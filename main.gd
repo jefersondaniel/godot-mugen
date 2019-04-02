@@ -100,9 +100,42 @@ func rle5_decode(buffer):
 	print("Unsupported format: rle5")
 	get_tree().quit()
 
-func lz5_decode(buffer):
-	print("Unsupported format: rle5")
-	get_tree().quit()
+func lz5_decode(data):
+	var dest = PoolByteArray.new()
+	var buffer = StreamPeerBuffer.new()
+
+	buffer.set_data_array(data)
+	buffer.get_32() # skip first 4 bytes
+
+	# TODO: Do benchmarks because this is not using memory in a smart way
+
+	while buffer.get_available_bytes():
+		var flags = buffer.get_partial_data(8)
+
+		if not buffer.get_available_bytes():
+			break
+
+		for a in range(0, 8):
+			if flags[a] == 0:
+				var color = buffer.get_8() # char
+				var numtimes = buffer.get_16() # int
+				for b in range(0, numtimes):
+					dest.append(color)
+			elif flags[a] == 1:
+				var len = buffer.get_16() # int
+				var offset = buffer.get_16() # int
+				var recycled = buffer.get_u8() # unsigned char
+				var recycled_bits_filled= buffer.get_u8() # unsigned char
+				var tmp_arr = PoolByteArray.new(dest) # TODO: Check this
+				tmp_array = tmp_arr.subarray(offset, offset + len) # TODO: Check this logic, if len is outofbounds and if slice is correct
+				while tmp_array.size() < len:
+					tmp_array.append_array(tmp_array)
+					tmp_array = tmp_arr.subarray(0, len)
+				dest.append_array(tmp_array)
+
+	return dest
+
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -152,11 +185,11 @@ func _ready():
 			offset += spr['offset']
 			buffer = file.get_buffer(spr['len'])
 			if spr['fmt'] == 2:
-				rle8_decode(buffer)
+				buffer = rle8_decode(buffer)
 			elif spr['fmt'] == 3:
-				rle5_decode(buffer)
+				buffer = rle5_decode(buffer)
 			elif spr['fmt'] == 4:
-				# lz5_decode(buffer)
+				buffer = lz5_decode(buffer)
 				pass
 
 	file.close()
