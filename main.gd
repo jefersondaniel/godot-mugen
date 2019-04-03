@@ -100,9 +100,70 @@ func rle5_decode(buffer):
 	print("Unsupported format: rle5")
 	get_tree().quit()
 
+func lz5_control_packet(buffer):
+	var flags = buffer.get_u8()
+	var masks = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
+	var results = [0, 0, 0, 0, 0, 0, 0, 0]
+	for a in range(0, 8):
+		results[i] = (flags & masks[a]) / masks[a]
+	return results
+
+func lz5_rle_packet(buffer):
+	var byte1 = buffer.get_u8()
+	var numtimes = (byte1 & 0xe0) >> 5
+	if numtimes == 0:
+		numtimes = buffer.get_u8() + 8
+	color = byte1 & 0x1f
+	return {'color': color, 'numtimes': numtimes}
+
+func lz5_lz_packet_recycle():
+	return {
+		'recycled': 0,
+		'recycled_bits_filled': 0,
+	}
+
+func lz5_lz_packet(buffer, recycle):
+	var byte1 = buffer.get_u8()
+	var offset = 0
+	var len = byte1 & 0x3f
+	if len == 0:
+		var byte2 = buffer.get_u8()
+		var byte3 = buffer.get_u8()
+		offset = byte1 & 0xc0;
+		offset = offset * 4;
+		offset = offset + byte2
+		offset++
+		len = byte3;
+		len = len + 3
+	else:
+		len++
+		var tmp_recyc = byte1 & 0xc0
+		if recycle['recycled_bits_filled'] == 2:
+			tmp_recyc = tmp_recyc >> 2
+		elif recycle['recycled_bits_filled'] == 4:
+			tmp_recyc = tmp_recyc >> 4
+		elif recycle['recycled_bits_filled'] == 6:
+			tmp_recyc = tmp_recyc >> 6
+		recycle['recycled'] = recycle['recycled'] + tmp_recyc
+		recycle['recycled_bits_filled'] = recycle['recycled_bits_filled'] + 2
+		if recycle['recycled_bits_filled'] < 8:
+			var byte2 = buffer.get_u8()
+			offset = byte2
+		elif recycle['recycled_bits_filled'] == 8:
+			offset = recycle['recycled']
+			recycle['recycled'] = 0
+			recycle['recycled_bits_filled'] = 0
+		offset++
+	return {
+		'offset': offset,
+		'len': len,
+	}
+
+
 func lz5_decode(data):
-	var dest = PoolByteArray.new()
+	var dest = PoolByteArray()
 	var buffer = StreamPeerBuffer.new()
+	var lz_recycle = lz5_lz_packet_recycle()
 
 	buffer.set_data_array(data)
 	buffer.get_32() # skip first 4 bytes
@@ -110,24 +171,24 @@ func lz5_decode(data):
 	# TODO: Do benchmarks because this is not using memory in a smart way
 
 	while buffer.get_available_bytes():
-		var flags = buffer.get_partial_data(8)
-
-		if not buffer.get_available_bytes():
-			break
+		var flags = lz5_control_packet(buffer)
 
 		for a in range(0, 8):
+			if not buffer.get_available_bytes():
+				break
 			if flags[a] == 0:
-				var color = buffer.get_8() # char
-				var numtimes = buffer.get_16() # int
+				var rle = lz5_rle_packet(buffer)
+				var color = rle['color']
+				var numtimes = rle['num_times']
 				for b in range(0, numtimes):
 					dest.append(color)
-			elif flags[a] == 1:
-				var len = buffer.get_16() # int
-				var offset = buffer.get_16() # int
-				var recycled = buffer.get_u8() # unsigned char
-				var recycled_bits_filled= buffer.get_u8() # unsigned char
-				var tmp_arr = PoolByteArray.new(dest) # TODO: Check this
-				tmp_array = tmp_arr.subarray(offset, offset + len) # TODO: Check this logic, if len is outofbounds and if slice is correct
+			else:
+				var lz = lz5_lz_packet(buffer, lz_recycle)
+				var len = lz['len']
+				var offset = lz['offset']
+				var tmp_arr = PoolByteArray()
+				tmp_array.append_array(dest) # TODO: Check if this can go on constructor
+				tmp_array = tmp_arr.subarray(tmp_array.size() - offset, len) # TODO: Check this logic, if len is outofbounds and if slice is correct
 				while tmp_array.size() < len:
 					tmp_array.append_array(tmp_array)
 					tmp_array = tmp_arr.subarray(0, len)
@@ -190,6 +251,5 @@ func _ready():
 				buffer = rle5_decode(buffer)
 			elif spr['fmt'] == 4:
 				buffer = lz5_decode(buffer)
-				pass
 
 	file.close()
