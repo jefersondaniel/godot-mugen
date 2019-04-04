@@ -264,6 +264,5 @@ func _init():
 				buffer = rle5_decode(buffer)
 			elif spr['fmt'] == 4:
 				buffer = lz5_decode(buffer)
-				break
 
 	file.close()
