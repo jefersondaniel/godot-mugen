@@ -52,6 +52,8 @@ var specs = {
 	],
 }
 
+var shared_buffer = StreamPeerBuffer.new()
+
 func check_struct_aligment(file, position, size):
 	var rest = position % size
 	var padding = 0
@@ -94,17 +96,16 @@ func parse_struct(file, struct_name):
 
 func rle8_decode(data):
 	var dest = PoolByteArray()
-	var buffer = StreamPeerBuffer.new()
 	var ch = 0
 	var color = 0
 
-	buffer.set_data_array(data)
-	buffer.get_32() # skip first 4 bytes
+	shared_buffer.set_data_array(data)
+	shared_buffer.get_32() # skip first 4 bytes
 
-	while buffer.get_available_bytes():
-		ch = buffer.get_u8()
+	while shared_buffer.get_available_bytes():
+		ch = shared_buffer.get_u8()
 		if (ch & 0xc0) == 0x40:
-			color = buffer.get_u8()
+			color = shared_buffer.get_u8()
 			for a in range(0, ch & 0x3f):
 				dest.append(color)
 		if (ch & 0xc0) != 0x40:
@@ -127,19 +128,19 @@ func rle5_decode(data):
 	print("Untested format: rle5")
 
 	var dest = PoolByteArray()
-	var buffer = StreamPeerBuffer.new()
+	var shared_buffer = StreamPeerBuffer.new()
 	var color = 0
 	var one_byte = 0
 	var run_len = 0
 
-	buffer.set_data_array(data)
-	buffer.get_32() # skip first 4 bytes
+	shared_buffer.set_data_array(data)
+	shared_buffer.get_32() # skip first 4 bytes
 
-	while buffer.get_available_bytes():
-		var rle5 = rle5_packet(buffer)
+	while shared_buffer.get_available_bytes():
+		var rle5 = rle5_packet(shared_buffer)
 
 		if rle5['color_bit'] == 1:
-			color = buffer.get_u8()
+			color = shared_buffer.get_u8()
 		elif rle5['color_bit'] == 0:
 			color = 0
 
@@ -147,7 +148,7 @@ func rle5_decode(data):
 			dest.append(color)
 
 		for bytes_processed in range(0, rle5['data_len']):
-			one_byte = buffer.get_u8()
+			one_byte = shared_buffer.get_u8()
 			color = one_byte & 0x1f
 			run_len = one_byte >> 5
 			for run_count in range(0, rle5['run_len'] + 1):
@@ -155,90 +156,63 @@ func rle5_decode(data):
 
 	return dest
 
-func lz5_control_packet(buffer):
-	var flags = buffer.get_u8()
-	var masks = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
-	var results = [0, 0, 0, 0, 0, 0, 0, 0]
-	for a in range(0, 8):
-		results[a] = (flags & masks[a]) / masks[a]
-	return results
-
-func lz5_rle_packet(buffer):
-	var byte1 = buffer.get_u8()
-	var numtimes = (byte1 & 0xe0) >> 5
-	if numtimes == 0:
-		numtimes = buffer.get_u8() + 8
-	var color = byte1 & 0x1f
-	return {'color': color, 'numtimes': numtimes}
-
-func lz5_lz_packet_recycle():
-	return {
-		'recycled': 0,
-		'recycled_bits_filled': 0,
-	}
-
-func lz5_lz_packet(buffer, recycle):
-	var byte1 = buffer.get_u8()
-	var offset = 0
-	var length = byte1 & 0x3f
-	if length == 0:
-		var byte2 = buffer.get_u8()
-		var byte3 = buffer.get_u8()
-		offset = byte1 & 0xc0;
-		offset = offset * 4;
-		offset = offset + byte2
-		offset = offset + 1
-		length = byte3
-		length = length + 3
-	else:
-		length = length + 1
-		var tmp_recyc = byte1 & 0xc0
-		if recycle['recycled_bits_filled'] == 2:
-			tmp_recyc = tmp_recyc >> 2
-		elif recycle['recycled_bits_filled'] == 4:
-			tmp_recyc = tmp_recyc >> 4
-		elif recycle['recycled_bits_filled'] == 6:
-			tmp_recyc = tmp_recyc >> 6
-		recycle['recycled'] = recycle['recycled'] + tmp_recyc
-		recycle['recycled_bits_filled'] = recycle['recycled_bits_filled'] + 2
-		if recycle['recycled_bits_filled'] < 8:
-			var byte2 = buffer.get_u8()
-			offset = byte2
-		elif recycle['recycled_bits_filled'] == 8:
-			offset = recycle['recycled']
-			recycle['recycled'] = 0
-			recycle['recycled_bits_filled'] = 0
-		offset = offset + 1 
-	return {
-		'offset': offset,
-		'length': length,
-	}
-
-
 func lz5_decode(data):
 	var dest = PoolByteArray()
-	var buffer = StreamPeerBuffer.new()
-	var lz_recycle = lz5_lz_packet_recycle()
+	var recycle = [0, 0]
 
-	buffer.set_data_array(data)
-	buffer.get_32() # skip first 4 bytes
+	shared_buffer.set_data_array(data)
+	shared_buffer.get_32() # skip first 4 bytes
 
-	while buffer.get_available_bytes():
-		var flags = lz5_control_packet(buffer)
+	while shared_buffer.get_available_bytes():
+		var flags_byte = shared_buffer.get_u8()
+		var masks = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
+		var flags = [0, 0, 0, 0, 0, 0, 0, 0]
+		for a in range(0, 8):
+			flags[a] = (flags_byte & masks[a]) / masks[a]
 
 		for a in range(0, 8):
-			if not buffer.get_available_bytes():
+			if not shared_buffer.get_available_bytes():
 				break
 			if flags[a] == 0:
-				var rle = lz5_rle_packet(buffer)
-				var color = rle['color']
-				var numtimes = rle['numtimes']
+				var byte1 = shared_buffer.get_u8()
+				var numtimes = (byte1 & 0xe0) >> 5
+				if numtimes == 0:
+					numtimes = shared_buffer.get_u8() + 8
+				var color = byte1 & 0x1f
 				for b in range(0, numtimes):
 					dest.append(color)
 			else:
-				var lz = lz5_lz_packet(buffer, lz_recycle)
-				var length = lz['length']
-				var offset = lz['offset']
+				var byte1 = shared_buffer.get_u8()
+				var offset = 0
+				var length = byte1 & 0x3f
+				if length == 0:
+					var byte2 = shared_buffer.get_u8()
+					var byte3 = shared_buffer.get_u8()
+					offset = byte1 & 0xc0;
+					offset = offset * 4;
+					offset = offset + byte2
+					offset = offset + 1
+					length = byte3
+					length = length + 3
+				else:
+					length = length + 1
+					var tmp_recyc = byte1 & 0xc0
+					if recycle[1] == 2:
+						tmp_recyc = tmp_recyc >> 2
+					elif recycle[1] == 4:
+						tmp_recyc = tmp_recyc >> 4
+					elif recycle[1] == 6:
+						tmp_recyc = tmp_recyc >> 6
+					recycle[0] = recycle[0] + tmp_recyc
+					recycle[1] = recycle[1] + 2
+					if recycle[1] < 8:
+						var byte2 = shared_buffer.get_u8()
+						offset = byte2
+					elif recycle[1] == 8:
+						offset = recycle[0]
+						recycle[0] = 0
+						recycle[1] = 0
+					offset = offset + 1
 				var tmp_arr = PoolByteArray(dest)
 				var tmp_arr_size = tmp_arr.size()
 				var start_index = tmp_arr_size - offset
@@ -278,25 +252,21 @@ func buffer_to_image(buffer, w, h, colors):
 	var dest = PoolByteArray()
 
 	for i in range(0, w * h):
-		var color_index = buffer[i]
-		var color = colors[color_index]
-		dest.append(color & 0xFF)
-		dest.append((color & 0xFF00) >> 8)
-		dest.append((color & 0xFF0000) >> 16)
-		dest.append(255)
+		dest.append_array(colors[buffer[i]])
 
 	var image = Image.new()
 	image.create_from_data(w, h, false, Image.FORMAT_RGBA8, dest)
+	
+	return image
 
+func image_to_sprite(image):
 	var texture = ImageTexture.new()
 	texture.create_from_image(image)
 
 	var sprite = Sprite.new()
 	sprite.set_texture(texture)
-	sprite.position = Vector2(100, 100)
 
 	return sprite
-
 
 func _init():
 	var file = File.new()
@@ -330,8 +300,12 @@ func _init():
 			pal['pal'] = []
 			file.seek(header['ldata_offset'] + pal['offset'])
 			for i in range(0, pal['numcols']):
-				pal['pal'].append(file.get_32())
-			# pal['pal'].invert()
+				var color = file.get_buffer(3)
+				color.append(0 if i == 0 else 255 )
+				file.get_8() # Ignore fourth byte
+				pal['pal'].append(color)
+
+	var sprite_start = OS.get_ticks_msec()
 
 	for spr in sprites:
 		if spr['len'] == 0: # Linked
@@ -350,11 +324,14 @@ func _init():
 				buffer = rle5_decode(buffer)
 			elif spr['fmt'] == 4:
 				buffer = lz5_decode(buffer)
-			print("Palette")
-			print(palettes[spr['palindex']]['pal'])
 			spr['image'] = buffer_to_image(buffer, spr['w'], spr['h'], palettes[spr['palindex']]['pal'])
-			self.add_child(spr['image'])
-			self.add_child(palette_to_image(palettes[spr['palindex']]['pal']))
-			break
+			# var node = image_to_sprite(spr['image'])
+			# node.position = Vector2(100, 100)
+			# self.add_child(node)
+			# break
+
+	var sprite_end = OS.get_ticks_msec()
+
+	print("Sprite build took %s msecs" % [sprite_end - sprite_start])
 
 	file.close()
