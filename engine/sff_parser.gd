@@ -224,28 +224,6 @@ func lz5_decode(data):
 				dest.append_array(tmp_arr)
 
 	return dest
-	
-func palette_to_image(palette):
-	var dest = PoolByteArray()
-
-	for color in range(0, palette.size()):
-		dest.append(color & 0xFF0000)
-		dest.append(color & 0xFF00)
-		dest.append(color & 0xFF)
-		dest.append(255)
-
-	var image = Image.new()
-	image.create_from_data(palette.size(), 1, false, Image.FORMAT_RGBA8, dest)
-
-	var texture = ImageTexture.new()
-	texture.create_from_image(image)
-
-	var sprite = Sprite.new()
-	sprite.set_texture(texture)
-	sprite.position = Vector2(100, 300)
-
-	return sprite
-
 
 func buffer_to_image(buffer, w, h, colors):
 	var dest = PoolByteArray()
@@ -257,16 +235,6 @@ func buffer_to_image(buffer, w, h, colors):
 	image.create_from_data(w, h, false, Image.FORMAT_RGBA8, dest)
 	
 	return image
-
-func image_to_sprite(image):
-	var texture = ImageTexture.new()
-	texture.create_from_image(image, 0)
-
-	var sprite = Sprite.new()
-	sprite.set_texture(texture)
-	sprite.scale = Vector2(5, 5)
-
-	return sprite
 
 func load_sff(file):
 	file.seek(0)
@@ -320,7 +288,6 @@ func get_images(file, sff, filters = null):
 	var palettes = sff['palettes']
 
 	for spr in sprites:
-		print('%s,%s' % [spr['groupno'], spr['imageno']])
 		if not spr['groupno'] in images:
 			images[spr['groupno']] = {}
 		if not 'image' in spr:
@@ -342,6 +309,6 @@ func get_images(file, sff, filters = null):
 				elif spr['fmt'] == 4:
 					buffer = lz5_decode(buffer)
 				spr['image'] = buffer_to_image(buffer, spr['w'], spr['h'], palettes[spr['palindex']]['pal'])
-		images[spr['groupno']][spr['imageno']] = spr['image']
+		images[spr['groupno']][spr['imageno']] = spr
 
 	return images

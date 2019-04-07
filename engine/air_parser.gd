@@ -15,7 +15,7 @@ func load_air(path):
 	var current_animation = null
 	var current_animation_key = null
 	var current_animation_set = null
-	var current_animation_time = 0
+	var current_animation_tick = 0
 
 	for line in lines:
 		var comment_idx = line.find(';')
@@ -30,11 +30,11 @@ func load_air(path):
 			if current_animation:
 				animations[current_animation_key] = current_animation
 				current_animation_set = null
-				current_animation_time = 0
+				current_animation_tick = 0
 
 			var idx_start = 14
 			var idx_end = line.find(']')
-			current_animation_key = line.substr(idx_start, idx_end - idx_start)
+			current_animation_key = int(line.substr(idx_start, idx_end - idx_start))
 			current_animation_set = {'frames': []}
 			current_animation = {
 				'collisions': [],
@@ -57,7 +57,7 @@ func load_air(path):
 			current_animation['collisions'].append({
 				'type': 1 if is_collision_1 else 2,
 				'points': points,
-				'time': current_animation_time,
+				'tick': current_animation_tick,
 			})
 			continue
 
@@ -80,12 +80,13 @@ func load_air(path):
 			for i in range(5, parameters_size):
 				flags.append(parameters[i])
 		current_animation_set['frames'].append({
-			'image': [float(parameters[0]), float(parameters[1])],
-			'offset': [float(parameters[2]), float(parameters[3])],
-			'ticks': float(parameters[4]),
+			'groupno': int(parameters[0]),
+			'imageno': int(parameters[1]),
+			'offset': [int(parameters[2]), int(parameters[3])],
+			'ticks': int(parameters[4]),
 			'flags': flags,
 		})
-		current_animation_time += 1
+		current_animation_tick += int(parameters[4])
 
 	if current_animation:
 		animations[current_animation_key] = current_animation
