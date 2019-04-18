@@ -2,7 +2,7 @@ extends Node
 
 # var sprite_manager = load('res://engine/sprite_manager.gd').new()
 # var air_parser = load('./engine/air_parser.gd').new()
-var Player = load('./engine/player.gd')
+var Player = load('./engine/player/player.gd')
 
 func _init():
 	# var bucket = sprite_manager.make_sprite_bucket("res://data/chars/kfm/kfm.sff")

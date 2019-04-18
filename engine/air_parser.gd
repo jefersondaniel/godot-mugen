@@ -15,7 +15,8 @@ func load_air(path):
 	var current_animation = null
 	var current_animation_key = null
 	var current_animation_set = null
-	var current_animation_tick = 0
+	var current_animation_frame = 0
+	var current_collision = null
 
 	for line in lines:
 		var comment_idx = line.find(';')
@@ -28,14 +29,17 @@ func load_air(path):
 
 		if line.begins_with('[begin action '):
 			if current_animation:
+				if current_collision:
+					current_animation['collisions'].append(current_collision)
 				animations[current_animation_key] = current_animation
 				current_animation_set = null
-				current_animation_tick = 0
+				current_animation_frame = 0
 
 			var idx_start = 14
 			var idx_end = line.find(']')
 			current_animation_key = int(line.substr(idx_start, idx_end - idx_start))
 			current_animation_set = {'frames': []}
+			current_collision = null
 			current_animation = {
 				'collisions': [],
 				'sets': [current_animation_set],
@@ -53,12 +57,12 @@ func load_air(path):
 			var idx_start = line.find('=') + 1
 			var idx_end = line.length() - 1
 			var points = line.substr(idx_start, idx_end - idx_start)
+			var clsn_type = 1 if is_collision_1 else 2
 			points = points.split_floats(',')
-			current_animation['collisions'].append({
-				'type': 1 if is_collision_1 else 2,
-				'points': points,
-				'tick': current_animation_tick,
-			})
+			if not current_collision:
+				push_error("Invalid collision instruction: %s" % [line])
+				continue
+			current_collision['boxes'].append(points)
 			continue
 
 		if is_loopstart:
@@ -67,6 +71,28 @@ func load_air(path):
 			continue
 
 		if line.begins_with('clsn'):
+			if current_collision != null:
+				current_animation['collisions'].append(current_collision)
+
+			current_collision = {
+				'type': null,
+				'default': null,
+				'boxes': [],
+				'frame': current_animation_frame,
+			}
+
+			if line.begins_with('clsn1default'):
+				current_collision['type'] = 1
+				current_collision['default'] = true
+			elif line.begins_with('clsn2default'):
+				current_collision['type'] = 2
+				current_collision['default'] = true
+			elif line.begins_with('clsn1'):
+				current_collision['type'] = 1
+				current_collision['default'] = false
+			elif line.begins_with('clsn2'):
+				current_collision['type'] = 2
+				current_collision['default'] = false
 			continue
 
 		line = line.replace(' ', '').replace(',,', '')
@@ -86,9 +112,11 @@ func load_air(path):
 			'ticks': int(parameters[4]),
 			'flags': flags,
 		})
-		current_animation_tick += int(parameters[4])
+		current_animation_frame += 1
 
 	if current_animation:
+		if current_collision:
+			current_animation['collisions'].append(current_collision)
 		animations[current_animation_key] = current_animation
 
 	return animations
