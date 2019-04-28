@@ -233,7 +233,7 @@ func buffer_to_image(buffer, w, h, colors):
 
 	var image = Image.new()
 	image.create_from_data(w, h, false, Image.FORMAT_RGBA8, dest)
-	
+
 	return image
 
 func load_sff(file):

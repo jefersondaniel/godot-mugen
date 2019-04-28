@@ -1,2 +1,8 @@
 .import/*
-
+docs/nomen/*
+docs/nomen-binary/*
+*.os
+*.so
+*.dll
+*.swp
+.sconsign.dblite

@@ -117,8 +117,9 @@ func load_data(path):
 	animated_sprite.set_sprite_frames(sprite_frames)
 	animated_sprite.set_animation('default')
 	animated_sprite.centered = false
-	animated_sprite.scale = Vector2(2, 2)
+	animated_sprite.scale = Vector2(1, 1)
 	animated_sprite.name = 'AnimatedSprite'
+	animated_sprite.show_behind_parent = true
 	change_anim(41)
 
 func _ready():

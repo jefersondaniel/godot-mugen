@@ -1,0 +1,8 @@
+env = Environment(
+    CPPPATH=Split('godot-cpp/include godot-cpp/include/core godot-cpp/include/gen godot-cpp/godot_headers'),
+    CCFLAGS=Split('-fPIC -g -O3 -std=c++14'),
+    LIBPATH='godot-cpp/bin',
+    LIBS='godot-cpp.linux.debug.64'
+)
+
+env.SharedLibrary('bin/game', Glob('src/*.cpp'))
