@@ -3,6 +3,7 @@
 
 #include <Godot.hpp>
 #include <File.hpp>
+#include "ByteArray.hpp"
 
 using namespace godot;
 
@@ -12,7 +13,7 @@ private:
 public:
 	FileStream(File *file);
 	void readRawData(char *buffer, size_t length);
-	void readRawData(PoolByteArray &dest, size_t length);
+	void readRawData(ByteArray &dest, size_t length);
 	FileStream &operator>>(uint8_t &dest);
 	FileStream &operator>>(uint16_t &dest);
 	FileStream &operator>>(uint32_t &dest);

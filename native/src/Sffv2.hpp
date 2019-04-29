@@ -141,7 +141,7 @@ FileStream& operator>>(FileStream& ds, _SFFV2_PAL_NODE_HEADER& pal)
     return ds;
 }
 
-PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_RLE5_PACKET& rle5)
+ByteArrayStream& operator>>(ByteArrayStream& ds, _SFFV2_RLE5_PACKET& rle5)
 {
     ds >> rle5.run_len;
     {
@@ -153,7 +153,7 @@ PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_RLE5_PACKET& rle
     return ds;
 }
 
-PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_CONTROL_PACKET& pack)
+ByteArrayStream& operator>>(ByteArrayStream& ds, _SFFV2_LZ5_CONTROL_PACKET& pack)
 {
     {
         uint8_t byte;
@@ -170,7 +170,7 @@ PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_CONTROL_PACK
     return ds;
 }
 
-PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_RLE_PACKET& pack)
+ByteArrayStream& operator>>(ByteArrayStream& ds, _SFFV2_LZ5_RLE_PACKET& pack)
 {
     {
         uint8_t byte1, byte2;
@@ -186,7 +186,7 @@ PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_RLE_PACKET& 
     return ds;
 }
 
-PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_LZ_PACKET& pack)
+ByteArrayStream& operator>>(ByteArrayStream& ds, _SFFV2_LZ5_LZ_PACKET& pack)
 {
     {
         uint8_t byte1, byte2, byte3;
@@ -229,10 +229,10 @@ PoolByteArrayStream& operator>>(PoolByteArrayStream& ds, _SFFV2_LZ5_LZ_PACKET& p
     return ds;
 }
 
-PoolColorArray _sffv2_makeColorArray(PoolByteArray& src, int dim)
+PoolColorArray _sffv2_makeColorArray(ByteArray& src, int dim)
 {
     PoolColorArray palette;
-    PoolByteArrayStream in(src);
+    ByteArrayStream in(src);
 
     uint8_t r, g, b, skip;
     for (int a = 0; a < dim; a++) {
@@ -249,9 +249,9 @@ PoolColorArray _sffv2_makeColorArray(PoolByteArray& src, int dim)
     return palette;
 }
 
-Image* _sffv2_makeImage(PoolByteArray& src, int w, int h, PoolColorArray& colors)
+Image* _sffv2_makeImage(ByteArray& src, int w, int h, PoolColorArray& colors)
 {
-    PoolByteArray dest;
+    ByteArray dest;
 
     for (int i = 0; i < (w * h); i++) {
         Color color = colors[src[i]];
@@ -267,10 +267,10 @@ Image* _sffv2_makeImage(PoolByteArray& src, int w, int h, PoolColorArray& colors
     return image;
 }
 
-void _sffv2_rle8Decode(PoolByteArray& src)
+void _sffv2_rle8Decode(ByteArray& src)
 {
-    PoolByteArrayStream in(src);
-    PoolByteArray dest;
+    ByteArrayStream in(src);
+    ByteArray dest;
     uint8_t ch, color;
     {
         uint32_t i;
@@ -292,11 +292,11 @@ void _sffv2_rle8Decode(PoolByteArray& src)
     src = dest;
 }
 
-void _sffv2_rle5Decode(PoolByteArray& src)
+void _sffv2_rle5Decode(ByteArray& src)
 {
-    PoolByteArray dest;
+    ByteArray dest;
     {
-        PoolByteArrayStream in(src);
+        ByteArrayStream in(src);
         uint8_t color = 0;
         {
             uint32_t tmp;
@@ -324,19 +324,10 @@ void _sffv2_rle5Decode(PoolByteArray& src)
     src = dest;
 }
 
-PoolByteArray subarray(PoolByteArray source, int start, int end)
+void _sffv2_lz5Decode(ByteArray& src)
 {
-    PoolByteArray dest;
-    for (int i = start; i <= end; i++) {
-        dest.append(source[i]);
-    }
-    return dest;
-}
-
-void _sffv2_lz5Decode(PoolByteArray& src)
-{
-    PoolByteArray dest;
-    PoolByteArrayStream in(src);
+    ByteArray dest;
+    ByteArrayStream in(src);
     _SFFV2_LZ5_CONTROL_PACKET ctrl;
     _SFFV2_LZ5_RLE_PACKET rle;
     _SFFV2_LZ5_LZ_PACKET lz;
@@ -359,18 +350,16 @@ void _sffv2_lz5Decode(PoolByteArray& src)
             if (ctrl.flags[a] == 1) {
                 //lz packet
                 in >> lz;
-                PoolByteArray tmpArr = dest;
+                ByteArray tmpArr = dest;
                 int tmpArrSize = tmpArr.size();
                 int startIndex = tmpArrSize - lz.offset;
                 int endIndex = std::min(startIndex + lz.len, tmpArrSize - 1);
-                tmpArr = subarray(tmpArr, startIndex, endIndex);
+                tmpArr = tmpArr.subarray(startIndex, endIndex);
                 while (tmpArr.size() < lz.len) {
-                    tmpArr.append_array(tmpArr);
+                    tmpArr.append(tmpArr);
                 }
-                if (tmpArr.size() > lz.len) {
-                    tmpArr = subarray(tmpArr, 0, lz.len - 1);
-                }
-                dest.append_array(tmpArr);
+                tmpArr.truncate(lz.len);
+                dest.append(tmpArr);
             }
         }
     }

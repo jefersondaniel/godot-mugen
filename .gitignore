@@ -1,7 +1,9 @@
 .import/*
 docs/nomen/*
 docs/nomen-binary/*
+native/bin/*
 *.os
+*.o
 *.so
 *.dll
 *.swp

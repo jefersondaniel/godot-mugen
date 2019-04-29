@@ -11,8 +11,9 @@ void FileStream::readRawData(char *dest, size_t length) {
 	memcpy(dest, buffer.read().ptr(), length);
 }
 
-void FileStream::readRawData(PoolByteArray &dest, size_t length) {
-	dest = this->file->get_buffer(length);
+void FileStream::readRawData(ByteArray &dest, size_t length) {
+	ByteArray newarray(this->file->get_buffer(length));
+	dest = newarray;
 }
 
 FileStream &FileStream::operator>>(uint8_t &dest) {

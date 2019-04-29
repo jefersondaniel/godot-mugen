@@ -6,7 +6,8 @@
 #include <vector>
 #include "SffParser.hpp"
 #include "FileStream.hpp"
-#include "PoolByteArrayStream.hpp"
+#include "ByteArray.hpp"
+#include "ByteArrayStream.hpp"
 #include "Sffv2.hpp"
 
 using namespace godot;
@@ -75,7 +76,7 @@ Variant SffParser::load_sff(String path) {
 
 			int k = (int) palnode[a].numcols;
 			k = k * 4;
-			PoolByteArray tmpArr;
+			ByteArray tmpArr;
 			in.readRawData(tmpArr, k);
 			k = k / 4;
 			sffpal["pal"] = _sffv2_makeColorArray(tmpArr, k); 
@@ -110,7 +111,7 @@ Variant SffParser::load_sff(String path) {
 		   file->seek(offset);
 
 	       Image *image;
-		   PoolByteArray tmpArr;
+		   ByteArray tmpArr;
 		   in.readRawData(tmpArr, ((int) sprnode[a].len) );
 
 		   /*
