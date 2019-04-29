@@ -3,7 +3,6 @@
 #include <Dictionary.hpp>
 #include <Color.hpp>
 #include <Image.hpp>
-#include <Texture.hpp>
 #include <vector>
 #include "SffParser.hpp"
 #include "FileStream.hpp"
@@ -101,7 +100,7 @@ Variant SffParser::load_sff(String path) {
 		sprite["y"] = sprnode[a].y;
 
 	    if(sprnode[a].len == 0) {
-		  sprite["image"] = sprites[sprnode[a].linked]["image"];    
+		  sprite["image"] = sprites[sprnode[a].linked]["image"];
 	    }
 	    if(sprnode[a].len != 0) {
 		   uint64_t offset = 0;
@@ -110,10 +109,11 @@ Variant SffParser::load_sff(String path) {
 		   offset += (uint64_t) sprnode[a].offset;
 		   file->seek(offset);
 
-	       Image *img;
+	       Image *image;
 		   PoolByteArray tmpArr;
 		   in.readRawData(tmpArr, ((int) sprnode[a].len) );
 
+		   /*
 		   std::string message = "{groupno:" + std::to_string(sprnode[a].groupno) + "," +  
 		   	"imageno:" + std::to_string(sprnode[a].imageno) + "," +  
 		   	"offset:" + std::to_string(sprnode[a].offset) + "," +  
@@ -122,21 +122,22 @@ Variant SffParser::load_sff(String path) {
 		   	"h:" + std::to_string(sprnode[a].h) + "," +  
 		   	"palindex:" + std::to_string(sprnode[a].palindex) + "}";  
 		   Godot::print(message.c_str());
+		   */
 
 		   if(sprnode[a].fmt == 2) _sffv2_rle8Decode(tmpArr);
 	       if(sprnode[a].fmt == 3) _sffv2_rle5Decode(tmpArr);
 	       if(sprnode[a].fmt == 4) _sffv2_lz5Decode(tmpArr);
 
 	       if(sprnode[a].colordepth == 5 || sprnode[a].colordepth == 8) {
-	          img = _sffv2_makeImage(
+	          image = _sffv2_makeImage(
 	          	tmpArr,
 	          	((int) sprnode[a].w), 
 	            ((int) sprnode[a].h),
 	            colors
 	          );
 	       }
-		   
-		   sprite["image"] = img;
+
+		   sprite["image"] = image;
 		   tmpArr.resize(0);
 	    }
 
@@ -146,6 +147,8 @@ Variant SffParser::load_sff(String path) {
 	}
 
 	file->close();
+
+	Godot::print("Done reading sff file");
 
 	result["palettes"] = palettes;
 	result["sprites"] = spritesDict;

@@ -5,4 +5,5 @@ env = Environment(
     LIBS='godot-cpp.linux.debug.64'
 )
 
-env.SharedLibrary('bin/game', Glob('src/*.cpp'))
+env.SConscript('godot-cpp/SConstruct')
+Default(env.SharedLibrary('bin/game', Glob('src/*.cpp')))
