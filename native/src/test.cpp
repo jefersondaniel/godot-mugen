@@ -1,22 +1,28 @@
 #include "ByteArray.hpp"
 #include "ByteArrayStream.hpp"
 
-/*int main() {
+void printElements(ByteArray &arr) {
+	for (int i = 0; i < arr.size(); i++) {
+		printf("element[%i] is %i\n",i, arr[i]);
+	}
+}
+
+ByteArray copy(ByteArray &other) {
+	return other;
+}
+
+int main() {
 	ByteArray bytes1;
-	ByteArray bytes2;
-	bytes1.append(42);
 
-	bytes2 = bytes1;
-	bytes2.append(42);
-	bytes2.append(bytes1);
+	for (int i = 0; i<100; i++) {
+		bytes1.append(i);
+	}
 
-	ByteArray bytes3 = bytes2.subarray(1,2);
+	bytes1.truncate(75);
 
-	// ByteArrayStream in(bytes1);
-	// uint8_t a;
-	// in >> a;
-	//printf("a = %i\n", a);
-	printf("Byte1 array size = %i\n", bytes1.size());
-	printf("Byte2 array size = %i\n", bytes2.size());
-	printf("Byte3 array size = %i\n", bytes3.size());
-}*/
+	ByteArray bytes2 = bytes1;
+	ByteArray bytes3 = bytes2.subarray(10, 74);
+	ByteArray bytes4 = bytes2.subarray(0, 63);
+
+	printElements(bytes4);
+}

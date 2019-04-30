@@ -12,7 +12,8 @@ void FileStream::readRawData(char *dest, size_t length) {
 }
 
 void FileStream::readRawData(ByteArray &dest, size_t length) {
-	ByteArray newarray(this->file->get_buffer(length));
+	PoolByteArray oldarr = this->file->get_buffer(length);
+	ByteArray newarray(oldarr);
 	dest = newarray;
 }
 

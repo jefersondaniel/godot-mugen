@@ -9,20 +9,19 @@
 #include <vector>
 
 using namespace godot;
+using namespace std;
 
 class ByteArray {
 private:
-	ByteArray(std::vector<uint8_t> &buffer);
 public:
 	std::vector<uint8_t> _buffer;
 	ByteArray();
-	ByteArray(int size);
 	ByteArray(const ByteArray &other);
-	ByteArray(const godot::PoolByteArray array);
+	ByteArray(vector<uint8_t> buffer);
+	ByteArray(PoolByteArray &array);
 	int size() const;
-	const uint8_t *ptr() const;
-	void append(const uint8_t data);
-	void append(const ByteArray &array);
+	void append(uint8_t data);
+	void append(ByteArray array);
 	void truncate(int size);
 	void resize(int size);
 	ByteArray subarray(int start, int end);

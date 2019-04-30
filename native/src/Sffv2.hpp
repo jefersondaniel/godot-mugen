@@ -269,6 +269,7 @@ Image* _sffv2_makeImage(ByteArray& src, int w, int h, PoolColorArray& colors)
 
 void _sffv2_rle8Decode(ByteArray& src)
 {
+
     ByteArrayStream in(src);
     ByteArray dest;
     uint8_t ch, color;
@@ -290,6 +291,7 @@ void _sffv2_rle8Decode(ByteArray& src)
     }
 
     src = dest;
+
 }
 
 void _sffv2_rle5Decode(ByteArray& src)

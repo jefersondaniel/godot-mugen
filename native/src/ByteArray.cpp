@@ -1,32 +1,27 @@
 #include "ByteArray.hpp"
 
 ByteArray::ByteArray() {
-	_buffer.resize(0);
 }
 
-
-ByteArray::ByteArray(int size) {
-	_buffer.resize(size);
-}
-
-ByteArray::ByteArray(std::vector<uint8_t> &buffer) {
-	_buffer = buffer;
+ByteArray::ByteArray(vector<uint8_t> newbuffer) {
+	_buffer = newbuffer;
 }
 
 ByteArray::ByteArray(const ByteArray &p_other) {
-	_buffer.resize(p_other.size());
-	for (int i = 0; i < p_other.size(); i++) {
-		_buffer[i] = p_other[i];
-	}
+  	int _size = p_other.size();
+  	resize(_size);
+  	for (int i = 0; i < _size; i++) {
+	    _buffer[i] = p_other[i];
+  	}
 }
 
-ByteArray::ByteArray(const PoolByteArray array) {
-	int size = array.size();
-	_buffer.resize(size);
+ByteArray::ByteArray(PoolByteArray &_arr) {
 
-	const unsigned char* array_ptr = array.read().ptr();
+	int size = _arr.size();
+	resize(size);
+
 	for (int i = 0; i < size; i++) {
-		_buffer[i] = array_ptr[i];
+		_buffer[i] = _arr[i];
 	}
 }
 
@@ -34,19 +29,15 @@ int ByteArray::size() const {
 	return _buffer.size();
 }
 
-const uint8_t *ByteArray::ptr() const {
-	return &_buffer.front();
+void ByteArray::resize(int _size) {
+	_buffer.resize(_size);
 }
 
-void ByteArray::resize(int size) {
-	_buffer.resize(size);
-}
-
-void ByteArray::append(const uint8_t data) {
+void ByteArray::append(uint8_t data) {
 	_buffer.push_back(data);
 }
 
-void ByteArray::append(const ByteArray &array) {
+void ByteArray::append(ByteArray array) {
 	if (array.size() == 0) {
 		return;
 	}
@@ -67,10 +58,11 @@ ByteArray ByteArray::subarray(int start, int end) {
 		return ByteArray();
 	}
 
+
 	std::vector<uint8_t> newvec;
-	newvec.resize(end - start + 1);
+
 	for (int i = start; i <= end; i++) {
-		newvec[i] = _buffer[i];
+		newvec.push_back(_buffer[i]);
 	}
 
 	return ByteArray(newvec);
@@ -85,14 +77,18 @@ uint8_t &ByteArray::operator[](const int idx) {
 }
 
 void ByteArray::operator=(const ByteArray &p_other) {
+
   	int _size = p_other.size();
   	resize(_size);
+
   	for (int i = 0; i < _size; i++) {
 	    _buffer[i] = p_other[i];
   	}
+
 }
 
 ByteArray::operator PoolByteArray() const {
+
 	PoolByteArray array = PoolByteArray();
 	int _size = size();
 	array.resize(_size);

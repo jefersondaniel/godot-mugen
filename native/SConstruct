@@ -7,4 +7,4 @@ env = Environment(
 
 env.SConscript('godot-cpp/SConstruct')
 Default(env.SharedLibrary('bin/game', Glob('src/*.cpp')))
-# env.Program('bin/lala', Glob('src/*.cpp'))
+env.Program('bin/lala', Glob('src/*.cpp'))
