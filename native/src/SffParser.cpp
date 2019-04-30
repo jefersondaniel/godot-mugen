@@ -91,7 +91,7 @@ Variant SffParser::load_sff(String path) {
 	for(int a = 0; a < sprnode.size(); a++) {
 		Dictionary sprite;
 		Dictionary currentPalette = palettes[sprnode[a].palindex];
-		PoolColorArray colors = currentPalette["pal"];
+		PoolByteArray colors = currentPalette["pal"];
 
 		sprite["groupno"] = sprnode[a].groupno;
 		sprite["imageno"] = sprnode[a].imageno;

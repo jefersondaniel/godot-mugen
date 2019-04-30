@@ -17,13 +17,16 @@ public:
 	std::vector<uint8_t> _buffer;
 	ByteArray();
 	ByteArray(const ByteArray &other);
-	ByteArray(vector<uint8_t> buffer);
+	ByteArray(vector<uint8_t> &buffer);
 	ByteArray(PoolByteArray &array);
 	int size() const;
+	uint8_t *ptr();
+	const uint8_t *ptr() const;
 	void append(uint8_t data);
-	void append(ByteArray array);
+	void append(ByteArray &array);
 	void truncate(int size);
 	void resize(int size);
+	void reserve(int size);
 	ByteArray subarray(int start, int end);
 	uint8_t operator[](const int idx) const;
 	uint8_t& operator[](const int idx);

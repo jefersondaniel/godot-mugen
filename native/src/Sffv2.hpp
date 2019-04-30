@@ -229,36 +229,38 @@ ByteArrayStream& operator>>(ByteArrayStream& ds, _SFFV2_LZ5_LZ_PACKET& pack)
     return ds;
 }
 
-PoolColorArray _sffv2_makeColorArray(ByteArray& src, int dim)
+PoolByteArray _sffv2_makeColorArray(ByteArray& src, int dim)
 {
-    PoolColorArray palette;
+    PoolByteArray palette;
     ByteArrayStream in(src);
 
     uint8_t r, g, b, skip;
+
     for (int a = 0; a < dim; a++) {
         in >> r;
         in >> g;
         in >> b;
         in >> skip;
-        palette.append(Color(
-            ((float)r / 255.0),
-            ((float)g / 255.0),
-            ((float)b / 255.0),
-            a == 0 ? 0 : 1));
+        palette.append(r);
+        palette.append(g);
+        palette.append(b);
+        palette.append(a == 0 ? 0 : 255);
     }
+
     return palette;
 }
 
-Image* _sffv2_makeImage(ByteArray& src, int w, int h, PoolColorArray& colors)
+Image* _sffv2_makeImage(ByteArray& src, int w, int h, PoolByteArray& colors)
 {
     ByteArray dest;
 
+    dest.resize(w * h * 4);
+
+    const uint32_t* p_colors = reinterpret_cast<const uint32_t*>(colors.read().ptr());
+    uint32_t* p_image = reinterpret_cast<uint32_t*>(dest.ptr());
+
     for (int i = 0; i < (w * h); i++) {
-        Color color = colors[src[i]];
-        dest.append((unsigned char)(color.r * 255.0));
-        dest.append((unsigned char)(color.g * 255.0));
-        dest.append((unsigned char)(color.b * 255.0));
-        dest.append((unsigned char)(color.a * 255.0));
+        p_image[i] = p_colors[src[i]];
     }
 
     Image* image = Image::_new();
@@ -273,10 +275,12 @@ void _sffv2_rle8Decode(ByteArray& src)
     ByteArrayStream in(src);
     ByteArray dest;
     uint8_t ch, color;
+
     {
         uint32_t i;
         in >> i;
     }
+
     while (!in.atEnd()) {
         in >> ch;
         if ((ch & 0xc0) == 0x40) {
@@ -291,7 +295,6 @@ void _sffv2_rle8Decode(ByteArray& src)
     }
 
     src = dest;
-
 }
 
 void _sffv2_rle5Decode(ByteArray& src)

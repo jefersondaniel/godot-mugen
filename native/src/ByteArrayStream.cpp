@@ -110,11 +110,7 @@ void ByteArrayStream::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_re
 		r_received = p_bytes;
 	}
 
-	for (int i = 0; i < r_received; i++) {
-		p_buffer[i] = this->data[i + pointer];
-	}
-
-	//memcpy(p_buffer, this->data.ptr() + pointer, r_received);
+	memcpy(p_buffer, this->data.ptr() + pointer, r_received);
 
 	pointer += r_received;
 }
