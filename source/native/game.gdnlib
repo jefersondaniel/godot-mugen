@@ -1,0 +1,9 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+
+[entry]
+
+X11="res://source/native/bin/libgame.so"

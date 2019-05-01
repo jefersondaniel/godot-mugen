@@ -16,7 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="NeoMugen"
-run/main_scene="res://main.tscn"
+run/main_scene="res://source/scenes/main.tscn"
 config/icon="res://icon.png"
 
 [display]
@@ -31,4 +31,4 @@ window/stretch/aspect="keep"
 
 [rendering]
 
-environment/default_environment="res://default_env.tres"
+environment/default_environment="res://source/scenes/default_env.tres"

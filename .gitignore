@@ -1,10 +1,12 @@
 .import/*
-docs/nomen/*
-docs/nomen-binary/*
-native/bin/*
+others/nomen/*
+others/nomen-binary/*
+bin/*
 *.os
 *.o
 *.so
 *.dll
 *.swp
+project.sublime-project
+project.sublime-workspace
 .sconsign.dblite
