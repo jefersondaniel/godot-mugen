@@ -1,10 +1,6 @@
-extends Node
+extends Object
 
-# class member variables go here, for example:
-# var a = 2
-# var b = "textvar"
-
-func load_configuration(path):
+func read(path, allow_duplicated_sections=false):
 	var file = File.new()
 	file.open(path, File.READ)
 	var lines = file.get_as_text().split("\n", false)
@@ -26,7 +22,11 @@ func load_configuration(path):
 
 		if line.begins_with('['):
 			if current_section:
-				sections[current_section_key] = current_section
+				if not allow_duplicated_sections:
+					sections[current_section_key] = current_section
+				else:
+					sections[current_section_key] = sections.get(current_section_key, [])
+					sections[current_section_key].append(current_section)
 			var idx_start = 1
 			var idx_end = line.find(']')
 			current_section_key = line.substr(idx_start, idx_end - idx_start).to_lower()
@@ -35,10 +35,10 @@ func load_configuration(path):
 
 		if current_section == null:
 			continue
-		
+
 		var equal_idx = line.find('=')
 		var line_size = line.length()
-		
+
 		if equal_idx == -1:
 			continue
 
@@ -47,6 +47,10 @@ func load_configuration(path):
 		current_section[key] = value
 
 	if current_section:
-		sections[current_section_key] = current_section
+		if not allow_duplicated_sections:
+			sections[current_section_key] = current_section
+		else:
+			sections[current_section_key] = sections.get(current_section_key, [])
+			sections[current_section_key].append(current_section)
 
 	return sections

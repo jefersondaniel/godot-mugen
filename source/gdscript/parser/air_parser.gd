@@ -1,10 +1,6 @@
-extends Node
+extends Object
 
-# class member variables go here, for example:
-# var a = 2
-# var b = "textvar"
-
-func load_air(path):
+func read(path):
 	var file = File.new()
 	file.open(path, File.READ)
 	var lines = file.get_as_text().split("\n", false)

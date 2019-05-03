@@ -1,31 +1,21 @@
-extends KinematicBody2D
+extends AnimatedSprite
 
-var configuration_parser = load('res://source/gdscript/engine/cfg_parser.gd').new()
-var air_parser = load('res://source/gdscript/engine/air_parser.gd').new()
-var sff_parser = load('res://source/native/sff_parser.gdns').new()
-
-var animations = null
-var animated_sprite = null
-var animation_player = null
-var empty_texture = null
+var animation_player: AnimationPlayer = null
+var images: Dictionary = {}
+var animations: Dictionary = {}
 var boxes = {1: [], 2: []}
 
-func image_to_texture(image):
-	var texture = ImageTexture.new()
-	texture.create_from_image(image, 0)
-	return texture
-
-func load_data(path):
-	var definition = configuration_parser.load_configuration(path)
-	var folder = path.substr(0, path.find_last('/'))
-	var sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
-	var animation_path = '%s/%s' % [folder, definition['files']['anim']]
-	var images = sff_parser.get_images(sprite_path, -1, -1, 0)
+func _init(_images, _animations):
 	var empty_image = Image.new()
 	var sprite_frames = SpriteFrames.new()
+	var empty_texture = null
 	var frame_index = 1
 	var frame_mapping = {}
 	var offset_mapping = {}
+
+	animations = _animations
+	images = _images
+	animation_player = AnimationPlayer.new()
 
 	# Prepare an empty texture
 	empty_image.create_from_data(1, 1, false, Image.FORMAT_RGBA8, PoolByteArray([0,0,0,0]))
@@ -33,12 +23,15 @@ func load_data(path):
 	empty_texture.create_from_image(empty_image, 0)
 
 	# Load animation spec
-	animations = air_parser.load_air(animation_path)
-	animated_sprite = AnimatedSprite.new()
 	animation_player = AnimationPlayer.new()
-
-	# Setup AnimatedSprite
 	sprite_frames.add_frame('default', empty_texture)
+
+	for image_key in images:
+		var image = images[image_key]
+		frame_mapping[image_key] = frame_index
+		offset_mapping[image_key] = Vector2(-image['x'], -image['y'])
+		frame_index = frame_index + 1
+		sprite_frames.add_frame('default', image_to_texture(image['image']))
 
 	for image_key in images:
 		var image = images[image_key]
@@ -78,9 +71,9 @@ func load_data(path):
 			var collision_track = animation.add_track(Animation.TYPE_METHOD)
 
 			animation.set_loop(loop)
-			animation.track_set_path(frame_track, 'AnimatedSprite:frame')
+			animation.track_set_path(frame_track, ':frame')
 			animation.value_track_set_update_mode(frame_track, Animation.UPDATE_DISCRETE)
-			animation.track_set_path(offset_track, 'AnimatedSprite:offset')
+			animation.track_set_path(offset_track, ':offset')
 			animation.value_track_set_update_mode(offset_track, Animation.UPDATE_DISCRETE)
 
 			var frame_value = 0
@@ -112,17 +105,12 @@ func load_data(path):
 			animation.set_length(current_set_time)
 			animation_player.add_animation(animation_name, animation)
 
-	animated_sprite.set_sprite_frames(sprite_frames)
-	animated_sprite.set_animation('default')
-	animated_sprite.centered = false
-	animated_sprite.scale = Vector2(1, 1)
-	animated_sprite.name = 'AnimatedSprite'
-	animated_sprite.show_behind_parent = true
-	change_anim(41)
-
-func _ready():
-	self.add_child(animation_player)
-	self.add_child(animated_sprite)
+	self.set_sprite_frames(sprite_frames)
+	self.set_animation('default')
+	self.centered = false
+	self.scale = Vector2(1, 1)
+	self.name = 'AnimatedSprite'
+	self.show_behind_parent = true
 
 func change_anim(value):
 	var key = '%s-0' % [value]
@@ -135,6 +123,11 @@ func change_boxes(_boxes):
 		boxes[type] = _boxes[type]
 	update()
 
+func image_to_texture(image):
+	var texture = ImageTexture.new()
+	texture.create_from_image(image, 0)
+	return texture
+
 func _draw():
 	for type in boxes:
 		var points = boxes[type]
@@ -144,3 +137,7 @@ func _draw():
 			draw_line(Vector2(point[0], point[3]), Vector2(point[2], point[3]), color)
 			draw_line(Vector2(point[0], point[1]), Vector2(point[0], point[3]), color)
 			draw_line(Vector2(point[2], point[1]), Vector2(point[2], point[3]), color)
+
+func _ready():
+	add_child(animation_player)
+	change_anim(0)
