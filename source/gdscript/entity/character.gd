@@ -59,7 +59,7 @@ func setup_state():
 
 	var commands: Array =  cmd_parser.read(command_path)
 
-	command_manager = CommandManager.new(commands, 'P1_')
+	command_manager = CommandManager.new(commands, 'P1_', true)
 
 	for path in state_paths:
 		var new_states = cns_parser.read(path)

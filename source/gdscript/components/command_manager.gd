@@ -21,9 +21,10 @@ var current_command: String
 var current_tick = 0
 var is_facing_right: bool
 
-func _init(_commands, _input_prefix):
+func _init(_commands, _input_prefix, _is_facing_right):
     commands = _commands
     input_prefix = _input_prefix
+    is_facing_right = _is_facing_right
     buffer = []
     for i in range(0, buffer_size):
         buffer.append({'code': 0, 'tick': 0})
@@ -59,12 +60,21 @@ func process_tick():
 
     for command in commands:
         if command['name'] == "FF":
-            debug = true
+            debug = false
+        else:
+            debug = false
         var n_time: int = -1
         var n_last_time: int = -1
         var curr_key_index: int = 0
         var cmd: Dictionary = command['cmd']
         var cmd_size: int = cmd.size()
+
+        if debug:
+            print("Start")
+            print(cmd.size())
+            print(cmd[0]['code'])
+            print(constants.KEY_B)
+            print(cmd[0]['code'] & constants.KEY_B != 0)
 
         for b in range(cmd_size - 1, -1, -1):
             var b_command: bool = false
@@ -123,10 +133,10 @@ func process_tick():
                         n_last_time = frame_input['tick']
 
                     b_command = true
-                    curr_key_index = curr_key_index + 1
+                    curr_key_index += 1
                     break
 
-                curr_key_index = curr_key_index + 1
+                curr_key_index += 1
 
             if !b_command:
                 break
