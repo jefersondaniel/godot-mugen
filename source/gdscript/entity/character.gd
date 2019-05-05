@@ -3,23 +3,29 @@ extends KinematicBody2D
 
 # Dependencies
 var CharacterSprite = load('res://source/gdscript/components/character_sprite.gd')
+var CommandManager = load('res://source/gdscript/components/command_manager.gd')
 var air_parser = load('res://source/gdscript/parser/air_parser.gd').new()
 var cfg_parser = load('res://source/gdscript/parser/cfg_parser.gd').new()
 var cns_parser = load('res://source/gdscript/parser/cns_parser.gd').new()
+var cmd_parser = load('res://source/gdscript/parser/cmd_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 
-# Character Definition
+# Paths
 var sprite_path: String
 var animation_path: String
+var command_path: String
 var state_paths: Array
+
+# Nodes
 var character_sprite = null
-var states = null
+var command_manager = null
 
 func _init(path):
 	var definition = cfg_parser.read(path)
 	var folder = path.substr(0, path.find_last('/'))
 	sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
 	animation_path = '%s/%s' % [folder, definition['files']['anim']]
+	command_path = '%s/%s' % [folder, definition['files']['cmd']]
 	state_paths = []
 
 	if 'stcommon' in definition['files']:
@@ -33,6 +39,7 @@ func _init(path):
 	setup_state()
 
 func _ready():
+	self.add_child(command_manager)
 	self.add_child(character_sprite)
 
 func setup_animation():
@@ -41,7 +48,7 @@ func setup_animation():
 	character_sprite = CharacterSprite.new(images, animations)
 
 func setup_state():
-	states = {
+	var states: Dictionary = {
 		'data': {},
 		'size': {},
 		'velocity': {},
@@ -49,6 +56,10 @@ func setup_state():
 		'quotes': {},
 		'states': {},
 	}
+
+	var commands: Array =  cmd_parser.read(command_path)
+
+	command_manager = CommandManager.new(commands, 'P1_')
 
 	for path in state_paths:
 		var new_states = cns_parser.read(path)
@@ -61,5 +72,3 @@ func setup_state():
 						states[parent_key][child_key] = new_states[parent_key][child_key]
 				else:
 					states[parent_key][child_key] = new_states[parent_key][child_key]
-
-	print(states['states']['180'])
