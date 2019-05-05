@@ -3,6 +3,9 @@ others/nomen/*
 others/nomen-binary/*
 bin/*
 *.os
+*.obj
+*.exp
+*.lib
 *.o
 *.so
 *.dll
@@ -10,3 +13,4 @@ bin/*
 project.sublime-project
 project.sublime-workspace
 .sconsign.dblite
+.vscode

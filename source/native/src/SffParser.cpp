@@ -4,6 +4,8 @@
 #include <Color.hpp>
 #include <Image.hpp>
 #include <vector>
+#include <algorithm>
+#include <string>
 #include "SffParser.hpp"
 #include "FileStream.hpp"
 #include "ByteArray.hpp"

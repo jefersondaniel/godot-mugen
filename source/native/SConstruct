@@ -1,10 +1,76 @@
+import sys
+
+opts = Variables([], ARGUMENTS)
+
+if sys.platform.startswith('linux'):
+    host_platform = 'linux'
+elif sys.platform == 'win32':
+    host_platform = 'windows'
+
+opts.Add(EnumVariable(
+    'platform',
+    'Target platform',
+    host_platform,
+    allowed_values=('linux', 'windows'),
+    ignorecase=2
+))
+
+opts.Add(EnumVariable(
+    'bits',
+    'Target platform bits',
+    'default',
+    ('default', '32', '64')
+))
+
+opts.Add(EnumVariable(
+    'target',
+    'Compilation target',
+    'debug',
+    allowed_values=('debug', 'release'),
+    ignorecase=2
+))
+
 env = Environment(
     CPPPATH=Split('godot-cpp/include godot-cpp/include/core godot-cpp/include/gen godot-cpp/godot_headers'),
-    CCFLAGS=Split('-fPIC -g -O3 -std=c++14'),
-    LIBPATH='godot-cpp/bin',
-    LIBS='godot-cpp.linux.debug.64'
+    LIBPATH='godot-cpp/bin'
 )
+opts.Update(env)
+Help(opts.GenerateHelpText(env))
 
-env.SConscript('godot-cpp/SConstruct')
-Default(env.SharedLibrary('bin/game', Glob('src/*.cpp')))
-env.Program('bin/lala', Glob('src/*.cpp'))
+is64 = sys.maxsize > 2**32
+
+if env['bits'] == 'default':
+    env['bits'] = '64' if is64 else '32'
+
+if env['platform'] == 'linux':
+    env.Append(
+        CCFLAGS=Split('-fPIC -g -std=c++14'),
+        LIBS='godot-cpp.linux.{}.{}'.format(env['target'], env['bits'])
+    )
+
+    if env['target'] == 'debug':
+        env.Append(CCFLAGS=['-Og'])
+    elif env['target'] == 'release':
+        env.Append(CCFLAGS=['-O3'])
+
+    if env['bits'] == '64':
+        env.Append(CCFLAGS=['-m64'])
+        env.Append(LINKFLAGS=['-m64'])
+    elif env['bits'] == '32':
+        env.Append(CCFLAGS=['-m32'])
+        env.Append(LINKFLAGS=['-m32'])
+elif env['platform'] == 'windows':
+    env.Append(
+        LINKFLAGS=['/WX'],
+        LIBS='libgodot-cpp.windows.{}.{}'.format(env['target'], env['bits'])
+    )
+    if env['target'] == 'debug':
+        env.Append(CCFLAGS=['/Z7', '/Od', '/EHsc', '/D_DEBUG', '/MDd'])
+    elif env['target'] == 'release':
+        env.Append(CCFLAGS=['/O2', '/EHsc', '/DNDEBUG', '/MD'])
+
+# env.SConscript('godot-cpp/SConstruct')
+Default(env.SharedLibrary(
+    'bin/game.{}.{}.{}'.format(env['platform'], env['target'], env['bits']),
+    Glob('src/*.cpp')
+))
