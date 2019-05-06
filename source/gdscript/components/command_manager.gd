@@ -56,25 +56,12 @@ func process_tick():
     buffer[buffer_index]['code'] = code
     buffer[buffer_index]['tick'] = current_tick
 
-    var debug: bool = false
-
     for command in commands:
-        if command['name'] == "FF":
-            debug = false
-        else:
-            debug = false
         var n_time: int = -1
         var n_last_time: int = -1
         var curr_key_index: int = 0
         var cmd: Dictionary = command['cmd']
         var cmd_size: int = cmd.size()
-
-        if debug:
-            print("Start")
-            print(cmd.size())
-            print(cmd[0]['code'])
-            print(constants.KEY_B)
-            print(cmd[0]['code'] & constants.KEY_B != 0)
 
         for b in range(cmd_size - 1, -1, -1):
             var b_command: bool = false
@@ -103,7 +90,7 @@ func process_tick():
 
                     for k in range(curr_key_index + 1, buffer_size):
                         var frame_input2: Dictionary = buffer[(buffer_index - k + buffer_size) % buffer_size]
-                        var key_down2: bool = (frame_input2['code'] & code) == key_code
+                        var key_down2: bool = (frame_input2['code'] & key_code) == key_code
                         if key_down2 && !use4_way:
                             var key_code_dirs: int = key_code & constants.ALL_DIRECTION_KEYS
                             var frame_input_dirs: int = frame_input2['code'] & constants.ALL_DIRECTION_KEYS
@@ -149,7 +136,7 @@ func process_tick():
                 print("Current command is: %s" % [current_command])
                 break
 
-        buffer_index = buffer_index + 1
+    buffer_index = buffer_index + 1
 
-        if buffer_index >= buffer_size:
-            buffer_index = 0
+    if buffer_index >= buffer_size:
+        buffer_index = 0
