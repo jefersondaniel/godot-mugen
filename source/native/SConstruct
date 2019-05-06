@@ -69,7 +69,7 @@ elif env['platform'] == 'windows':
     elif env['target'] == 'release':
         env.Append(CCFLAGS=['/O2', '/EHsc', '/DNDEBUG', '/MD'])
 
-# env.SConscript('godot-cpp/SConstruct')
+env.SConscript('godot-cpp/SConstruct')
 Default(env.SharedLibrary(
     'bin/game.{}.{}.{}'.format(env['platform'], env['target'], env['bits']),
     Glob('src/*.cpp')

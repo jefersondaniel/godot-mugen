@@ -7,8 +7,6 @@ bin/*
 *.exp
 *.lib
 *.o
-*.so
-*.dll
 *.swp
 project.sublime-project
 project.sublime-workspace
