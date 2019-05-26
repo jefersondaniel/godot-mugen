@@ -2,7 +2,7 @@
 #include "Expression.hpp"
 #include <memory>
 
-#define IS_REDIRECTION_NAME(name) (name == "sysvar" || name == "helper" || name == "target" || name == "enemy" || name == "enemynear" || name == "playerid")
+#define IS_REDIRECTION_NAME(name) (name == "parent" || name == "root" || name == "helper" || name == "target" || name == "partner" || name == "enemy" || name == "enemynear" || name == "playerid")
 
 // Token
 
