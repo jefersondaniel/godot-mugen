@@ -298,7 +298,7 @@ Value Value::mod(const Value &other) const
         return Value();
     }
 
-    return Value(intValue() + other.intValue());
+    return Value(intValue() % other.intValue());
 }
 
 Value Value::multiply(const Value &other) const

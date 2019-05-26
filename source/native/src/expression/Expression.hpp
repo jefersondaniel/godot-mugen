@@ -99,14 +99,4 @@ public:
     Value evaluate(Context* context) override;
 };
 
-class ListExpression : public Expression {
-private:
-    string op;
-    shared_ptr<Expression> left;
-    vector<shared_ptr<Expression>> values;
-public:
-    ListExpression(string op, shared_ptr<Expression> left, vector<shared_ptr<Expression>> values);
-    Value evaluate(Context* context) override;
-};
-
 #endif

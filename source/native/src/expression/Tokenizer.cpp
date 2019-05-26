@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 
-#define IS_IDENTIFIER_CHAR(c) (isalpha(c) || '_' == c || isdigit(c))
+#define IS_IDENTIFIER_CHAR(c) (isalpha(c) || '_' == c || '.' == c || isdigit(c))
 #define MATCH_TOKEN_TYPE(v, e, t) (e < v.size() ? v[e]->type == t : false)
 
 vector<shared_ptr<Token>> Tokenizer::preprocess(Parser *parser, string text)
@@ -239,26 +239,15 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
-        /**
-         * Trigger redirection example
-         *
-         * (helper(1 + 1), pos_y)
-         *
-         * Trigger redirection valid triggers
-         *
-         * parent
-         * root
-         * helper
-         * helper(ID)
-         * target
-         * target(ID)
-         * partner
-         * enemy
-         * enemy(n)
-         * enemyNear
-         * enemyNear(n)
-         * playerID(ID)
-         */
+        bool isHitDefAttr = MATCH_TOKEN_TYPE(oldtokens, i, "identifier")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "hitdefattr"
+            && (MATCH_TOKEN_TYPE(oldtokens, i, "=") || MATCH_TOKEN_TYPE(oldtokens, i, "!="));
+
+        if (isHitDefAttr) {
+            newtokens.push_back(oldtokens[i]);
+            newtokens.push_back(oldtokens[i]);
+            continue;
+        }
 
         newtokens.push_back(oldtokens[i]);
     }

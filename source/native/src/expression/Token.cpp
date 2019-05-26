@@ -1,6 +1,7 @@
 #include "Token.hpp"
 #include "Expression.hpp"
 #include <memory>
+#include <Godot.hpp>
 
 #define IS_REDIRECTION_NAME(name) (name == "parent" || name == "root" || name == "helper" || name == "target" || name == "partner" || name == "enemy" || name == "enemynear" || name == "playerid")
 
@@ -65,17 +66,6 @@ shared_ptr<Expression> BinaryAndUnaryOperatorToken::led(shared_ptr<Expression> l
 {
     int subtract = rightAssociative ? 1 : 0;
 
-    if (op == "=" || op == "!=") {
-        vector<shared_ptr<Expression>> values;
-        while (parser->token()->type == ",") {
-            parser->advance(",");
-            values.push_back(parser->expression(0));
-        }
-        if (values.size() > 0) {
-            return shared_ptr<Expression>(new ListExpression(op, left, values));
-        }
-    }
-
     return shared_ptr<Expression>(new BinaryOperatorExpression(op, left, parser->expression(precedence - subtract)));
 }
 
@@ -88,8 +78,9 @@ BinaryOperatorToken::BinaryOperatorToken(Parser* parser_, string op_, int preced
 shared_ptr<Expression> BinaryOperatorToken::led(shared_ptr<Expression> left)
 {
     int subtract = rightAssociative ? 1 : 0;
+    shared_ptr<Expression> right = parser->expression(precedence - subtract);
 
-    return shared_ptr<Expression>(new BinaryOperatorExpression(op, left, parser->expression(precedence - subtract)));
+    return shared_ptr<Expression>(new BinaryOperatorExpression(op, left, right));
 }
 
 // UnaryOperatorToken

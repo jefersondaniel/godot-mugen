@@ -5,6 +5,17 @@ var MugenExpression = load('res://source/native/mugen_expression.gdns')
 class Context extends Object:
     var variables = {
         "command": "holddown",
+        "screenpos_x": 400,
+        "screenpos_y": 300,
+        "gamewidth": 720,
+        "gameheight": 1000,
+        "gametime": 27,
+        "fall.vel": 10,
+        "hitdefattr": "ha",
+        "a": "a",
+        "ha": "ha",
+        "sa": "sa",
+        "hitfall": false,
     }
     var contexts = {}
 
@@ -39,3 +50,10 @@ func _init():
     execute_expression("helper, life := 100", context)
     execute_expression("life + (helper, life)", context)
     execute_expression("IfElse(command=\"holdup\", 10, 20)", context)
+    execute_expression("ScreenPos Y < GameHeight / 2", context)
+    execute_expression("(GameTime % 27) = 0", context)
+    execute_expression("ScreenPos X >= GameWidth / 2", context)
+    execute_expression("fall.vel", context)
+    execute_expression("HitDefAttr = A, SA, HA", context)
+    execute_expression("HitDefAttr = A, SA", context)
+    execute_expression("!HitFall", context)

@@ -226,31 +226,3 @@ Value RedirectionExpression::evaluate(Context* context)
 
     return right->evaluate(redirect.get());
 }
-
-// ListExpression
-
-ListExpression::ListExpression(string op_, shared_ptr<Expression> left_, vector<shared_ptr<Expression>> values_): Expression("(list)"), op(op_), left(left_), values(values_)
-{
-}
-
-Value ListExpression::evaluate(Context* context)
-{
-    int contains = 0;
-    Value value = left->evaluate(context);
-    Value option;
-
-    for (int i = 0; i < values.size(); i++) {
-        option = values[i]->evaluate(context);
-
-        if (option.isBottom()) {
-            return option;
-        }
-
-        if (value.equal(option)) {
-            contains = 1;
-            break;
-        }
-    }
-
-    return Value(op == "=" ? contains : !contains);
-}
