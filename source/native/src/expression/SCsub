@@ -1,0 +1,4 @@
+Import('env')
+
+lib = env.Library("expression", Glob("*.cpp"))
+env.Prepend(LIBS=[lib])

@@ -1,5 +1,6 @@
 #include <Godot.hpp>
 #include "SffParser.hpp"
+#include "MugenExpression.hpp"
 
 using namespace godot;
 
@@ -18,4 +19,5 @@ extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
     godot::Godot::nativescript_init(handle);
 
     godot::register_class<SffParser>();
+    godot::register_class<MugenExpression>();
 }

@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <string>
 #include "SffParser.hpp"
-#include "FileStream.hpp"
-#include "ByteArray.hpp"
-#include "ByteArrayStream.hpp"
-#include "Sffv2.hpp"
+#include "sff/FileStream.hpp"
+#include "sff/ByteArray.hpp"
+#include "sff/ByteArrayStream.hpp"
+#include "sff/Sffv2.hpp"
 
 using namespace godot;
 
@@ -49,7 +49,7 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
 
 	for(long a=0; a<head.total_palettes; a++) {
 		_SFFV2_PAL_NODE_HEADER tmp_palnode;
-		in>>tmp_palnode;		
+		in>>tmp_palnode;
 		palnode.push_back(tmp_palnode);
 	}
 
@@ -59,7 +59,7 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
 		in>>tmp_sprnode;
 		if (group == -1 || group == tmp_sprnode.groupno) {
 			sprnode.push_back(tmp_sprnode);
-		}    	  
+		}
 	}
 
 	std::vector<Palette> palettes;
@@ -80,7 +80,7 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
 			ByteArray tmpArr;
 			in.readRawData(tmpArr, k);
 			k = k / 4;
-			palette.colors = _sffv2_makeColorArray(tmpArr, k); 
+			palette.colors = _sffv2_makeColorArray(tmpArr, k);
 		}
 
 		palettes.push_back(palette);
@@ -126,7 +126,7 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
 	       if(sprnode[a].colordepth == 5 || sprnode[a].colordepth == 8) {
 	          image = _sffv2_makeImage(
 	          	tmpArr,
-	          	((int) sprnode[a].w), 
+	          	((int) sprnode[a].w),
 	            ((int) sprnode[a].h),
 	            palette.colors
 	          );

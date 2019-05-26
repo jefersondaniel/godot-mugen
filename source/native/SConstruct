@@ -30,10 +30,19 @@ opts.Add(EnumVariable(
     ignorecase=2
 ))
 
+godot_cpp = [
+    '${BUILD_ROOT.abspath}/godot-cpp/include',
+    '${BUILD_ROOT.abspath}/godot-cpp/include/core',
+    '${BUILD_ROOT.abspath}/godot-cpp/include/gen',
+    '${BUILD_ROOT.abspath}/godot-cpp/godot_headers',
+]
+
 env = Environment(
-    CPPPATH=Split('godot-cpp/include godot-cpp/include/core godot-cpp/include/gen godot-cpp/godot_headers'),
+    CPPPATH=godot_cpp,
     LIBPATH='godot-cpp/bin'
 )
+env['BUILD_ROOT'] = Dir('.')
+
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
 
@@ -69,7 +78,9 @@ elif env['platform'] == 'windows':
     elif env['target'] == 'release':
         env.Append(CCFLAGS=['/O2', '/EHsc', '/DNDEBUG', '/MD'])
 
-env.SConscript('godot-cpp/SConstruct')
+# env.SConscript('godot-cpp/SConstruct')
+env.SConscript(['src/sff/SCsub', 'src/expression/SCsub'], exports='env')
+
 Default(env.SharedLibrary(
     'bin/game.{}.{}.{}'.format(env['platform'], env['target'], env['bits']),
     Glob('src/*.cpp')
