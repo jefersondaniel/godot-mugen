@@ -20,15 +20,12 @@ Value::Value(float value): type_(Value::TYPE_FLOAT), floatValue_(value)
 {
 }
 
-Value::Value(string value): type_(Value::TYPE_INT)
+Value::Value(string value): type_(Value::TYPE_STRING), stringValue_(value)
 {
-    hash<string> hasher;
-    intValue_ = hasher(value);
 }
 
 Value::Value(Variant variant)
 {
-    hash<string> hasher;
 	if (variant.get_type() == Variant::BOOL) {
         type_ = Value::TYPE_INT;
         intValue_ = variant ? 1 : 0;
@@ -39,9 +36,9 @@ Value::Value(Variant variant)
         type_ = Value::TYPE_FLOAT;
         floatValue_ = (float) variant;
     } else if (variant.get_type() == Variant::STRING) {
-        type_ = Value::TYPE_INT;
+        type_ = Value::TYPE_STRING;
         String stringValue = variant;
-        intValue_ = hasher(string(stringValue.utf8().get_data()));
+        stringValue_ = string(stringValue.utf8().get_data());
     } else {
         type_ = Value::TYPE_BOTTOM;
     }
@@ -60,6 +57,11 @@ bool Value::isInt() const
 bool Value::isFloat() const
 {
     return type_ == Value::TYPE_FLOAT;
+}
+
+bool Value::isString() const
+{
+    return type_ == Value::TYPE_STRING;
 }
 
 bool Value::isBottom() const
@@ -93,11 +95,31 @@ float Value::floatValue() const
     return 0.0;
 }
 
+string Value::stringValue() const
+{
+    if (type_ == Value::TYPE_INT) {
+        return to_string(intValue_);
+    }
+
+    if (type_ == Value::TYPE_FLOAT) {
+        return to_string(floatValue_);
+    }
+
+    if (type_ == Value::TYPE_STRING) {
+        return stringValue_;
+    }
+
+    return "";
+}
 
 Value Value::equal(const Value &other) const
 {
     if (isBottom() || other.isBottom()) {
         return Value();
+    }
+
+    if (isString() || other.isString()) {
+        return Value(stringValue() == other.stringValue());
     }
 
     if (isInt() && other.isInt()) {
@@ -185,6 +207,14 @@ Value Value::compare(const Value &other) const
         return Value();
     }
 
+    if (isString() || other.isString()) {
+        if (stringValue() == other.stringValue()) {
+            return Value(0);
+        }
+
+        return Value(stringValue().size() < other.stringValue().size() ? -1 : 1);
+    }
+
     if (isInt() && other.isInt()) {
         if (intValue() == other.intValue()) {
             return Value(0);
@@ -258,6 +288,10 @@ Value Value::add(const Value &other) const
         return Value();
     }
 
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
+    }
+
     if (isInt() && other.isInt()) {
         return Value(intValue() + other.intValue());
     }
@@ -270,6 +304,10 @@ Value Value::subtract(const Value &other) const
 {
     if (isBottom() || other.isBottom()) {
         return Value();
+    }
+
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
     }
 
     if (isInt() && other.isInt()) {
@@ -285,6 +323,10 @@ Value Value::inverse() const
         return Value();
     }
 
+    if (isString()) {
+        return Value(); // TODO: Review string behavior
+    }
+
     if (isInt()) {
         return Value(-intValue());
     }
@@ -298,6 +340,10 @@ Value Value::mod(const Value &other) const
         return Value();
     }
 
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
+    }
+
     return Value(intValue() % other.intValue());
 }
 
@@ -305,6 +351,10 @@ Value Value::multiply(const Value &other) const
 {
     if (isBottom() || other.isBottom()) {
         return Value();
+    }
+
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
     }
 
     if (isInt() && other.isInt()) {
@@ -320,6 +370,10 @@ Value Value::divide(const Value &other) const
         return Value();
     }
 
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
+    }
+
     if (isInt() && other.isInt()) {
         return Value(intValue() / other.intValue());
     }
@@ -331,6 +385,10 @@ Value Value::pow(const Value &other) const
 {
     if (isBottom() || other.isBottom()) {
         return Value();
+    }
+
+    if (isString() || other.isString()) {
+        return Value(); // TODO: Review string behavior
     }
 
     // TODO: Return bottom on invalid pow
@@ -350,6 +408,10 @@ Value::operator bool() const
 
     if (isInt()) {
         return intValue() != 0;
+    }
+
+    if (isString()) {
+        return stringValue().size() > 0;
     }
 
     return floatValue() != 0;
@@ -375,10 +437,6 @@ Value::operator float() const
 
 Value::operator Variant() const
 {
-    if (isBottom()) {
-        return Variant();
-    }
-
     if (isInt()) {
         return Variant(intValue());
     }
@@ -386,4 +444,10 @@ Value::operator Variant() const
     if (isFloat()) {
         return Variant(floatValue());
     }
+
+    if (isString()) {
+        return Variant(stringValue().c_str());
+    }
+
+    return Variant();
 }

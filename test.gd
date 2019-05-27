@@ -28,6 +28,9 @@ class Context extends Object:
     func call_context_function(key, arguments):
         if key == "sqrt":
             return sqrt(arguments[0])
+        if key == "debug":
+            print(arguments)
+            return null
         print("method not found %s" % [key])
 
     func redirect_context(key):
@@ -57,3 +60,4 @@ func _init():
     execute_expression("HitDefAttr = A, SA, HA", context)
     execute_expression("HitDefAttr = A, SA", context)
     execute_expression("!HitFall", context)
+    execute_expression("debug(\"Some variable\")", context)

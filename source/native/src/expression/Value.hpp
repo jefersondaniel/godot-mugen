@@ -2,6 +2,7 @@
 #define VALUE_HPP
 
 #include <iostream>
+#include <string>
 #include <Godot.hpp>
 #include <Variant.hpp>
 
@@ -13,11 +14,13 @@ private:
     int type_;
     int intValue_;
     float floatValue_;
+    string stringValue_;
 public:
     enum {
         TYPE_BOTTOM,
         TYPE_INT,
         TYPE_FLOAT,
+        TYPE_STRING,
     };
 
     Value();
@@ -29,9 +32,11 @@ public:
     int type() const;
     bool isInt() const;
     bool isFloat() const;
+    bool isString() const;
     bool isBottom() const;
     int intValue() const;
     float floatValue() const;
+    string stringValue() const;
     operator int() const;
     operator float() const;
     operator bool() const;

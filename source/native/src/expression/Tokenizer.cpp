@@ -239,6 +239,7 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
+        /*
         bool isHitDefAttr = MATCH_TOKEN_TYPE(oldtokens, i, "identifier")
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "hitdefattr"
             && (MATCH_TOKEN_TYPE(oldtokens, i, "=") || MATCH_TOKEN_TYPE(oldtokens, i, "!="));
@@ -248,6 +249,7 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             newtokens.push_back(oldtokens[i]);
             continue;
         }
+        */
 
         newtokens.push_back(oldtokens[i]);
     }
