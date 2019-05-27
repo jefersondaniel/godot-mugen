@@ -60,7 +60,7 @@ func read(path):
 
             cmd.append({
                 'modifier': modifier,
-                'ticks': ticks,
+                'ticks': min(ticks, 1),
                 'code': code,
             })
 
@@ -68,7 +68,7 @@ func read(path):
             'name': name,
             'cmd': cmd,
             'time': int(command.get('time', default_time)),
-            'buffer_time': int(command.get('buffer.time', default_buffer_time)),
+            'buffer_time': min(max(int(command.get('buffer.time', default_buffer_time)), 30), 1),
         })
 
     return commands
