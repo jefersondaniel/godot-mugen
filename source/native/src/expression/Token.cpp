@@ -23,7 +23,7 @@ shared_ptr<Expression> Token::led(shared_ptr<Expression> left)
 
 // LiteralToken
 
-LiteralToken::LiteralToken(Parser* parser_, Value value_): Token(parser_, "(literal)", 0), value(value_)
+LiteralToken::LiteralToken(Parser* parser_, Value value_): Token(parser_, "(literal)", 5), value(value_)
 {
 }
 
@@ -34,7 +34,7 @@ shared_ptr<Expression> LiteralToken::nud()
 
 // IdentifierToken
 
-IdentifierToken::IdentifierToken(Parser* parser_, string name_): Token(parser_, "(identifier)", 0), name(name_)
+IdentifierToken::IdentifierToken(Parser* parser_, string name_): Token(parser_, "(identifier)", 5), name(name_)
 {
 }
 
@@ -44,7 +44,7 @@ shared_ptr<Expression> IdentifierToken::nud()
 
     if (IS_REDIRECTION_NAME(name) && parser->token()->type != "(") {
         parser->advance(",", "Expected , after redirection keyword");
-        shared_ptr<Expression> right = parser->expression(0);
+        shared_ptr<Expression> right = parser->expression(5);
         return shared_ptr<Expression>(new RedirectionExpression(variable, right));
     }
 
@@ -102,7 +102,7 @@ EndToken::EndToken(Parser* parser_): Token(parser_, "(end)", 0)
 
 // ReservedToken
 
-ReservedToken::ReservedToken(Parser* parser_, string type_): Token(parser_, type_, 0)
+ReservedToken::ReservedToken(Parser* parser_, string type_): Token(parser_, type_, 1)
 {
 }
 
@@ -118,6 +118,35 @@ shared_ptr<Expression> ReservedToken::led(shared_ptr<Expression> left)
     return shared_ptr<Expression>(new BottomExpression());
 }
 
+// CommaToken
+
+CommaToken::CommaToken(Parser* parser_): Token(parser_, ",", 1)
+{
+}
+
+shared_ptr<Expression> CommaToken::nud()
+{
+    parser->setError("Unexpected comma");
+    return shared_ptr<Expression>(new BottomExpression());
+}
+
+shared_ptr<Expression> CommaToken::led(shared_ptr<Expression> left)
+{
+    vector<shared_ptr<Expression>> expressions;
+
+    expressions.push_back(left);
+
+    while (true) {
+        expressions.push_back(parser->expression(5));
+        if (parser->token()->type != ",") {
+            break;
+        }
+        parser->advance();
+    }
+
+    return shared_ptr<Expression>(new ArrayExpression(expressions));
+}
+
 // ParenthesisOpenToken
 
 ParenthesisOpenToken::ParenthesisOpenToken(Parser* parser_): Token(parser_, "(", 90)
@@ -126,7 +155,7 @@ ParenthesisOpenToken::ParenthesisOpenToken(Parser* parser_): Token(parser_, "(",
 
 shared_ptr<Expression> ParenthesisOpenToken::nud()
 {
-    shared_ptr<Expression> expression = parser->expression(0);
+    shared_ptr<Expression> expression = parser->expression(5);
     parser->advance(")");
     return expression;
 }
@@ -142,7 +171,7 @@ shared_ptr<Expression> ParenthesisOpenToken::led(shared_ptr<Expression> left)
 
     if (parser->token()->type != ")") {
         while (true) {
-            arguments.push_back(parser->expression(0));
+            arguments.push_back(parser->expression(5));
             if (parser->token()->type != ",") {
                 break;
             }
@@ -170,7 +199,7 @@ shared_ptr<Expression> ParenthesisOpenToken::led(shared_ptr<Expression> left)
 
         if (IS_REDIRECTION_NAME(variable->name)) {
             parser->advance(",", "Expected , after redirection keyword");
-            shared_ptr<Expression> right = parser->expression(0);
+            shared_ptr<Expression> right = parser->expression(5);
             return shared_ptr<Expression>(new RedirectionExpression(dynamicVariable, right));
         }
 

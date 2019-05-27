@@ -74,6 +74,13 @@ public:
     shared_ptr<Expression> led(shared_ptr<Expression> left) override;
 };
 
+class CommaToken : public Token {
+public:
+    CommaToken(Parser* parser);
+    shared_ptr<Expression> nud() override;
+    shared_ptr<Expression> led(shared_ptr<Expression> left) override;
+};
+
 class IntervalOperatorToken : public Token {
 public:
     string equalityOp;

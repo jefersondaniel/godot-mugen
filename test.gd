@@ -11,11 +11,11 @@ class Context extends Object:
         "gameheight": 1000,
         "gametime": 27,
         "fall.vel": 10,
-        "hitdefattr": "ha",
         "a": "a",
         "ha": "ha",
         "sa": "sa",
         "hitfall": false,
+        "lala": ["a", 1, true],
     }
     var contexts = {}
 
@@ -28,9 +28,15 @@ class Context extends Object:
     func call_context_function(key, arguments):
         if key == "sqrt":
             return sqrt(arguments[0])
+        if key == "hitdefattr":
+            # var op = arguments[0]
+            # var values = arguments[1]
+            # var check = 'ha' in values
+            # return check if op == "=" else !check
+            return true
         if key == "debug":
-            print(arguments)
-            return null
+            print("DEBUG: %s" % [arguments[0]])
+            return arguments[0]
         print("method not found %s" % [key])
 
     func redirect_context(key):
@@ -48,9 +54,11 @@ func execute_expression(name, context):
 
 func _init():
     var context = Context.new()
-    execute_expression("sqrt(16)", context)
+    execute_expression("debug(16, 16)", context)
+    execute_expression("16, 16", context)
     execute_expression("life := 1000", context)
     execute_expression("helper, life := 100", context)
+    # execute_expression("life, helper, (life, life)", context)
     execute_expression("life + (helper, life)", context)
     execute_expression("IfElse(command=\"holdup\", 10, 20)", context)
     execute_expression("ScreenPos Y < GameHeight / 2", context)
@@ -61,3 +69,5 @@ func _init():
     execute_expression("HitDefAttr = A, SA", context)
     execute_expression("!HitFall", context)
     execute_expression("debug(\"Some variable\")", context)
+    execute_expression("debug(lala)", context)
+    execute_expression("debug(lala)", context)

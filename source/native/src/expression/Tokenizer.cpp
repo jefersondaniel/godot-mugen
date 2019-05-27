@@ -99,7 +99,7 @@ vector<shared_ptr<Token>> Tokenizer::preprocess(Parser *parser, string text)
                 index_++;
                 break;
             case ',':
-                result.push_back(shared_ptr<Token>(new ReservedToken(parser, ",")));
+                result.push_back(shared_ptr<Token>(new CommaToken(parser)));
                 index_++;
                 break;
             case '[':
@@ -239,17 +239,44 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
-        /*
-        bool isHitDefAttr = MATCH_TOKEN_TYPE(oldtokens, i, "identifier")
+        /**
+         * Special triggers
+         *
+         * Some triggers don't conform to the expression syntax, so we convert them to functions
+         * so the context can implement the correct behavior
+         *
+         * Example:
+         *
+         * HitDefAttr = A, SA, HA
+         *
+         * This is a trigger that checks if the attr is in the list
+         */
+
+        bool isHitDefAttr = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "hitdefattr"
-            && (MATCH_TOKEN_TYPE(oldtokens, i, "=") || MATCH_TOKEN_TYPE(oldtokens, i, "!="));
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 1, "=") || MATCH_TOKEN_TYPE(oldtokens, i + 1, "!="));
 
         if (isHitDefAttr) {
             newtokens.push_back(oldtokens[i]);
-            newtokens.push_back(oldtokens[i]);
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(oldtokens[i + 1]->type))));
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ",")));
+            i += 2;
+            while (MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")) {
+                newtokens.push_back(oldtokens[i]);
+
+                if (MATCH_TOKEN_TYPE(oldtokens, i + 1, ",")) {
+                    newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ",")));
+                    i += 2;
+                    continue;
+                }
+
+                i += 1;
+                break;
+            }
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
             continue;
         }
-        */
 
         newtokens.push_back(oldtokens[i]);
     }

@@ -61,7 +61,7 @@ Value DynamicVariableExpression::evaluate(Context* context)
 
 // FunctionCalExpression
 
-FunctionCallExpression::FunctionCallExpression(string name_, vector<shared_ptr<Expression>> arguments_): Expression("call"), name(name_), arguments(arguments_)
+FunctionCallExpression::FunctionCallExpression(string name_, vector<shared_ptr<Expression>> arguments_): Expression("(call)"), name(name_), arguments(arguments_)
 {
 }
 
@@ -225,4 +225,21 @@ Value RedirectionExpression::evaluate(Context* context)
     }
 
     return right->evaluate(redirect.get());
+}
+
+// ArrayExpression
+
+ArrayExpression::ArrayExpression(vector<shared_ptr<Expression>> exps): Expression("(array)"), expressions(exps)
+{
+}
+
+Value ArrayExpression::evaluate(Context* context)
+{
+    vector<Value> values;
+
+    for (int i = 0; i < expressions.size(); i++) {
+        values.push_back(expressions[i]->evaluate(context));
+    }
+
+    return Value(values);
 }

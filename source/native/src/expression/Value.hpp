@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <Godot.hpp>
 #include <Variant.hpp>
 
@@ -15,12 +16,14 @@ private:
     int intValue_;
     float floatValue_;
     string stringValue_;
+    vector<Value> arrayValue_;
 public:
     enum {
         TYPE_BOTTOM,
         TYPE_INT,
         TYPE_FLOAT,
         TYPE_STRING,
+        TYPE_ARRAY,
     };
 
     Value();
@@ -29,11 +32,15 @@ public:
     Value(bool value);
     Value(string value);
     Value(Variant value);
+    Value(vector<Value> values);
     int type() const;
     bool isInt() const;
     bool isFloat() const;
     bool isString() const;
     bool isBottom() const;
+    bool isArray() const;
+    bool isComparable() const;
+    bool isArithmetic() const;
     int intValue() const;
     float floatValue() const;
     string stringValue() const;

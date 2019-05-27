@@ -39,9 +39,21 @@ Value::Value(Variant variant)
         type_ = Value::TYPE_STRING;
         String stringValue = variant;
         stringValue_ = string(stringValue.utf8().get_data());
+    } else if (variant.get_type() == Variant::ARRAY) {
+        type_ = Value::TYPE_ARRAY;
+        vector<Value> values_;
+        Array array_ = variant;
+        for (int i = 0; i < array_.size(); i++) {
+            values_.push_back(array_[i]);
+        }
+        arrayValue_ = values_;
     } else {
         type_ = Value::TYPE_BOTTOM;
     }
+}
+
+Value::Value(vector<Value> values_): type_(Value::TYPE_ARRAY), arrayValue_(values_)
+{
 }
 
 int Value::type() const
@@ -62,6 +74,21 @@ bool Value::isFloat() const
 bool Value::isString() const
 {
     return type_ == Value::TYPE_STRING;
+}
+
+bool Value::isArray() const
+{
+    return type_ == Value::TYPE_ARRAY;
+}
+
+bool Value::isArithmetic() const
+{
+    return isInt() || isFloat();
+}
+
+bool Value::isComparable() const
+{
+    return isArithmetic() || isString();
 }
 
 bool Value::isBottom() const
@@ -114,7 +141,7 @@ string Value::stringValue() const
 
 Value Value::equal(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isComparable() || !other.isComparable()) {
         return Value();
     }
 
@@ -131,7 +158,7 @@ Value Value::equal(const Value &other) const
 
 Value Value::logicalNot() const
 {
-    if (isBottom()) {
+    if (!isArithmetic()) {
         return Value();
     }
 
@@ -140,7 +167,7 @@ Value Value::logicalNot() const
 
 Value Value::logicalAnd(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
     }
 
@@ -149,7 +176,7 @@ Value Value::logicalAnd(const Value &other) const
 
 Value Value::logicalOr(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
     }
 
@@ -158,7 +185,7 @@ Value Value::logicalOr(const Value &other) const
 
 Value Value::logicalXor(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
     }
 
@@ -167,7 +194,7 @@ Value Value::logicalXor(const Value &other) const
 
 Value Value::bitwiseNot() const
 {
-    if (isBottom() || !isInt()) {
+    if (isArithmetic() || !isArithmetic()) {
         return Value();
     }
 
@@ -176,7 +203,7 @@ Value Value::bitwiseNot() const
 
 Value Value::bitwiseAnd(const Value &other) const
 {
-    if (isBottom() || other.isBottom() || !isInt() || !other.isInt()) {
+    if (!isArithmetic() || !other.isArithmetic() || !isInt() || !other.isInt()) {
         return Value();
     }
 
@@ -185,7 +212,7 @@ Value Value::bitwiseAnd(const Value &other) const
 
 Value Value::bitwiseOr(const Value &other) const
 {
-    if (isBottom() || other.isBottom() || !isInt() || !other.isInt()) {
+    if (!isArithmetic() || !other.isArithmetic() || !isInt() || !other.isInt()) {
         return Value();
     }
 
@@ -194,7 +221,7 @@ Value Value::bitwiseOr(const Value &other) const
 
 Value Value::bitwiseXor(const Value &other) const
 {
-    if (isBottom() || other.isBottom() || !isInt() || !other.isInt()) {
+    if (!isArithmetic() || !other.isArithmetic() || !isInt() || !other.isInt()) {
         return Value();
     }
 
@@ -203,7 +230,7 @@ Value Value::bitwiseXor(const Value &other) const
 
 Value Value::compare(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isComparable() || !other.isComparable()) {
         return Value();
     }
 
@@ -284,12 +311,8 @@ Value Value::lessOrEqual(const Value &value) const
 
 Value Value::add(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
-    }
-
-    if (isString() || other.isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     if (isInt() && other.isInt()) {
@@ -302,7 +325,7 @@ Value Value::add(const Value &other) const
 
 Value Value::subtract(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
     }
 
@@ -319,12 +342,8 @@ Value Value::subtract(const Value &other) const
 
 Value Value::inverse() const
 {
-    if (isBottom()) {
+    if (!isArithmetic()) {
         return Value();
-    }
-
-    if (isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     if (isInt()) {
@@ -336,12 +355,8 @@ Value Value::inverse() const
 
 Value Value::mod(const Value &other) const
 {
-    if (isBottom() || other.isBottom() || isFloat() || other.isFloat() || other.equal(Value(0))) {
+    if (!isArithmetic() || !other.isArithmetic() || isFloat() || other.isFloat() || other.equal(Value(0))) {
         return Value();
-    }
-
-    if (isString() || other.isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     return Value(intValue() % other.intValue());
@@ -349,12 +364,8 @@ Value Value::mod(const Value &other) const
 
 Value Value::multiply(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
-    }
-
-    if (isString() || other.isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     if (isInt() && other.isInt()) {
@@ -366,12 +377,8 @@ Value Value::multiply(const Value &other) const
 
 Value Value::divide(const Value &other) const
 {
-    if (isBottom() || other.isBottom() || other.equal(Value(0))) {
+    if (!isArithmetic() || !other.isArithmetic() || other.equal(Value(0))) {
         return Value();
-    }
-
-    if (isString() || other.isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     if (isInt() && other.isInt()) {
@@ -383,12 +390,8 @@ Value Value::divide(const Value &other) const
 
 Value Value::pow(const Value &other) const
 {
-    if (isBottom() || other.isBottom()) {
+    if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
-    }
-
-    if (isString() || other.isString()) {
-        return Value(); // TODO: Review string behavior
     }
 
     // TODO: Return bottom on invalid pow
@@ -402,7 +405,7 @@ Value Value::pow(const Value &other) const
 
 Value::operator bool() const
 {
-    if (isBottom()) {
+    if (!isArithmetic()) {
         return false;
     }
 
@@ -419,7 +422,7 @@ Value::operator bool() const
 
 Value::operator int() const
 {
-    if (isBottom()) {
+    if (!isArithmetic()) {
         return 0;
     }
 
@@ -428,7 +431,7 @@ Value::operator int() const
 
 Value::operator float() const
 {
-    if (isBottom()) {
+    if (!isArithmetic()) {
         return 0;
     }
 
@@ -447,6 +450,14 @@ Value::operator Variant() const
 
     if (isString()) {
         return Variant(stringValue().c_str());
+    }
+
+    if (isArray()) {
+        Array array_;
+        for (int i = 0; i < arrayValue_.size(); i++) {
+            array_.push_back(arrayValue_[i]);
+        }
+        return Variant(array_);
     }
 
     return Variant();

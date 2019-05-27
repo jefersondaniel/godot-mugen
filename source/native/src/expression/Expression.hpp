@@ -99,4 +99,12 @@ public:
     Value evaluate(Context* context) override;
 };
 
+class ArrayExpression : public Expression {
+private:
+    vector<shared_ptr<Expression>> expressions;
+public:
+    ArrayExpression(vector<shared_ptr<Expression>> expressions);
+    Value evaluate(Context* context) override;
+};
+
 #endif
