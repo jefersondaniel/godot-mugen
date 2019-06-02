@@ -1,56 +1,62 @@
 extends Object
 
 func read(path, allow_duplicated_sections=false):
-	var file = File.new()
-	file.open(path, File.READ)
-	var lines = file.get_as_text().split("\n", false)
-	file.close()
-	
-	var sections = {}
+    var file = File.new()
+    file.open(path, File.READ)
+    var lines = file.get_as_text().split("\n", false)
+    file.close()
 
-	var current_section = null
-	var current_section_key = null
+    var sections = {}
 
-	for line in lines:
-		var comment_idx = line.find(';')
-		if comment_idx != -1:
-			line = line.substr(0, comment_idx)
-		line = line.strip_edges()
+    var current_section = null
+    var current_section_key = null
 
-		if not line:
-			continue
+    for line in lines:
+        var comment_idx = line.find(';')
+        if comment_idx != -1:
+            line = line.substr(0, comment_idx)
+        line = line.strip_edges()
 
-		if line.begins_with('['):
-			if current_section:
-				if not allow_duplicated_sections:
-					sections[current_section_key] = current_section
-				else:
-					sections[current_section_key] = sections.get(current_section_key, [])
-					sections[current_section_key].append(current_section)
-			var idx_start = 1
-			var idx_end = line.find(']')
-			current_section_key = line.substr(idx_start, idx_end - idx_start).to_lower()
-			current_section = {}
-			continue
+        if not line:
+            continue
 
-		if current_section == null:
-			continue
+        if line.begins_with('['):
+            if current_section:
+                if not allow_duplicated_sections:
+                    sections[current_section_key] = current_section
+                else:
+                    sections[current_section_key] = sections.get(current_section_key, [])
+                    sections[current_section_key].append(current_section)
+            var idx_start = 1
+            var idx_end = line.find(']')
+            current_section_key = line.substr(idx_start, idx_end - idx_start).to_lower()
+            current_section = {}
+            continue
 
-		var equal_idx = line.find('=')
-		var line_size = line.length()
+        if current_section == null:
+            continue
 
-		if equal_idx == -1:
-			continue
+        var equal_idx = line.find('=')
+        var line_size = line.length()
 
-		var key = line.substr(0, equal_idx).to_lower().strip_edges()
-		var value = line.substr(equal_idx + 1, line_size - equal_idx).strip_edges()
-		current_section[key] = value
+        if equal_idx == -1:
+            continue
 
-	if current_section:
-		if not allow_duplicated_sections:
-			sections[current_section_key] = current_section
-		else:
-			sections[current_section_key] = sections.get(current_section_key, [])
-			sections[current_section_key].append(current_section)
+        var key = line.substr(0, equal_idx).to_lower().strip_edges()
+        var value = line.substr(equal_idx + 1, line_size - equal_idx).strip_edges()
 
-	return sections
+        if key.substr(0, 7) == 'trigger':
+            current_section[key] = current_section.get(key, [])
+            current_section[key].append(value)
+            continue
+
+        current_section[key] = value
+
+    if current_section:
+        if not allow_duplicated_sections:
+            sections[current_section_key] = current_section
+        else:
+            sections[current_section_key] = sections.get(current_section_key, [])
+            sections[current_section_key].append(current_section)
+
+    return sections

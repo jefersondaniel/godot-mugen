@@ -154,8 +154,6 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
 
 	file->close();
 
-	Godot::print("Done reading sff file");
-
 	return result;
 }
 

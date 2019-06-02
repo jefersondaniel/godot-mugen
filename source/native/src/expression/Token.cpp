@@ -48,6 +48,49 @@ shared_ptr<Expression> IdentifierToken::nud()
         return shared_ptr<Expression>(new RedirectionExpression(variable, right));
     }
 
+    if (parser->token()->type == "(") {
+        parser->advance();
+
+        vector<shared_ptr<Expression>> arguments;
+
+        if (parser->token()->type != ")") {
+            while (true) {
+                arguments.push_back(parser->expression(5));
+                if (parser->token()->type != ",") {
+                    break;
+                }
+                parser->advance(",");
+            }
+            parser->advance(")");
+        }
+
+        bool isDynamicVariable = name == "var"
+            || name == "fvar"
+            || IS_REDIRECTION_NAME(name);
+
+        if (isDynamicVariable) {
+            if (arguments.size() != 1) {
+                parser->setError("Expected exactly one argument at identifier: " + name);
+                return shared_ptr<Expression>(new BottomExpression());
+            }
+
+            shared_ptr<Expression> dynamicVariable(new DynamicVariableExpression(
+                name,
+                arguments[0]
+            ));
+
+            if (IS_REDIRECTION_NAME(name)) {
+                parser->advance(",", "Expected , after redirection keyword");
+                shared_ptr<Expression> right = parser->expression(5);
+                return shared_ptr<Expression>(new RedirectionExpression(dynamicVariable, right));
+            }
+
+            return dynamicVariable;
+        }
+
+        return shared_ptr<Expression>(new FunctionCallExpression(name, arguments));
+    }
+
     return variable;
 }
 
@@ -162,51 +205,8 @@ shared_ptr<Expression> ParenthesisOpenToken::nud()
 
 shared_ptr<Expression> ParenthesisOpenToken::led(shared_ptr<Expression> left)
 {
-    vector<shared_ptr<Expression>> arguments;
-
-    if (left->type != "(variable)") {
-        parser->setError("Expected identifier before parenthesis");
-        return nullptr;
-    }
-
-    if (parser->token()->type != ")") {
-        while (true) {
-            arguments.push_back(parser->expression(5));
-            if (parser->token()->type != ",") {
-                break;
-            }
-            parser->advance(",");
-        }
-        parser->advance(")");
-    }
-
-    shared_ptr<VariableExpression> variable = dynamic_pointer_cast<VariableExpression>(left);
-
-    bool isDynamicVariable = variable->name == "var"
-        || variable->name == "fvar"
-        || IS_REDIRECTION_NAME(variable->name);
-
-    if (isDynamicVariable) {
-        if (arguments.size() != 1) {
-            parser->setError("Expected exactly one argument at identifier: " + variable->name);
-            return nullptr;
-        }
-
-        shared_ptr<Expression> dynamicVariable(new DynamicVariableExpression(
-            variable->name,
-            arguments[0]
-        ));
-
-        if (IS_REDIRECTION_NAME(variable->name)) {
-            parser->advance(",", "Expected , after redirection keyword");
-            shared_ptr<Expression> right = parser->expression(5);
-            return shared_ptr<Expression>(new RedirectionExpression(dynamicVariable, right));
-        }
-
-        return dynamicVariable;
-    }
-
-    return shared_ptr<Expression>(new FunctionCallExpression(variable->name, arguments));
+    parser->setError("Unexpected (");
+    return shared_ptr<Expression>(new BottomExpression());
 }
 
 IntervalOperatorToken::IntervalOperatorToken(

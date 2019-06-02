@@ -63,10 +63,10 @@ vector<shared_ptr<Token>> Tokenizer::preprocess(Parser *parser, string text)
         }
 
         switch (text[index_]) {
-            case '0': case '1': case '2': case '3': case '4': case '5':
+            case '.': case '0': case '1': case '2': case '3': case '4': case '5':
             case '6': case '7': case '8': case '9':
                 intValue = 0;
-                divisor = 1;
+                divisor = text[index_] == '.' ? 10 : 1;
                 isFloat = false;
                 while (isdigit(text[index_]) || text[index_] == '.') {
                     if (text[index_] == '.' && !isFloat) {
@@ -260,13 +260,13 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             newtokens.push_back(oldtokens[i]);
             newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
             newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(oldtokens[i + 1]->type))));
-            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ",")));
+            newtokens.push_back(shared_ptr<Token>(new CommaToken(parser)));
             i += 2;
             while (MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")) {
                 newtokens.push_back(oldtokens[i]);
 
                 if (MATCH_TOKEN_TYPE(oldtokens, i + 1, ",")) {
-                    newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ",")));
+                    newtokens.push_back(shared_ptr<Token>(new CommaToken(parser)));
                     i += 2;
                     continue;
                 }

@@ -1,6 +1,6 @@
 extends Node
 
-var Character = load('res://source/gdscript/entity/character.gd')
+var Character = load('res://source/gdscript/nodes/character.gd')
 
 func _init():
 	var character = Character.new('res://data/chars/kfm/kfm.def')

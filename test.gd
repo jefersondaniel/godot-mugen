@@ -54,6 +54,7 @@ func execute_expression(name, context):
 
 func _init():
     var context = Context.new()
+    execute_expression("-sqrt(9)", context)
     execute_expression("debug(16, 16)", context)
     execute_expression("16, 16", context)
     execute_expression("life := 1000", context)

@@ -1,6 +1,7 @@
 extends Object
 
 var cfg_parser = load('res://source/gdscript/parser/cfg_parser.gd').new()
+var cns_parser = load('res://source/gdscript/parser/cns_parser.gd').new()
 
 var KEY_MAP: Dictionary = {
     'F': constants.KEY_F,
