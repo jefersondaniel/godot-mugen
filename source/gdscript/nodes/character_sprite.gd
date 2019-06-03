@@ -4,6 +4,7 @@ var animation_player: AnimationPlayer = null
 var images: Dictionary = {}
 var animations: Dictionary = {}
 var boxes = {1: [], 2: []}
+var current_animation: int = 0
 
 func _init(_images, _animations):
 	var empty_image = Image.new()
@@ -113,6 +114,7 @@ func _init(_images, _animations):
 	self.show_behind_parent = true
 
 func change_anim(value):
+    current_animation = value
 	var key = '%s-0' % [value]
 	animation_player.play(key)
 	if animations[value]['sets'].size() > 1:

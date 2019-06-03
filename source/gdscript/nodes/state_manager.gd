@@ -1,47 +1,57 @@
 extends Node
 
-var constants: Dictionary = {
-    'data': {},
-    'size': {},
-    'velocity': {},
-    'movement': {},
-    'quotes': {},
-    'states': {},
-}
-
 var stateno: int = 0
+var character: Object
+var context: Object
 
 class Context extends Object:
+    var character: Object
+
+    func _init(_character):
+        character = _character
+
     func set_context_variable(key, value):
         pass
 
     func get_context_variable(key):
-        return 0
+        if key == "command":
+            return character.get_current_command()
+        if key == "anim":
+            return character.get_current_animation()
+        elif key == "alive":
+            return character.alive
+        elif key == "vel_x":
+            return character.vel_x
+        elif key == "vel_y":
+            return character.vel_y
+        print("Variable not found: %s" % [key])
 
     func call_context_function(key, arguments):
         if key == 'abs':
             return abs(arguments[0] if arguments[0] != null else 0)
         elif key == 'const':
-            return arguments[0]
+            var data = arguments[0].split(".", false, 1)
+            if data[0] == 'states':
+                return null
+            return character.get_const(data[0], data[1])
         print("Method not found: %s, arguments: %s" % [key, arguments])
 
     func redirect_context(key):
         print("TODO: Trigger redirection")
 
-var context = Context.new()
-
-func _init(_constants):
-    constants = _constants
+func _init(_character):
+    character = _character
+    context = Context.new(_character)
 
 func _process(_delta: float):
     #process_input_state()
     process_current_state()
 
 func process_input_state():
-    process_state(constants['states']['-1'])
+    process_state(character.get_state(-1))
 
 func process_current_state():
-    process_state(constants['states'][String(stateno)])
+    process_state(character.get_state(stateno))
 
 func process_state(state):
     for controller in state['controllers']:

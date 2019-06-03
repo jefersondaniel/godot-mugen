@@ -21,6 +21,22 @@ var character_sprite = null
 var command_manager = null
 var state_manager = null
 
+# Constants
+var consts: Dictionary = {
+    'data': {},
+    'size': {},
+    'velocity': {},
+    'movement': {},
+    'quotes': {},
+    'states': {},
+}
+
+# State variables
+var life: int = 0
+var alive: int = 0
+var vel_x: int = 0
+var vel_y: int = 0
+
 func _init(path):
     var definition = cfg_parser.read(path)
     var folder = path.substr(0, path.find_last('/'))
@@ -39,6 +55,9 @@ func _init(path):
     setup_animation()
     setup_state()
 
+    alive = 1
+    life = consts['data']['life']
+
 func _ready():
     self.add_child(command_manager)
     self.add_child(state_manager)
@@ -50,24 +69,15 @@ func setup_animation():
     character_sprite = CharacterSprite.new(images, animations)
 
 func setup_state():
-    var constants: Dictionary = {
-        'data': {},
-        'size': {},
-        'velocity': {},
-        'movement': {},
-        'quotes': {},
-        'states': {},
-    }
-
     var commands: Array =  cmd_parser.read(command_path)
 
     command_manager = CommandManager.new(commands, 'P1_', true)
 
     for path in state_paths:
         var new_states = cns_parser.read(path)
-        merge_states(new_states, constants)
+        merge_states(new_states, consts)
 
-    state_manager = StateManager.new(constants)
+    state_manager = StateManager.new(self)
 
 func merge_states(new_states, states):
     for parent_key in states.keys():
@@ -79,3 +89,17 @@ func merge_states(new_states, states):
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:
                 states[parent_key][child_key] = new_states[parent_key][child_key]
+
+func get_const(kind, name):
+    if kind == 'states':
+        return
+    return consts[kind][name]
+
+func get_state(number: int):
+    return consts['states'][String(number)]
+
+func get_current_command():
+    return command_manager.get_current_command()
+
+func get_current_animation():
+    return character_sprite.get_current_animation()

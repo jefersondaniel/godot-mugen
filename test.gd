@@ -16,6 +16,7 @@ class Context extends Object:
         "sa": "sa",
         "hitfall": false,
         "lala": ["a", 1, true],
+        "null": null,
     }
     var contexts = {}
 
@@ -28,6 +29,9 @@ class Context extends Object:
     func call_context_function(key, arguments):
         if key == "sqrt":
             return sqrt(arguments[0])
+        if key == "const":
+            print("const: %s" % [arguments])
+            return 1
         if key == "hitdefattr":
             # var op = arguments[0]
             # var values = arguments[1]
@@ -54,6 +58,7 @@ func execute_expression(name, context):
 
 func _init():
     var context = Context.new()
+    execute_expression("0 = null", context)
     execute_expression("-sqrt(9)", context)
     execute_expression("debug(16, 16)", context)
     execute_expression("16, 16", context)
@@ -72,3 +77,4 @@ func _init():
     execute_expression("debug(\"Some variable\")", context)
     execute_expression("debug(lala)", context)
     execute_expression("debug(lala)", context)
+    execute_expression("const(velocity.x) + const(velocity.y)", context)

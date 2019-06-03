@@ -252,6 +252,8 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
          * This is a trigger that checks if the attr is in the list
          */
 
+        // Convert hitdeff expression to a function call
+
         bool isHitDefAttr = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "hitdefattr"
             && (MATCH_TOKEN_TYPE(oldtokens, i + 1, "=") || MATCH_TOKEN_TYPE(oldtokens, i + 1, "!="));
@@ -275,6 +277,23 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
                 break;
             }
             newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            continue;
+        }
+
+        // Convert const function to a call where the arguments is an string
+
+        bool isConst = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "const"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "(")
+            && MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)")
+            && MATCH_TOKEN_TYPE(oldtokens, i + 3, ")");
+
+        if (isConst) {
+            newtokens.push_back(oldtokens[i]);
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(dynamic_pointer_cast<IdentifierToken>(oldtokens[i + 2])->name))));
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            i += 3;
             continue;
         }
 

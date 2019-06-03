@@ -32,9 +32,6 @@ func _init(_commands, _input_prefix, _is_facing_right):
 func set_facing_right(value):
     is_facing_right = value
 
-func get_current_command() -> String:
-    return current_command
-
 func _process(_delta: float):
     # TODO: Consider 60 ticks per second
     process_tick()

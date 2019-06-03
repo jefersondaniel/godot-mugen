@@ -50,6 +50,20 @@ func read(path, allow_duplicated_sections=false):
             current_section[key].append(value)
             continue
 
+        if current_section_key in ['data', 'size', 'velocity', 'movement'] or current_section_key.ends_with('quote'):
+            if value.begins_with('"'):
+                value = value.lstrip('"').rstrip('"')
+            else:
+                var numbers = []
+                var pieces = value.split(',')
+
+                for piece in pieces:
+                    if piece.strip_edges().is_valid_float():
+                        numbers.append(float(piece))
+
+                if numbers.size() == pieces.size():
+                    value = numbers if numbers.size() > 1 else numbers[0]
+
         current_section[key] = value
 
     if current_section:
