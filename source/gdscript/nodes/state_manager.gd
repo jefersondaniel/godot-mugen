@@ -1,6 +1,5 @@
 extends Node
 
-var stateno: int = 0
 var character: Object
 var context: Object
 
@@ -24,6 +23,10 @@ class Context extends Object:
             return character.vel_x
         elif key == "vel_y":
             return character.vel_y
+        elif key == "time":
+            return character.state_time
+        elif key == "stateno":
+            return character.state_number
         print("Variable not found: %s" % [key])
 
     func call_context_function(key, arguments):
@@ -44,14 +47,15 @@ func _init(_character):
     context = Context.new(_character)
 
 func _process(_delta: float):
-    #process_input_state()
+    process_input_state()
     process_current_state()
+    character.state_time = character.state_time + 1
 
 func process_input_state():
     process_state(character.get_state(-1))
 
 func process_current_state():
-    process_state(character.get_state(stateno))
+    process_state(character.get_state(character.state_number))
 
 func process_state(state):
     for controller in state['controllers']:
@@ -85,5 +89,15 @@ func process_state(state):
         handle_state_controller(controller)
 
 func handle_state_controller(controller):
-    print(controller)
-    pass
+    if controller['type'] == 'velset':
+        self.handle_velset(controller)
+        return
+
+    print("unhandled type %s" % [controller['type']])
+
+func handle_velset(controller):
+    if 'x' in controller:
+        character.vel_x = controller['x'].execute(context)
+
+    if 'y' in controller:
+        character.vel_y = controller['y'].execute(context)

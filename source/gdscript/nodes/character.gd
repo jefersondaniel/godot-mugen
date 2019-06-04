@@ -36,6 +36,8 @@ var life: int = 0
 var alive: int = 0
 var vel_x: int = 0
 var vel_y: int = 0
+var state_time: int = 0
+var state_number: int = 0
 
 func _init(path):
     var definition = cfg_parser.read(path)
@@ -99,7 +101,7 @@ func get_state(number: int):
     return consts['states'][String(number)]
 
 func get_current_command():
-    return command_manager.get_current_command()
+    return command_manager.current_command
 
 func get_current_animation():
-    return character_sprite.get_current_animation()
+    return character_sprite.current_animation
