@@ -46,6 +46,7 @@ var time: int = 0
 var stateno: int = 0
 var statetype: int = constants.STATE_CONSTS['s']
 var ctrl: int = 1
+var canwalk: int = 1
 
 func _init(path):
     var definition = cfg_parser.read(path)
@@ -53,7 +54,7 @@ func _init(path):
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
     command_path = '%s/%s' % [folder, definition['files']['cmd']]
-    state_paths = []
+    state_paths = ['res://data/data/internal.cns']
 
     if 'stcommon' in definition['files']:
         state_paths.append('%s/%s' % ['res://data/data', definition['files']['stcommon']])
@@ -89,7 +90,7 @@ func _init(path):
 func _ready():
     self.add_child(command_manager)
     self.add_child(state_manager)
-    #self.add_child(character_sprite)
+    self.add_child(character_sprite)
 
 func setup_animation():
     var images = sff_parser.get_images(sprite_path, -1, -1, 0)

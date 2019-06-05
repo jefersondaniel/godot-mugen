@@ -1,0 +1,116 @@
+[Statedef -1]
+
+[State -1, Jump]
+type = ChangeState
+trigger1 = ctrl && command = "holdup" && roundstate = 2 && statetype = S && stateno != 40
+value = 40
+
+[State -1, Duck]
+type = ChangeState
+trigger1 = ctrl && command = "holddown" && stateno != 10 && stateno != 11 && statetype = S
+value = 10
+
+[State -1, Walk]
+type = ChangeState
+triggerall = ctrl && canwalk && statetype = S && stateno != 20 && stateno < 40
+trigger1 = command = "holdfwd" && command != "holdback"
+trigger2 = command != "holdfwd" && command = "holdback"
+value = 20
+
+[State -1, Air Jump]
+type = ChangeState
+trigger1 = ctrl && stateno = 50 && command = "press up"
+trigger1 = Pos Y <= -1 * const(movement.airjump.height)
+trigger1 = sysvar(2) < const(movement.airjump.num)
+value = 45
+
+
+[Statedef -2]
+
+[Statedef -2, Landing]
+type = ChangeState
+trigger1 = Pos Y > 0 && statetype = A && Physics = A && stateno != 105 && stateno != 106
+value = 52
+
+
+[Statedef 10]
+
+[State 10, Stop Ducking]
+type = ChangeState
+trigger1 = !ctrl || command != "holddown"
+value = 12
+
+
+[Statedef 11]
+
+[State 11, Stop Ducking]
+type = ChangeState
+trigger1 = !ctrl || command != "holddown"
+value = 12
+
+
+[Statedef 20]
+
+[State 20, Stop Walking]
+type = ChangeState
+trigger1 = !ctrl || (command != "holdfwd" && command != "holdback") || (command = "holdfwd" && command = "holdback")
+value = 0
+
+
+[Statedef 40]
+
+[State 40, Reset Variable For Air Jumps]
+type = VarSet
+trigger1 = time = 0
+sysvar(2) = 0
+
+
+[Statedef 45]
+
+[State 45, Increase Air Jump Counter]
+type = VarAdd
+trigger1 = time = 0
+sysvar(2) = 1
+
+
+[Statedef 120]
+
+[State 120, Stop Sliding]
+type = VelSet
+trigger1 = time = 0
+x = 0
+y = 0
+
+
+[Statedef 140]
+
+[State 140, 1]
+type = ChangeState
+trigger1 = animtime = 0 && statetype = S
+value = 0
+
+[State 140, 2]
+type = ChangeState
+trigger1 = animtime = 0 && statetype = C
+value = 11
+
+[State 140, 3]
+type = ChangeState
+trigger1 = animtime = 0 && statetype = A
+value = 51
+
+
+[Statedef 5110]
+
+[State 5110, 1]
+type = ChangeState
+trigger1 = Time = const(data.liedown.time)
+value = 5120
+
+
+[Statedef 5900]
+
+[State 5900, 1]
+type = ChangeState
+trigger1 = 1
+value = 0
