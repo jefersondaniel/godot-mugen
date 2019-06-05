@@ -18,6 +18,7 @@ var buffer_size: int = 120
 var buffer_index: int
 var commands: Array
 var current_command: String
+var last_command: String
 var current_tick = 0
 var is_facing_right: bool
 
@@ -49,6 +50,7 @@ func process_tick():
         if Input.is_action_pressed(input_prefix + input):
             code += input_map[input]
 
+    last_command = current_command
     current_command = ''
     buffer[buffer_index]['code'] = code
     buffer[buffer_index]['tick'] = current_tick
@@ -129,8 +131,9 @@ func process_tick():
            # the last button of the sequenz must be pressed int the Current game tick to
            # be valid and then it must be check for how long it has taken to do the input
            if n_last_time >= (current_tick - command['buffer_time']) && (n_last_time - n_time) <= command['time']:
+                if command['name'] != last_command:
+                    print("command detected %s" % command['name'])
                 current_command = command['name']
-                print("Current command is: %s" % [current_command])
                 break
 
     buffer_index = buffer_index + 1

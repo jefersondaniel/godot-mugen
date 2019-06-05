@@ -17,3 +17,9 @@ var KEY_y: int = 1 << 8
 var KEY_z: int = 1 << 9
 var KEY_s: int = 1 << 10
 var ALL_DIRECTION_KEYS = KEY_F + KEY_B + KEY_U + KEY_D
+
+var STATE_CONSTS = {
+    's': 1 << 0, # Stand
+    'c': 1 << 1, # Crouch
+    'a': 1 << 2, # Air
+}

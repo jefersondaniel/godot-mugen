@@ -1,61 +1,23 @@
 extends Node
 
 var character: Object
-var context: Object
-
-class Context extends Object:
-    var character: Object
-
-    func _init(_character):
-        character = _character
-
-    func set_context_variable(key, value):
-        pass
-
-    func get_context_variable(key):
-        if key == "command":
-            return character.get_current_command()
-        if key == "anim":
-            return character.get_current_animation()
-        elif key == "alive":
-            return character.alive
-        elif key == "vel_x":
-            return character.vel_x
-        elif key == "vel_y":
-            return character.vel_y
-        elif key == "time":
-            return character.state_time
-        elif key == "stateno":
-            return character.state_number
-        print("Variable not found: %s" % [key])
-
-    func call_context_function(key, arguments):
-        if key == 'abs':
-            return abs(arguments[0] if arguments[0] != null else 0)
-        elif key == 'const':
-            var data = arguments[0].split(".", false, 1)
-            if data[0] == 'states':
-                return null
-            return character.get_const(data[0], data[1])
-        print("Method not found: %s, arguments: %s" % [key, arguments])
-
-    func redirect_context(key):
-        print("TODO: Trigger redirection")
+var var_regex: RegEx
 
 func _init(_character):
     character = _character
-    context = Context.new(_character)
+    var_regex = RegEx.new()
+    var_regex.compile("(?<type>(fvar|var)).(?<number>[0-9]+).")
 
 func _process(_delta: float):
     process_input_state()
     process_current_state()
-    character.state_time = character.state_time + 1
+    character.time = character.time + 1
 
 func process_input_state():
-    process_state(character.get_state(-1))
+    process_state(character.get_state_def(-1))
 
 func process_current_state():
-    process_state(character.get_state(character.state_number))
+    process_state(character.get_state_def(character.stateno))
 
 func process_state(state):
     for controller in state['controllers']:
@@ -64,7 +26,7 @@ func process_state(state):
         var triggerall = controller.get('triggerall', [])
 
         for trigger in triggerall:
-            if not trigger.execute(context):
+            if not trigger.execute(character):
                 will_activate = false
                 break
 
@@ -75,7 +37,7 @@ func process_state(state):
             var triggers = controller.get('trigger' + String(triggerno), [])
             will_activate = true
             for trigger in triggers:
-                if not trigger.execute(context):
+                if not trigger.execute(character):
                     triggerno += 1
                     will_activate = false
                     break
@@ -89,15 +51,50 @@ func process_state(state):
         handle_state_controller(controller)
 
 func handle_state_controller(controller):
-    if controller['type'] == 'velset':
-        self.handle_velset(controller)
+    var method_name: String = 'handle_%s' % [controller['type']]
+
+    if has_method(method_name):
+        self.call(method_name, controller)
         return
 
-    print("unhandled type %s" % [controller['type']])
+    push_warning("unhandled type %s" % [controller['type']])
 
 func handle_velset(controller):
     if 'x' in controller:
-        character.vel_x = controller['x'].execute(context)
+        character.vel_x = controller['x'].execute(character)
 
     if 'y' in controller:
-        character.vel_y = controller['y'].execute(context)
+        character.vel_y = controller['y'].execute(character)
+
+func handle_varset(controller):
+    var type: String
+    var number: int
+    var value
+
+    for key in controller:
+        var result = var_regex.search(key)
+        if not result:
+            continue
+        type = result.get_string('type')
+        number = int(result.get_string('number'))
+        value = controller[key].execute(character)
+
+    if 'v' in controller:
+        type = 'var'
+        number = controller['v'].execute(character)
+        value = controller['value'].execute(character)
+
+    if 'fv' in controller:
+        type = 'fvar'
+        number = controller['v'].execute(character)
+        value = controller['value'].execute(character)
+
+
+    if not type:
+        push_error("Invalid varset: [%s, %s, %s]" % [type, number, value])
+        return
+
+    if type == 'var':
+        character.int_vars[number] = value
+    elif type == 'fvar':
+        character.float_vars[number] = value
