@@ -1,6 +1,6 @@
 extends Object
 
-var cfg_parser = load('res://source/gdscript/parser/cfg_parser.gd').new()
+var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var MugenExpression = load('res://source/native/mugen_expression.gdns')
 
 func read(path):

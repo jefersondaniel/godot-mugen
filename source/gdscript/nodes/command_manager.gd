@@ -20,18 +20,14 @@ var commands: Array
 var current_command: String
 var last_command: String
 var current_tick = 0
-var is_facing_right: bool
+var is_facing_right: bool = true
 
-func _init(_commands, _input_prefix, _is_facing_right):
+func _init(_commands, _input_prefix):
     commands = _commands
     input_prefix = _input_prefix
-    is_facing_right = _is_facing_right
     buffer = []
     for i in range(0, buffer_size):
         buffer.append({'code': 0, 'tick': 0})
-
-func set_facing_right(value):
-    is_facing_right = value
 
 func _process(_delta: float):
     # TODO: Consider 60 ticks per second
