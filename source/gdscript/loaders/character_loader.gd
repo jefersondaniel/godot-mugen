@@ -33,7 +33,9 @@ func load(path: String, input_prefix: String):
     var consts: Dictionary = {
         'data': {},
         'size': {},
-        'velocity': {},
+        'velocity': {
+            'jump': [0, -8.4],
+        },
         'movement': {},
         'quotes': {},
         'states': {},
@@ -55,3 +57,4 @@ func merge_states(new_states, states):
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:
                 states[parent_key][child_key] = new_states[parent_key][child_key]
+

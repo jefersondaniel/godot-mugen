@@ -24,6 +24,8 @@ var consts: Dictionary = {
 # Custom Variables
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
+var sys_int_vars: PoolIntArray
+var sys_float_vars: PoolRealArray
 var velocity: Vector2
 
 # State variables
@@ -36,7 +38,9 @@ var time: int = 0
 var prevstateno: int = -1
 var stateno: int = 0
 var statetype: int = constants.FLAG_S
+var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
+var sprpriority: int = 0
 var ctrl: int = 1
 var canwalk: int = 1
 
@@ -49,14 +53,7 @@ func _init(_consts, images, animations, commands, input_prefix):
     alive = 1
     life = consts['data']['life']
     velocity = Vector2(0, 0)
-
-    int_vars = PoolIntArray()
-    int_vars.resize(64)
-    float_vars = PoolRealArray()
-    float_vars.resize(int_vars.size())
-    for i in range(0, int_vars.size()):
-        int_vars[i] = 0
-        float_vars[i] = 0
+    setup_vars()
 
     var skip = true
     for p in self.get_property_list():
@@ -67,17 +64,30 @@ func _init(_consts, images, animations, commands, input_prefix):
             continue
         state_variables.append(p['name'])
 
+func setup_vars():
+    int_vars = PoolIntArray()
+    float_vars = PoolRealArray()
+    sys_int_vars = PoolIntArray()
+    sys_float_vars = PoolRealArray()
+
+    int_vars.resize(64)
+    float_vars.resize(64)
+    sys_int_vars.resize(64)
+    sys_float_vars.resize(64)
+
+    for i in range(0, 64):
+        int_vars[i] = 0
+        float_vars[i] = 0
+        sys_int_vars[i] = 0
+        sys_float_vars[i] = 0
+
 func _ready():
     self.add_child(command_manager)
     self.add_child(state_manager)
     self.add_child(character_sprite)
 
 func get_const(fullname):
-    var data = fullname.split(".", false, 1)
-
-    if data[0] == 'states':
-        return null
-
+    var data = fullname.to_lower().split(".", false, 1)
     var kind = data[0]
     var name = data[1]
 
@@ -87,17 +97,21 @@ func get_const(fullname):
     var vector_attr: String
 
     if name.ends_with('.x') or name.ends_with('.y'):
-        vector_attr = name.substr(name.size() - 2, name.size() - 1)
-        name = name.substr(0, name.size() - 2)
-        print("vecotr attr")
-        print(vector_attr)
-        print("name attr")
-        print(name)
+        vector_attr = name.substr(name.length() - 1, name.length() - 1)
+        name = name.substr(0, name.length() - 2)
 
     var result = consts[kind][name]
+    var x: int = 0
+    var y: int = 0
+
+    if typeof(result) == TYPE_ARRAY:
+        x = result[0]
+        y = result[1]
+    else:
+        x = result
 
     if vector_attr:
-        result = result[0] if vector_attr == 'x' else result[1]
+        result = x if vector_attr == 'x' else y
 
     return result
 
@@ -144,6 +158,14 @@ func call_context_function(key, arguments):
         return arguments[0] # todo, multiply by resolution
     if key == 'selfanimexist':
         return character_sprite.has_anim(arguments[0])
+    if key == 'sysvar':
+        return sys_int_vars[arguments[0]]
+    if key == 'fsysvar':
+        return sys_float_vars[arguments[0]]
+    if key == 'var':
+        return int_vars[arguments[0]]
+    if key == 'fvar':
+        return float_vars[arguments[0]]
     push_warning("Method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
@@ -151,3 +173,13 @@ func redirect_context(key):
 
 func change_anim(anim: int):
     character_sprite.change_anim(anim)
+
+func _process(delta):
+    if position.y > stage.floor_y and physics == constants.FLAG_A:
+        velocity.y = 0
+        position.y = stage.floor_y
+        state_manager.activate_state(0)
+    elif physics == constants.FLAG_A:
+        velocity.y += stage.gravity.y
+
+    self.move_and_collide(velocity)

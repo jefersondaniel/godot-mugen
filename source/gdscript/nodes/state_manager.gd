@@ -31,6 +31,17 @@ func activate_state(stateno):
     if statedef.has('ctrl'):
         character.ctrl = int(statedef['ctrl'])
 
+    if statedef.has('type') && statedef['type'].to_lower() != 'u':
+        character.statetype = constants.FLAGS[statedef['type'].to_lower()]
+        # todo set default value when omitted
+
+    if statedef.has('physics') && statedef['physics'].to_lower() != 'u':
+        character.physics = constants.FLAGS[statedef['physics'].to_lower()]
+        # todo set default value when omitted
+
+    if statedef.has('sprpriority'):
+        character.sprpriority = int(statedef['sprpriority'])
+
     print("activate state: %s, previous: %s" % [stateno, character.prevstateno])
 
 func process_state(state):
@@ -85,12 +96,10 @@ func handle_changeanim(state, controller):
 
 func handle_velset(state, controller):
     if 'x' in controller:
-        pass
-        #character.velocity.x = controller['x'].execute(character)
+        character.velocity.x = controller['x'].execute(character)
 
     if 'y' in controller:
-        pass
-        #character.velocity.y = controller['y'].execute(character)
+        character.velocity.y = controller['y'].execute(character)
 
 func handle_varset(state, controller):
     var type: String
