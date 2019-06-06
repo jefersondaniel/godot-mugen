@@ -152,6 +152,10 @@ func image_to_texture(image):
     texture.create_from_image(image, 0)
     return texture
 
+func get_element_time(element):
+    var current_element_by_tick = element_by_tick[int(current_animation)]
+    return current_element_by_tick[element]
+
 func _process(delta):
     animation_time = animation_time + 1
 

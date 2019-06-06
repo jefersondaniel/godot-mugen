@@ -82,7 +82,7 @@ func handle_state_controller(state, controller):
         self.call(method_name, state, controller)
         return
 
-    push_warning("unhandled type %s" % [controller['type']])
+    push_warning("unhandled state type %s" % [controller['type']])
 
 func handle_changestate(state, controller):
     if controller.has('ctrl'):

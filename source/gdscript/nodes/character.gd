@@ -139,6 +139,13 @@ func get_context_variable(key):
         return velocity.x
     if key == "vel_y":
         return velocity.y
+    if key == "pos_x":
+        return position.x
+    if key == "pos_y":
+        return position.y
+    if key.begins_with("var."):
+        print('get var', key.substr(5, key.length() - 1))
+        return int_vars[key.substr(5, key.length() - 1)]
     if key in state_variables:
         return get(key)
     if key in stage_variables:
@@ -158,6 +165,8 @@ func call_context_function(key, arguments):
         return arguments[0] # todo, multiply by resolution
     if key == 'selfanimexist':
         return character_sprite.has_anim(arguments[0])
+    if key == 'animelemtime':
+        return (character_sprite.animation_time - character_sprite.get_element_time(arguments[0]))
     if key == 'sysvar':
         return sys_int_vars[arguments[0]]
     if key == 'fsysvar':
