@@ -35,7 +35,8 @@ var vel_x: int = 0
 var vel_y: int = 0
 var time: int = 0
 var stateno: int = 0
-var statetype: int = constants.STATE_CONSTS['s']
+var statetype: int = constants.FLAG_S
+var movetype: int = constants.FLAG_I
 var ctrl: int = 1
 var canwalk: int = 1
 
@@ -91,8 +92,8 @@ func get_context_variable(key):
         return get(key)
     elif key in stage_variables:
         return stage.get(key)
-    elif key in constants.STATE_CONSTS:
-        return constants.STATE_CONSTS[key]
+    elif key in constants.FLAGS:
+        return constants.FLAGS[key]
     push_warning("variable not found: %s" % [key])
 
 func call_context_function(key, arguments):

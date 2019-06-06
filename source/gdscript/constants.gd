@@ -18,8 +18,18 @@ var KEY_z: int = 1 << 9
 var KEY_s: int = 1 << 10
 var ALL_DIRECTION_KEYS = KEY_F + KEY_B + KEY_U + KEY_D
 
-var STATE_CONSTS = {
-    's': 1 << 0, # Stand
-    'c': 1 << 1, # Crouch
-    'a': 1 << 2, # Air
-}
+var FLAGS = {}
+var FLAG_S = 1 << 1;
+var FLAG_C = 1 << 2;
+var FLAG_A = 1 << 3;
+var FLAG_L = 1 << 4;
+var FLAG_I = 1 << 5;
+var FLAG_H = 1 << 6;
+var FLAG_U = 1 << 7;
+var FLAG_N = 1 << 8;
+
+func _init():
+    for p in get_property_list():
+        if not p['name'].begins_with('FLAG_'):
+            continue
+        FLAGS[p['name'].substr(5, p['name'].length() - 5).to_lower()] = get(p['name'])
