@@ -3,8 +3,14 @@ extends AnimatedSprite
 var animation_player: AnimationPlayer = null
 var images: Dictionary = {}
 var animations: Dictionary = {}
+var looptimes: Dictionary = {}
+var element_by_tick: Dictionary = {} # Map at which tick each element starts
 var boxes = {1: [], 2: []}
 var current_animation: int = 0
+var animation_time: int = 0
+var animation_element: int = 0
+var animation_element_time: int = 0
+var animation_looptime: int = 0
 
 func _init(_images, _animations):
     var empty_image = Image.new()
@@ -44,8 +50,10 @@ func _init(_images, _animations):
     for animation_key in animations:
         var animation_size = animations[animation_key]['sets'].size()
         var current_animation_frame = 0
+        var current_looptime = 0
         var collisions = {} # Map {frame: {type: [boxes]}}, will be merged by animation player
         var last_defaults = {1: [], 2: []}
+        var current_element_by_tick = {}
 
         for collision in animations[animation_key]['collisions']:
             if not collisions.get(collision['frame']):
@@ -100,11 +108,17 @@ func _init(_images, _animations):
                         'args': [collisions[current_animation_frame]]
                     }
                     animation.track_insert_key(collision_track, current_set_time, method)
-                current_set_time += (frame['ticks'] * tick_length)
+
+                current_element_by_tick[current_animation_frame] = current_looptime
+                current_looptime += max(1, frame['ticks'])
+                current_set_time += (max(1, frame['ticks']) * tick_length)
                 current_animation_frame += 1
 
             animation.set_length(current_set_time)
             animation_player.add_animation(animation_name, animation)
+
+        looptimes[animation_key] = current_looptime
+        element_by_tick[animation_key] = current_element_by_tick
 
     self.set_sprite_frames(sprite_frames)
     self.set_animation('default')
@@ -113,12 +127,20 @@ func _init(_images, _animations):
     self.name = 'AnimatedSprite'
     self.show_behind_parent = true
 
-func change_anim(value):
+func change_anim(value: int):
+    animation_time = 0
+    animation_element = 0
+    animation_element_time = 0
     current_animation = value
+    animation_looptime = looptimes[value]
+
     var key = '%s-0' % [value]
     animation_player.play(key)
     if animations[value]['sets'].size() > 1:
         animation_player.queue('%s-1' % [value])
+
+func has_anim(value: int):
+    return animations.has(value)
 
 func change_boxes(_boxes):
     for type in _boxes:
@@ -129,6 +151,9 @@ func image_to_texture(image):
     var texture = ImageTexture.new()
     texture.create_from_image(image, 0)
     return texture
+
+func _process(delta):
+    animation_time = animation_time + 1
 
 func _draw():
     for type in boxes:

@@ -19,6 +19,20 @@ func process_input_state():
 func process_current_state():
     process_state(character.get_state_def(character.stateno))
 
+func activate_state(stateno):
+    var statedef = character.get_state_def(stateno)
+
+    character.prevstateno = character.stateno
+    character.stateno = stateno
+
+    if statedef.has('anim'):
+        character.change_anim(int(statedef['anim']))
+
+    if statedef.has('ctrl'):
+        character.ctrl = int(statedef['ctrl'])
+
+    print("activate state: %s, previous: %s" % [stateno, character.prevstateno])
+
 func process_state(state):
     for controller in state['controllers']:
         var will_activate: bool = true
@@ -48,25 +62,37 @@ func process_state(state):
         if not will_activate:
             continue
 
-        handle_state_controller(controller)
+        handle_state_controller(state, controller)
 
-func handle_state_controller(controller):
+func handle_state_controller(state, controller):
     var method_name: String = 'handle_%s' % [controller['type']]
 
     if has_method(method_name):
-        self.call(method_name, controller)
+        self.call(method_name, state, controller)
         return
 
     push_warning("unhandled type %s" % [controller['type']])
 
-func handle_velset(controller):
+func handle_changestate(state, controller):
+    if controller.has('ctrl'):
+        character.ctrl = controller['ctrl'].execute(character)
+
+    activate_state(controller['value'].execute(character))
+
+func handle_changeanim(state, controller):
+    # Todo handle element property
+    character.change_anim(controller['value'].execute(character))
+
+func handle_velset(state, controller):
     if 'x' in controller:
-        character.vel_x = controller['x'].execute(character)
+        pass
+        #character.velocity.x = controller['x'].execute(character)
 
     if 'y' in controller:
-        character.vel_y = controller['y'].execute(character)
+        pass
+        #character.velocity.y = controller['y'].execute(character)
 
-func handle_varset(controller):
+func handle_varset(state, controller):
     var type: String
     var number: int
     var value

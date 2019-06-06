@@ -35,19 +35,25 @@ value = 52
 
 [Statedef 10]
 
-[State 10, Stop Ducking]
+[State 10, Stand to crouch]
 type = ChangeState
-trigger1 = !ctrl || command != "holddown"
+trigger1 = command != "holddown"
 value = 12
 
 
 [Statedef 11]
 
-[State 11, Stop Ducking]
+[State 11, Crouching]
 type = ChangeState
-trigger1 = !ctrl || command != "holddown"
+trigger1 = command != "holddown"
 value = 12
 
+[Statedef 12]
+
+[State 12, Crouch to stand]
+type = ChangeState
+trigger1 = command != "holddown"
+value = 0
 
 [Statedef 20]
 

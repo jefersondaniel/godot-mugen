@@ -18,7 +18,7 @@ func load(path: String, input_prefix: String):
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
     command_path = '%s/%s' % [folder, definition['files']['cmd']]
-    state_paths = ['res://data/data/internal.cns']
+    state_paths = []
 
     if 'stcommon' in definition['files']:
         state_paths.append('%s/%s' % ['res://data/data', definition['files']['stcommon']])
