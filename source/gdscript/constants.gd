@@ -1,5 +1,7 @@
 extends Node
 
+var target_fps = 60
+
 var KEY_MODIFIER_MUST_BE_HELD: int = 1 << 0
 var KEY_MODIFIER_DETECT_AS_4WAY: int = 1 << 1
 var KEY_MODIFIER_BAN_OTHER_INPUT: int = 1 << 2
@@ -19,6 +21,10 @@ var KEY_s: int = 1 << 10
 var ALL_DIRECTION_KEYS = KEY_F + KEY_B + KEY_U + KEY_D
 
 var FLAGS = {}
+var REVERSE_FLAGS = {}
+
+# Hit and state type flags
+
 var FLAG_S = 1 << 1;
 var FLAG_C = 1 << 2;
 var FLAG_A = 1 << 3;
@@ -28,8 +34,33 @@ var FLAG_H = 1 << 6;
 var FLAG_U = 1 << 7;
 var FLAG_N = 1 << 8;
 
+# Special flags for state controllers, uncomment when implemented
+
+# var FLAG_INTRO = 'intro';
+# var FLAG_INVISIBLE = 'invisible';
+# var FLAG_ROUNDNOTOVER = 'roundnotover';
+# var FLAG_NOBARDISPLAY = 'nobardisplay';
+# var FLAG_NOBG = 'nobg';
+# var FLAG_NOFG = 'nofg';
+# var FLAG_NOSTANDGUARD = 'nostandguard';
+# var FLAG_NOCROUCHGUARD = 'nocrouchguard';
+# var FLAG_NOAIRGUARD = 'noairguard';
+var FLAG_NOAUTOTURN = 'noautoturn';
+# var FLAG_NOJUGGLECHECK = 'nojugglecheck';
+# var FLAG_NOKOSND = 'nokosnd';
+# var FLAG_NOKOSLOW = 'nokoslow';
+# var FLAG_NOSHADOW = 'noshadow';
+# var FLAG_GLOBALNOSHADOW = 'globalnoshadow';
+# var FLAG_NOMUSIC = 'nomusic';
+var FLAG_NOWALK = 'nowalk';
+# var FLAG_TIMERFREEZE = 'timerfreeze';
+# var FLAG_UNGUARDABLE = 'unguardable';
+
 func _init():
     for p in get_property_list():
         if not p['name'].begins_with('FLAG_'):
             continue
-        FLAGS[p['name'].substr(5, p['name'].length() - 5).to_lower()] = get(p['name'])
+        var key = p['name'].substr(5, p['name'].length() - 5).to_lower()
+        var value = get(p['name'])
+        FLAGS[key] = value
+        REVERSE_FLAGS[value] = key

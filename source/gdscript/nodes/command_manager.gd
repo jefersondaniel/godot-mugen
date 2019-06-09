@@ -21,6 +21,7 @@ var current_command: String
 var last_command: String
 var current_tick = 0
 var is_facing_right: bool = true
+var code: int = 0
 
 func _init(_commands, _input_prefix):
     commands = _commands
@@ -30,12 +31,7 @@ func _init(_commands, _input_prefix):
         buffer.append({'code': 0, 'tick': 0})
 
 func _process(_delta: float):
-    # TODO: Consider 60 ticks per second
-    process_tick()
-    current_tick += 1
-
-func process_tick():
-    var code: int = 0
+    code = 0
 
     if Input.is_action_pressed(input_prefix + 'F'):
         code += constants.KEY_F if is_facing_right else constants.KEY_B
@@ -46,6 +42,11 @@ func process_tick():
         if Input.is_action_pressed(input_prefix + input):
             code += input_map[input]
 
+func _physics_process(_delta: float):
+    process_command()
+    current_tick += 1
+
+func process_command():
     last_command = current_command
     current_command = ''
     buffer[buffer_index]['code'] = code
@@ -126,6 +127,7 @@ func process_tick():
         if n_time >= 0 and n_last_time > 0:
            # the last button of the sequenz must be pressed int the Current game tick to
            # be valid and then it must be check for how long it has taken to do the input
+           # print([current_tick, command['buffer_time'], command['time'], command['name'], (n_last_time - n_time)])
            if n_last_time >= (current_tick - command['buffer_time']) && (n_last_time - n_time) <= command['time']:
                 if command['name'] != last_command:
                     print("command detected %s" % command['name'])

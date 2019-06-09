@@ -7,3 +7,13 @@ script = ExtResource( 1 )
 
 [node name="Node" type="Node" parent="."]
 
+[node name="text" type="RichTextLabel" parent="."]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 630.0
+margin_bottom = 160.0
+text = "Tick: 0,dsad
+dasda
+dsada
+"
+

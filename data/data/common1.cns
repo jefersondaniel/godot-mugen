@@ -26,39 +26,6 @@
 ; Hitfall_recover (5200): player's defence is restored at time = 0
 ; Hitfall_airrecover (5210): player's defence is restored at time = 0
 
-[Statedef -1]
-
-[State -1, Jump]
-type = ChangeState
-trigger1 = ctrl && command = "holdup" && roundstate = 2 && statetype = S && stateno != 40
-value = 40
-
-[State -1, Duck]
-type = ChangeState
-trigger1 = ctrl && command = "holddown" && stateno != 10 && stateno != 11 && statetype = S
-value = 10
-
-[State -1, Walk]
-type = ChangeState
-triggerall = ctrl && canwalk && statetype = S && stateno != 20 && stateno < 40
-trigger1 = command = "holdfwd" && command != "holdback"
-trigger2 = command != "holdfwd" && command = "holdback"
-value = 20
-
-[State -1, Air Jump]
-type = ChangeState
-trigger1 = ctrl && stateno = 50 && command = "press up"
-trigger1 = Pos Y <= -1 * const(movement.airjump.height)
-trigger1 = sysvar(2) < const(movement.airjump.num)
-value = 45
-
-[Statedef -2]
-
-[Statedef -2, Landing]
-type = ChangeState
-trigger1 = Pos Y > 0 && statetype = A && Physics = A && stateno != 105 && stateno != 106
-value = 52
-
 ;---------------------------------------------------------------------------
 ; Stand
 [Statedef 0]

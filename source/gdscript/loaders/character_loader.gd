@@ -18,7 +18,7 @@ func load(path: String, input_prefix: String):
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
     command_path = '%s/%s' % [folder, definition['files']['cmd']]
-    state_paths = []
+    state_paths = ['res://data/data/internal.cns']
 
     if 'stcommon' in definition['files']:
         state_paths.append('%s/%s' % ['res://data/data', definition['files']['stcommon']])
@@ -53,8 +53,11 @@ func merge_states(new_states, states):
             if parent_key == 'states':
                 if child_key in states['states']:
                     states['states'][child_key]['controllers'] += new_states['states'][child_key]['controllers']
+                    for attr_key in new_states['states'][child_key]:
+                        if attr_key == 'controllers':
+                            continue
+                        states['states'][child_key][attr_key] = new_states['states'][child_key][attr_key]
                 else:
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:
                 states[parent_key][child_key] = new_states[parent_key][child_key]
-

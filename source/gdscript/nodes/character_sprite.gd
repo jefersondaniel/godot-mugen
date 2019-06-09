@@ -143,6 +143,7 @@ func has_anim(value: int):
     return animations.has(value)
 
 func change_boxes(_boxes):
+    boxes = {}
     for type in _boxes:
         boxes[type] = _boxes[type]
     update()
@@ -155,6 +156,10 @@ func image_to_texture(image):
 func get_element_time(element):
     var current_element_by_tick = element_by_tick[int(current_animation)]
     return current_element_by_tick[element]
+
+func get_time_from_the_end():
+    var lala: int = animation_time % (animation_looptime + 1)
+    return min(0, -animation_looptime + lala)
 
 func _process(delta):
     animation_time = animation_time + 1

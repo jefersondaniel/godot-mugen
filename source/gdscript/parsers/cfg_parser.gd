@@ -21,7 +21,7 @@ func read(path, allow_duplicated_sections=false):
             continue
 
         if line.begins_with('['):
-            if current_section:
+            if current_section != null:
                 if not allow_duplicated_sections:
                     sections[current_section_key] = current_section
                 else:

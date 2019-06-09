@@ -21,6 +21,7 @@ func read(path):
             start_index = statedef_idx + 9
             item_name = key.substr(start_index, length - start_index).strip_edges()
             states[item_name] = data[key]
+            states[item_name]['number'] = key
             states[item_name]['controllers'] = []
             continue
 
@@ -31,7 +32,7 @@ func read(path):
             start_index = state_idx + 6
             item_name = key.substr(start_index, comma_idx - start_index).strip_edges()
             if item_name in states:
-                states[item_name]['controllers'].append(parse_controller(data[key]))
+                states[item_name]['controllers'].append(parse_controller(data[key], key))
             continue
 
     return {
@@ -43,11 +44,12 @@ func read(path):
         'states': states,
     }
 
-func parse_controller(data: Dictionary):
+func parse_controller(data: Dictionary, key: String):
     # This is used in cmd parser too
     var type: String = data['type'].to_lower()
     var controller: Dictionary = {
         'type': type,
+        'key': key.split(",")[1].strip_edges()
     }
 
     for key in data:

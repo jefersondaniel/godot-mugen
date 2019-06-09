@@ -2,19 +2,25 @@ extends Node
 
 var character: Object
 var var_regex: RegEx
+var trigger_counter: Dictionary = {}
+var delayed_controllers: Array = []
+var current_tick: int = 0
 
 func _init(_character):
     character = _character
     var_regex = RegEx.new()
-    var_regex.compile("(?<type>(fvar|var)).(?<number>[0-9]+).")
+    var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
 
-func _process(_delta: float):
-    process_input_state()
-    process_current_state()
-    character.time = character.time + 1
-
-func process_input_state():
+func _physics_process(_delta: float):
+    process_delayed_controllers()
     process_state(character.get_state_def(-1))
+    process_state(character.get_state_def(-2))
+    process_state(character.get_state_def(-3))
+    process_current_state()
+
+    current_tick += 1
+    character.time = character.time + 1
+    character.special_flags = []
 
 func process_current_state():
     process_state(character.get_state_def(character.stateno))
@@ -22,8 +28,10 @@ func process_current_state():
 func activate_state(stateno):
     var statedef = character.get_state_def(stateno)
 
+    trigger_counter = {}
     character.prevstateno = character.stateno
     character.stateno = stateno
+    character.time = -1
 
     if statedef.has('anim'):
         character.change_anim(int(statedef['anim']))
@@ -42,7 +50,7 @@ func activate_state(stateno):
     if statedef.has('sprpriority'):
         character.sprpriority = int(statedef['sprpriority'])
 
-    print("activate state: %s, previous: %s" % [stateno, character.prevstateno])
+    print("activate state: %s, previous: %s, current_tick: %s" % [stateno, character.prevstateno, current_tick])
 
 func process_state(state):
     for controller in state['controllers']:
@@ -73,46 +81,73 @@ func process_state(state):
         if not will_activate:
             continue
 
-        handle_state_controller(state, controller)
+        handle_state_controller(controller)
 
-func handle_state_controller(state, controller):
-    var method_name: String = 'handle_%s' % [controller['type']]
+func process_delayed_controllers():
+    for controller in delayed_controllers:
+        var method_name: String = 'handle_%s' % [controller['type']]
+        self.call(method_name, controller, true)
+    delayed_controllers = []
 
-    if has_method(method_name):
-        self.call(method_name, state, controller)
+func handle_state_controller(controller, delayed=false):
+    if controller['type'] == 'null':
         return
 
-    push_warning("unhandled state type %s" % [controller['type']])
+    var method_name: String = 'handle_%s' % [controller['type']]
 
-func handle_changestate(state, controller):
+    if not has_method(method_name):
+        push_warning("unhandled controller type %s" % [controller['type']])
+        return
+
+    if controller.has('persistent'):
+        var persistence: int = controller['persistent'].execute(character)
+        var counter: int = 1
+
+        if trigger_counter.has(controller['key']):
+            counter = trigger_counter[controller['key']]
+        else:
+            trigger_counter[controller['key']] = counter
+
+        trigger_counter[controller['key']] += 1
+
+        if persistence == 0 and counter > 1:
+            return
+        elif persistence > 0 and counter % persistence != 0:
+            return
+
+    self.call(method_name, controller, false)
+
+func handle_changestate(controller, delayed=false):
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
 
     activate_state(controller['value'].execute(character))
 
-func handle_changeanim(state, controller):
+func handle_changeanim(controller, delayed=false):
     # Todo handle element property
     character.change_anim(controller['value'].execute(character))
 
-func handle_velset(state, controller):
+func handle_velset(controller, delayed=false):
     if 'x' in controller:
         character.velocity.x = controller['x'].execute(character)
 
     if 'y' in controller:
         character.velocity.y = controller['y'].execute(character)
 
-func handle_varset(state, controller):
+func handle_varset(controller, delayed=false):
     var type: String
     var number: int
     var value
 
     for key in controller:
-        var result = var_regex.search(key)
+        var result = var_regex.search(key.to_lower())
         if not result:
             continue
         type = result.get_string('type')
         number = int(result.get_string('number'))
         value = controller[key].execute(character)
+        if type != 'var':
+            print([key, type, number, controller[key].execute(character)])
 
     if 'v' in controller:
         type = 'var'
@@ -124,7 +159,6 @@ func handle_varset(state, controller):
         number = controller['v'].execute(character)
         value = controller['value'].execute(character)
 
-
     if not type:
         push_error("Invalid varset: [%s, %s, %s]" % [type, number, value])
         return
@@ -133,3 +167,33 @@ func handle_varset(state, controller):
         character.int_vars[number] = value
     elif type == 'fvar':
         character.float_vars[number] = value
+    if type == 'sysvar':
+        character.sys_int_vars[number] = value
+    elif type == 'sysfvar':
+        character.sys_float_vars[number] = value
+
+func handle_ctrlset(controller, delayed=false):
+    character.ctrl = controller['value'].execute(character)
+
+func handle_posset(controller, delayed=false):
+    var newpos = character.get_relative_position()
+
+    if controller.has('x'):
+        newpos.x = controller['x'].execute(character)
+
+    if controller.has('y'):
+        newpos.y = controller['y'].execute(character)
+
+    character.set_relative_position(newpos)
+
+func handle_assertspecial(controller, delayed=false):
+    if not delayed:
+        delayed_controllers.append(controller)
+        return
+
+    if controller.has('flag'):
+        character.assert_special(controller['flag'].execute(character))
+    if controller.has('flag2'):
+        character.assert_special(controller['flag2'].execute(character))
+    if controller.has('flag3'):
+        character.assert_special(controller['flag3'].execute(character))
