@@ -135,8 +135,6 @@ func set_context_variable(key, value):
         push_warning("cant assign variable: %s" % [key])
 
 func get_context_variable(key):
-    if key == "command":
-        return command_manager.current_command
     if key == "anim":
         return character_sprite.current_animation
     if key == "animtime":
@@ -165,6 +163,10 @@ func call_context_function(key, arguments):
     if key == "debug":
         print("DEBUG: ", arguments[0])
         return 1
+    if key == "command":
+        var has_command: bool = command_manager.active_commands.has(arguments[1])
+        var op: String = arguments[0]
+        return has_command if op == "=" else !has_command
     if key == 'abs':
         return abs(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
@@ -201,6 +203,9 @@ func change_state(stateno: int):
 func assert_special(flag: String):
     special_flags.append(flag)
 
+func reset_assert_special():
+    special_flags = []
+
 func _process(delta):
     var text = "stateno: %s, prevstateno: %s, time: %s, animelem: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
@@ -221,7 +226,7 @@ func _process(delta):
         get_context_variable('vel_y'),
     ]
 
-    text += "command: %s\n" % [command_manager.current_command]
+    text += "commands: %s\n" % [command_manager.active_commands]
 
     get_node('/root/Node2D/text').text = text
 

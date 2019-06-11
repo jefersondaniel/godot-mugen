@@ -3,7 +3,6 @@ extends Node
 var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
-var delayed_controllers: Array = []
 var current_tick: int = 0
 
 func _init(_character):
@@ -12,15 +11,21 @@ func _init(_character):
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
 
 func _physics_process(_delta: float):
-    process_delayed_controllers()
+    var oldstateno = character.stateno
+
     process_state(character.get_state_def(-1))
     process_state(character.get_state_def(-2))
     process_state(character.get_state_def(-3))
-    process_current_state()
+
+    if character.stateno == oldstateno:
+        # If the state was changed, then its was already executed
+        process_current_state()
+    else:
+        # TODO: Review assert special reset
+        character.reset_assert_special()
 
     current_tick += 1
     character.time = character.time + 1
-    character.special_flags = []
 
 func process_current_state():
     process_state(character.get_state_def(character.stateno))
@@ -31,7 +36,7 @@ func activate_state(stateno):
     trigger_counter = {}
     character.prevstateno = character.stateno
     character.stateno = stateno
-    character.time = -1
+    character.time = 0
 
     if statedef.has('anim'):
         character.change_anim(int(statedef['anim']))
@@ -53,6 +58,8 @@ func activate_state(stateno):
     print("activate state: %s, previous: %s, current_tick: %s" % [stateno, character.prevstateno, current_tick])
 
 func process_state(state):
+    var oldstateno = character.stateno
+
     for controller in state['controllers']:
         var will_activate: bool = true
         var triggerno: int = 1
@@ -83,13 +90,11 @@ func process_state(state):
 
         handle_state_controller(controller)
 
-func process_delayed_controllers():
-    for controller in delayed_controllers:
-        var method_name: String = 'handle_%s' % [controller['type']]
-        self.call(method_name, controller, true)
-    delayed_controllers = []
+        if oldstateno != character.stateno:
+            # If the controller changed the state, skip the next controllers
+            break
 
-func handle_state_controller(controller, delayed=false):
+func handle_state_controller(controller):
     if controller['type'] == 'null':
         return
 
@@ -115,26 +120,27 @@ func handle_state_controller(controller, delayed=false):
         elif persistence > 0 and counter % persistence != 0:
             return
 
-    self.call(method_name, controller, false)
+    self.call(method_name, controller)
 
-func handle_changestate(controller, delayed=false):
+func handle_changestate(controller):
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
 
     activate_state(controller['value'].execute(character))
+    process_state(character.get_state_def(character.stateno))
 
-func handle_changeanim(controller, delayed=false):
+func handle_changeanim(controller):
     # Todo handle element property
     character.change_anim(controller['value'].execute(character))
 
-func handle_velset(controller, delayed=false):
+func handle_velset(controller):
     if 'x' in controller:
         character.velocity.x = controller['x'].execute(character)
 
     if 'y' in controller:
         character.velocity.y = controller['y'].execute(character)
 
-func handle_varset(controller, delayed=false):
+func handle_varset(controller):
     var type: String
     var number: int
     var value
@@ -172,10 +178,10 @@ func handle_varset(controller, delayed=false):
     elif type == 'sysfvar':
         character.sys_float_vars[number] = value
 
-func handle_ctrlset(controller, delayed=false):
+func handle_ctrlset(controller):
     character.ctrl = controller['value'].execute(character)
 
-func handle_posset(controller, delayed=false):
+func handle_posset(controller):
     var newpos = character.get_relative_position()
 
     if controller.has('x'):
@@ -186,11 +192,7 @@ func handle_posset(controller, delayed=false):
 
     character.set_relative_position(newpos)
 
-func handle_assertspecial(controller, delayed=false):
-    if not delayed:
-        delayed_controllers.append(controller)
-        return
-
+func handle_assertspecial(controller):
     if controller.has('flag'):
         character.assert_special(controller['flag'].execute(character))
     if controller.has('flag2'):

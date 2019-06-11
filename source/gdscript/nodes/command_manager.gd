@@ -17,8 +17,8 @@ var buffer: Array
 var buffer_size: int = 120
 var buffer_index: int
 var commands: Array
-var current_command: String
-var last_command: String
+var old_active_commands: Array
+var active_commands: Array
 var current_tick = 0
 var is_facing_right: bool = true
 var code: int = 0
@@ -47,8 +47,8 @@ func _physics_process(_delta: float):
     current_tick += 1
 
 func process_command():
-    last_command = current_command
-    current_command = ''
+    old_active_commands = active_commands
+    active_commands = []
     buffer[buffer_index]['code'] = code
     buffer[buffer_index]['tick'] = current_tick
 
@@ -129,12 +129,12 @@ func process_command():
            # be valid and then it must be check for how long it has taken to do the input
            # print([current_tick, command['buffer_time'], command['time'], command['name'], (n_last_time - n_time)])
            if n_last_time >= (current_tick - command['buffer_time']) && (n_last_time - n_time) <= command['time']:
-                if command['name'] != last_command:
-                    print("command detected %s" % command['name'])
-                current_command = command['name']
-                break
+                active_commands.push_back(command['name'])
 
     buffer_index = buffer_index + 1
+
+    if old_active_commands != active_commands:
+        print("active commands: %s" % [active_commands])
 
     if buffer_index >= buffer_size:
         buffer_index = 0

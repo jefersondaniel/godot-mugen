@@ -4,7 +4,6 @@ var MugenExpression = load('res://source/native/mugen_expression.gdns')
 
 class Context extends Object:
     var variables = {
-        "command": "holddown",
         "screenpos_x": 400,
         "screenpos_y": 300,
         "gamewidth": 720,
@@ -38,6 +37,8 @@ class Context extends Object:
             # var check = 'ha' in values
             # return check if op == "=" else !check
             return true
+        if key == "command":
+            return arguments[1] == "holdup"
         if key == "debug":
             print("DEBUG: %s" % [arguments[0]])
             return arguments[0]

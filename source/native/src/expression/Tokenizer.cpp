@@ -280,6 +280,22 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
+        bool isCommand = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "command"
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 1, "=") || MATCH_TOKEN_TYPE(oldtokens, i + 1, "!="))
+            && MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)");
+
+        if (isCommand) {
+            newtokens.push_back(oldtokens[i]);
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(oldtokens[i + 1]->type))));
+            newtokens.push_back(shared_ptr<Token>(new CommaToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            i+= 2;
+            continue;
+        }
+
         // Convert const function to a call where the arguments is an string
 
         bool isConst = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
