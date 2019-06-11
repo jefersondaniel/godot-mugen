@@ -140,6 +140,20 @@ func handle_velset(controller):
     if 'y' in controller:
         character.velocity.y = controller['y'].execute(character)
 
+func handle_veladd(controller):
+    if 'x' in controller:
+        character.velocity.x += controller['x'].execute(character)
+
+    if 'y' in controller:
+        character.velocity.y += controller['y'].execute(character)
+
+func handle_velmul(controller):
+    if 'x' in controller:
+        character.velocity.x *= controller['x'].execute(character)
+
+    if 'y' in controller:
+        character.velocity.y *= controller['y'].execute(character)
+
 func handle_varset(controller):
     var type: String
     var number: int
