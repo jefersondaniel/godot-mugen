@@ -78,7 +78,7 @@ elif env['platform'] == 'windows':
     elif env['target'] == 'release':
         env.Append(CCFLAGS=['/O2', '/EHsc', '/DNDEBUG', '/MD'])
 
-# env.SConscript('godot-cpp/SConstruct')
+env.SConscript('godot-cpp/SConstruct')
 env.SConscript(['src/sff/SCsub', 'src/expression/SCsub'], exports='env')
 
 Default(env.SharedLibrary(
