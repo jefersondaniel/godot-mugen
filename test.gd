@@ -28,6 +28,8 @@ class Context extends Object:
     func call_context_function(key, arguments):
         if key == "sqrt":
             return sqrt(arguments[0])
+        if key == "animelemtime":
+            return 100 if arguments[0] != 3 else 0
         if key == "const":
             print("const: %s" % [arguments])
             return 1
@@ -79,3 +81,7 @@ func _init():
     execute_expression("debug(lala)", context)
     execute_expression("debug(lala)", context)
     execute_expression("const(velocity.x) + const(velocity.y)", context)
+    execute_expression("animelem = 3, >= 0", context)
+    execute_expression("animelem = 3, 0", context)
+    execute_expression("animelem = 3", context)
+    execute_expression("animelem = 2, -1", context)

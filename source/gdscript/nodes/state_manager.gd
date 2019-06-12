@@ -206,6 +206,18 @@ func handle_posset(controller):
 
     character.set_relative_position(newpos)
 
+func handle_posadd(controller):
+    var oldpos = character.get_relative_position()
+    var newpos = character.get_relative_position()
+
+    if controller.has('x'):
+        newpos.x += controller['x'].execute(character)
+
+    if controller.has('y'):
+        newpos.y += controller['y'].execute(character)
+
+    character.set_relative_position(newpos)
+
 func handle_assertspecial(controller):
     if controller.has('flag'):
         character.assert_special(controller['flag'].execute(character))

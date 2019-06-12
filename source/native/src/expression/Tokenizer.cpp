@@ -5,6 +5,7 @@
 
 #define IS_IDENTIFIER_CHAR(c) (isalpha(c) || '_' == c || '.' == c || isdigit(c))
 #define MATCH_TOKEN_TYPE(v, e, t) (e < v.size() ? v[e]->type == t : false)
+#define MATCH_COMPARATOR_TOKEN(v, e) (e < v.size() ? (v[e]->type == "=" || v[e]->type == "!=" || v[e]->type == "<" || v[e]->type == ">" || v[e]->type == "<=" || v[e]->type == ">=") : false)
 
 vector<shared_ptr<Token>> Tokenizer::preprocess(Parser *parser, string text)
 {
@@ -249,7 +250,9 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
          *
          * HitDefAttr = A, SA, HA
          *
-         * This is a trigger that checks if the attr is in the list
+         * This is a trigger that checks if the attr is in the list, result:
+         *
+         * HitDefAttr = A, SA, HA => HitDefAttr("A", "SA", "HA")
          */
 
         // Convert hitdeff expression to a function call
@@ -280,6 +283,13 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
+        /**
+         * THe command trigger is converted to a function in format command("=", "name"), so the
+         * implementation can do any type of logic:
+         *
+         * command = "a" => command("=", "a")
+         */
+
         bool isCommand = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "command"
             && (MATCH_TOKEN_TYPE(oldtokens, i + 1, "=") || MATCH_TOKEN_TYPE(oldtokens, i + 1, "!="))
@@ -296,7 +306,113 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             continue;
         }
 
-        // Convert const function to a call where the arguments is an string
+        /**
+         * The animelem trigger is converted to animelemtime:
+         *
+         * animelem = 1 => animelemtime(1) = 0
+         * animelem = 1, >= 2 => animelemtime(1) >= 2
+         * animelem = 1, -1 => animelemtime(1) = -1
+         *
+         * TODO: Refactor this ugly code
+         */
+        bool isAnimElemFormat30 = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "animelem"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "=")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)"))
+            && MATCH_TOKEN_TYPE(oldtokens, i + 3, ",")
+            && MATCH_COMPARATOR_TOKEN(oldtokens, i + 4)
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 5, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 5, "(identifier)"));
+
+        if (isAnimElemFormat30) {
+            newtokens.push_back(shared_ptr<Token>(new IdentifierToken(parser, "animelemtime")));
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            newtokens.push_back(oldtokens[i + 4]);
+            newtokens.push_back(oldtokens[i + 5]);
+            i+= 5;
+            continue;
+        }
+
+        bool isAnimElemFormat20 = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "animelem"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "=")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)"))
+            && MATCH_TOKEN_TYPE(oldtokens, i + 3, ",")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 4, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 5, "(identifier)"));
+
+        if (isAnimElemFormat20) {
+            newtokens.push_back(shared_ptr<Token>(new IdentifierToken(parser, "animelemtime")));
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            newtokens.push_back(oldtokens[i + 1]);
+            newtokens.push_back(oldtokens[i + 4]);
+            i+= 4;
+            continue;
+        }
+
+        bool isAnimElemFormat31 = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "animelem"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "=")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)"))
+            && MATCH_TOKEN_TYPE(oldtokens, i + 3, ",")
+            && MATCH_COMPARATOR_TOKEN(oldtokens, i + 4)
+            && MATCH_TOKEN_TYPE(oldtokens, i + 5, "-")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 6, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 6, "(identifier)"));
+
+        if (isAnimElemFormat31) {
+            newtokens.push_back(shared_ptr<Token>(new IdentifierToken(parser, "animelemtime")));
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            newtokens.push_back(oldtokens[i + 4]);
+            newtokens.push_back(oldtokens[i + 5]);
+            newtokens.push_back(oldtokens[i + 6]);
+            i+= 6;
+            continue;
+        }
+
+        bool isAnimElemFormat21 = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "animelem"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "=")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)"))
+            && MATCH_TOKEN_TYPE(oldtokens, i + 3, ",")
+            && MATCH_TOKEN_TYPE(oldtokens, i + 4, "-")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 5, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 5, "(identifier)"));
+
+        if (isAnimElemFormat21) {
+            newtokens.push_back(shared_ptr<Token>(new IdentifierToken(parser, "animelemtime")));
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            newtokens.push_back(oldtokens[i + 1]);
+            newtokens.push_back(oldtokens[i + 4]);
+            newtokens.push_back(oldtokens[i + 5]);
+            i+= 5;
+            continue;
+        }
+
+        bool isAnimElemFormat1 = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "animelem"
+            && MATCH_TOKEN_TYPE(oldtokens, i + 1, "=")
+            && (MATCH_TOKEN_TYPE(oldtokens, i + 2, "(literal)") || MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)"));
+
+        if (isAnimElemFormat1) {
+            newtokens.push_back(shared_ptr<Token>(new IdentifierToken(parser, "animelemtime")));
+            newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
+            newtokens.push_back(oldtokens[i + 2]);
+            newtokens.push_back(shared_ptr<Token>(new ReservedToken(parser, ")")));
+            newtokens.push_back(oldtokens[i + 1]);
+            newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(0))));
+            i+= 2;
+            continue;
+        }
+
+        /**
+         * The const function transform the argument in a string if its a indentifier:
+         * const(velocity.x) => const("velocity.x")
+         */
 
         bool isConst = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "const"

@@ -139,8 +139,6 @@ func get_context_variable(key):
         return character_sprite.current_animation
     if key == "animtime":
         return character_sprite.get_time_from_the_end()
-    if key == "animelem":
-        return character_sprite.animation_element
     if key == "vel_x":
         return velocity.x
     if key == "vel_y":
@@ -178,7 +176,8 @@ func call_context_function(key, arguments):
     if key == 'selfanimexist':
         return character_sprite.has_anim(arguments[0])
     if key == 'animelemtime':
-        return (character_sprite.animation_time - character_sprite.get_element_time(arguments[0]))
+        var lala = (character_sprite.animation_time - character_sprite.get_element_time(arguments[0]))
+        return lala
     if key == 'sysvar':
         return sys_int_vars[arguments[0]]
     if key == 'sysfvar':
@@ -207,11 +206,10 @@ func reset_assert_special():
     special_flags = []
 
 func _process(delta):
-    var text = "stateno: %s, prevstateno: %s, time: %s, animelem: %s, animtime: %s, fps: %s\n" % [
+    var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
         get_context_variable('prevstateno'),
         get_context_variable('time'),
-        get_context_variable('animelem'),
         get_context_variable('animtime'),
         Engine.get_frames_per_second()
     ]

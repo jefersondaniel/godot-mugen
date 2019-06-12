@@ -9,7 +9,6 @@ var boxes = {1: [], 2: []}
 var current_animation: int = 0
 var animation_time: int = 0
 var animation_element: int = 0
-var animation_element_time: int = 0
 var animation_looptime: int = 0
 
 func _init(_images, _animations):
@@ -77,6 +76,7 @@ func _init(_images, _animations):
             var animation = Animation.new()
             var frame_track = animation.add_track(Animation.TYPE_VALUE)
             var offset_track = animation.add_track(Animation.TYPE_VALUE)
+            var element_number_track = animation.add_track(Animation.TYPE_VALUE)
             var collision_track = animation.add_track(Animation.TYPE_METHOD)
 
             animation.set_loop(loop)
@@ -84,6 +84,8 @@ func _init(_images, _animations):
             animation.value_track_set_update_mode(frame_track, Animation.UPDATE_DISCRETE)
             animation.track_set_path(offset_track, ':offset')
             animation.value_track_set_update_mode(offset_track, Animation.UPDATE_DISCRETE)
+            animation.track_set_path(element_number_track, ':animation_element')
+            animation.value_track_set_update_mode(element_number_track, Animation.UPDATE_DISCRETE)
 
             var frame_value = 0
             var current_set_time = 0.0
@@ -102,6 +104,7 @@ func _init(_images, _animations):
                 )
                 animation.track_insert_key(offset_track, current_set_time, frame_offset)
                 animation.track_insert_key(frame_track, current_set_time, frame_value)
+                animation.track_insert_key(element_number_track, current_set_time, current_animation_frame + 1)
                 if collisions.get(current_animation_frame):
                     var method = {
                         'method': 'change_boxes',
@@ -130,7 +133,6 @@ func _init(_images, _animations):
 func change_anim(value: int):
     animation_time = 0
     animation_element = 0
-    animation_element_time = 0
     current_animation = value
     animation_looptime = looptimes[value]
 
@@ -155,7 +157,7 @@ func image_to_texture(image):
 
 func get_element_time(element):
     var current_element_by_tick = element_by_tick[int(current_animation)]
-    return current_element_by_tick[element]
+    return current_element_by_tick[element - 1]
 
 func get_time_from_the_end():
     var lala: int = animation_time % (animation_looptime + 1)
