@@ -1,6 +1,6 @@
 extends Object
 
-func read(path, allow_duplicated_sections=false):
+func read(path, allow_key_extends=false, allow_duplicated_sections=false):
     var file = File.new()
     file.open(path, File.READ)
     var lines = file.get_as_text().split("\n", false)
@@ -22,7 +22,7 @@ func read(path, allow_duplicated_sections=false):
 
         if line.begins_with('['):
             if current_section != null:
-                if not allow_duplicated_sections:
+                if not allow_key_extends:
                     sections[current_section_key] = current_section
                 else:
                     sections[current_section_key] = sections.get(current_section_key, [])
@@ -30,6 +30,12 @@ func read(path, allow_duplicated_sections=false):
             var idx_start = 1
             var idx_end = line.find(']')
             current_section_key = line.substr(idx_start, idx_end - idx_start).to_lower()
+            if allow_duplicated_sections:
+                var counter = 0
+                var session_key_backup = current_section_key
+                while sections.has(current_section_key):
+                    counter = counter + 1
+                    current_section_key = '%s.%s' % [session_key_backup, counter]
             current_section = {}
             continue
 
@@ -67,7 +73,7 @@ func read(path, allow_duplicated_sections=false):
         current_section[key] = value
 
     if current_section:
-        if not allow_duplicated_sections:
+        if not allow_key_extends:
             sections[current_section_key] = current_section
         else:
             sections[current_section_key] = sections.get(current_section_key, [])

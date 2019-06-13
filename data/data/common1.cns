@@ -44,16 +44,6 @@ type = VelSet
 trigger1 = Time = 0
 y = 0
 
-[State 0, 9]
-type = Debug
-trigger1 = 1
-value = "a"
-
-[State 0, 9]
-type = Debug
-trigger1 = 1
-value = "b"
-
 [State 0, 3] ;Stop moving if low velocity or 4 ticks pass
 type = VelSet
 trigger1 = abs(vel x) < Const(movement.stand.friction.threshold)

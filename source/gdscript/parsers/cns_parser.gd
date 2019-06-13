@@ -4,7 +4,8 @@ var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var MugenExpression = load('res://source/native/mugen_expression.gdns')
 
 func read(path):
-    var data = cfg_parser.read(path, false)
+    var data = cfg_parser.read(path, false, true)
+
     var states = {
         '-3': {'controllers': []},
         '-2': {'controllers': []},
