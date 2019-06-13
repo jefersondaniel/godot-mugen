@@ -46,14 +46,22 @@ func activate_state(stateno):
 
     if statedef.has('type') && statedef['type'].to_lower() != 'u':
         character.statetype = constants.FLAGS[statedef['type'].to_lower()]
-        # todo set default value when omitted
+    elif not statedef.has('type'):
+        character.statetype = constants.FLAG_S
 
     if statedef.has('physics') && statedef['physics'].to_lower() != 'u':
         character.physics = constants.FLAGS[statedef['physics'].to_lower()]
-        # todo set default value when omitted
+    elif not statedef.has('physics'):
+        character.physics = constants.FLAG_N
 
     if statedef.has('sprpriority'):
         character.sprpriority = int(statedef['sprpriority'])
+
+    if statedef.has('velset'):
+        var velset = statedef['velset'].split_floats(",")
+        character.velocity = Vector2(velset[0], velset[1])
+
+    # TODO: Implement movetype, poweradd, juggle, facep2, (hitdef|movehit|hitcount)persist, sprpriority
 
     print("activate state: %s, previous: %s, current_tick: %s" % [stateno, character.prevstateno, current_tick])
 
@@ -122,6 +130,9 @@ func handle_state_controller(controller):
 
     self.call(method_name, controller)
 
+func handle_debug(controller):
+    print('DEBUG: %s' % [controller['value'].execute(character)])
+
 func handle_changestate(controller):
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
@@ -166,8 +177,6 @@ func handle_varset(controller):
         type = result.get_string('type')
         number = int(result.get_string('number'))
         value = controller[key].execute(character)
-        if type != 'var':
-            print([key, type, number, controller[key].execute(character)])
 
     if 'v' in controller:
         type = 'var'
@@ -207,7 +216,6 @@ func handle_posset(controller):
     character.set_relative_position(newpos)
 
 func handle_posadd(controller):
-    var oldpos = character.get_relative_position()
     var newpos = character.get_relative_position()
 
     if controller.has('x'):

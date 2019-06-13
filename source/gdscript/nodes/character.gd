@@ -121,7 +121,6 @@ func get_relative_position():
 func set_relative_position(newpos):
     position.x = newpos.x
     position.y = newpos.y + stage.ground_y
-    velocity = Vector2(0, 0)
 
 func get_state_def(number: int):
     return consts['states'][String(number)]

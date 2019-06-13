@@ -67,7 +67,7 @@ vector<shared_ptr<Token>> Tokenizer::preprocess(Parser *parser, string text)
             case '.': case '0': case '1': case '2': case '3': case '4': case '5':
             case '6': case '7': case '8': case '9':
                 intValue = 0;
-                divisor = text[index_] == '.' ? 10 : 1;
+                divisor = 1;
                 isFloat = false;
                 while (isdigit(text[index_]) || text[index_] == '.') {
                     if (text[index_] == '.' && !isFloat) {

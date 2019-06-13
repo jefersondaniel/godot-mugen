@@ -85,3 +85,5 @@ func _init():
     execute_expression("animelem = 3, 0", context)
     execute_expression("animelem = 3", context)
     execute_expression("animelem = 2, -1", context)
+    execute_expression("0.5 + 0.5", context)
+    execute_expression(".5 + .5", context)
