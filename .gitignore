@@ -15,3 +15,4 @@ project.sublime-project
 project.sublime-workspace
 .sconsign.dblite
 .vscode
+resources
