@@ -22,6 +22,10 @@
 
 #include "../../SffHandler.h"
 #include "../../SffItem.h"
+#include "../../data/ByteArray.hpp"
+#include "../../data/ByteArrayStream.hpp"
+#include "../../data/FileStream.hpp"
+#include <Image.hpp>
 #include "SffV2.h"
 #include "internal_sffv2_structs.h"
 #include "internal_sffv2_rle5-lz5_decode.h"

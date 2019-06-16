@@ -92,7 +92,7 @@ public: //load - save
       @param filename the name of sff to load
       \sa class SffHandler and \ref pageSffPluginSystem
   */
-  bool loadSff(String & _filename);
+  bool loadSff(String _filename);
    //! Save an Sff.
   /*!
       This function delegates the work to a function that uses the plugin selected
@@ -101,7 +101,7 @@ public: //load - save
       @param sff_type It is a number that marks what plugin you use for saving
       \sa class SffHandler and \ref pageSffPluginSystem
   */
-  bool saveSff(String & _filename, char sff_type = 1);
+  bool saveSff(String _filename, char sff_type = 1);
 
 };
 

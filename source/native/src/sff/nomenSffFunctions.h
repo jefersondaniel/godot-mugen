@@ -31,9 +31,9 @@ bool nomenComparePalettes(ByteArray &pal1, ByteArray &pal2);
 ByteArray nomenPalFiller(ByteArray &param);
 
 //! load a palette from JASC PAL and returns palette
-ByteArray nomenLoadPal_pal(QString & filename);
+ByteArray nomenLoadPal_pal(String filename);
 //! load a palette from Photoshop Act and returns palette
-ByteArray nomenLoadPal_act(QString & filename);
+ByteArray nomenLoadPal_act(String filename);
 
 #endif
 

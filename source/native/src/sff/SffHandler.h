@@ -24,7 +24,6 @@
 #define SFF_HANDLER_H
 
 #include <Godot.hpp>
-#include "SffItem.h"
 #include <vector>
 
 using namespace std;
@@ -59,7 +58,7 @@ class SffHandler {
        \sa \ref pageSffPluginSystem
 
     */
-    virtual bool read(String & filename) = 0;
+    virtual bool read(String filename) = 0;
 
   public:
     //! returns how many different groupno used in sff (useful only for sffv1 at the moment)
@@ -81,14 +80,6 @@ class SffHandler {
    \return a pointer to the plugin selected
    \sa \ref pageSffPluginSystem
 */
-SffHandler * select_sff_plugin_reader(String &filename);
-
-//! Selects the SffPlugin writer to Use
-/*! \relates Sff
-    This function is used internally by Sff::write()
-   \return a pointer to the plugin selected
-   \sa \ref pageSffPluginSystem
-*/
-SffHandler * select_sff_plugin_writer(String &filename, char sff_type = 1);
+SffHandler * select_sff_plugin_reader(String filename);
 
 #endif

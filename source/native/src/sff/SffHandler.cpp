@@ -52,7 +52,7 @@ SffHandler * select_sff_plugin_reader(String filename) {
       return NULL;
 }
 
-void exec_sff_plugin_wText(string & _snapdest, const string & _imgf, const string & _palf, vector<SffData> & _sffdata, vector<SffPal> & _paldata) {
+void exec_sff_plugin_wText(String _snapdest, const String _imgf, const String _palf, vector<SffData> & _sffdata, vector<SffPal> & _paldata) {
   #ifdef ADD_SFF_PLUGIN
   #undef ADD_SFF_PLUGIN
   #endif
@@ -101,21 +101,6 @@ void SffHandler::searchDuplicateImages() {
 
 string SffHandler::scanSff(bool rgbSupported) {
     string str;
-    for(int a = 0; a < sffdata.size(); a++) {
-        //if rgb is not supported, return an error if an Rgb Image found
-        if(rgbSupported == false) {
-            if(sffdata[a].image.format() != QImage::Format_Indexed8) {
-                return "This sff format doesn't support Rgb Images";
-            }
-        }
-
-         //check for duplicate infos....
-        for(int b = a+1; b < sffdata.size(); b++) {
-            if(sffdata[a].groupno == sffdata[b].groupno && sffdata[a].imageno == sffdata[b].imageno) {
-                return "Two or more images with same groupno, imageno";
-            }
-        }
-    }
 
     return str;
 }

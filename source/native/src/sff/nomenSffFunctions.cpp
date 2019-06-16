@@ -20,8 +20,6 @@
  *
  ******************************************************/
 
-//#include <QGraphicsPixmapItem>
-
 #include "nomenSffFunctions.h"
 
 bool nomenComparePalettes(ByteArray& pal1, ByteArray& pal2)

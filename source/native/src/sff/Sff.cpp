@@ -45,7 +45,7 @@ void Sff::clear() {
 }
 
 
-bool Sff::loadSff(String & _filename) {
+bool Sff::loadSff(String _filename) {
   SffHandler * sffh = select_sff_plugin_reader(_filename);
   //select_sff_plugin_reader automaticly invoke PLUGIN->read(filename) so it
   //is not necessary to call it inside loadSff
