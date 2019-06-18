@@ -15,9 +15,11 @@ void SffParser::_init() {
 Variant SffParser::get_images(String path, int group, int selectedPalette, int defaultPalette) {
     Godot::print("Selecting plugin");
     SffHandler *handler = select_sff_plugin_reader(path);
-    Godot::print("Plugin selected, will read");
-    handler->read(path);
     Godot::print("Done reading file");
+
+    if (handler == NULL) {
+        return Variant();
+    }
 
     Dictionary result;
 

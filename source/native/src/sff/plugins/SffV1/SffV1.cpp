@@ -24,6 +24,7 @@
 #include "../../data/ByteArray.hpp"
 #include "../../data/ByteArrayStream.hpp"
 #include "../../data/FileStream.hpp"
+#include "../../image/PCXReader.hpp"
 #include <Image.hpp>
 #include <File.hpp>
 #include "SffV1.h"
@@ -110,17 +111,20 @@ bool SffV1::read(String filename)
                             break;
                         }
                     }
-                    if (checked == false)
+                    if (checked == false) {
                         paldata.push_back(sffpal); //append only if paldata is new
+                    }
                 }
             }
             //assigning palindex to sffimage
             sffitem.palindex = actual_palindex;
             //setting image:
             {
-                //QBuffer buffer(&tmpArr);
-                //buffer.open(QIODevice::ReadOnly);
-                //sffitem.image.load(&buffer, "pcx"); // read image from tmpArr in pcx format
+                PCXReader reader(tmpArr);
+                bool success = reader.read(&sffitem.image);
+                if (!success) {
+                    cerr << "error reading pcx image" << endl;
+                }
             }
             tmpArr.clear();
         }
@@ -161,7 +165,7 @@ bool SffV1::read(String filename)
 
     //final step... reapply palette for char-sff shared images - needed in order to avoid possible problems
     if (head.isShared) {
-        ByteArray forcePal;
+        Palette forcePal;
         //setting forcepal
         bool have0 = false; //have0 = checking if there is a 0,x individual image
         //verify if there is a 0,x individual
@@ -226,6 +230,8 @@ bool SffV1::read(String filename)
             sffdata[sharedImage[k]].palindex = 0;
         }
     }
+
+    sffFile->close();
 
     return true;
 }

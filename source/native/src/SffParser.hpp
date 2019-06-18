@@ -9,22 +9,6 @@
 
 using namespace godot;
 
-struct Sprite {
-	int groupno;
-	int imageno;
-	int w;
-	int h;
-	int x;
-	int y;
-	Image* image;
-};
-
-struct Palette {
-	int groupno;
-	int itemno;
-	ByteArray colors;
-};
-
 class SffParser : public Reference {
     GODOT_CLASS(SffParser, Reference);
 public:

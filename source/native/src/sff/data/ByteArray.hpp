@@ -19,6 +19,7 @@ public:
 	ByteArray(const ByteArray &other);
 	ByteArray(vector<uint8_t> &buffer);
 	ByteArray(PoolByteArray &array);
+    ByteArray(int size, uint8_t placeholder);
 	int size() const;
 	uint8_t *ptr();
 	const uint8_t *ptr() const;
@@ -27,6 +28,7 @@ public:
 	void truncate(int size);
 	void resize(int size);
 	void reserve(int size);
+    void fill(uint8_t value);
     void clear();
     ByteArray right(int size);
 	ByteArray subarray(int start, int end);

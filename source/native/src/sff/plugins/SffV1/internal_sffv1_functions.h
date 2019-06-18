@@ -24,15 +24,13 @@
 
 //matrix-pal.  Convert a ByteArray "raw" to a vector <QRgb>.
 
-ByteArray _sffv1_matrixToPal (ByteArray &src) {
-  ByteArray palette;
+Palette _sffv1_matrixToPal (ByteArray &src) {
+  Palette palette;
   ByteArrayStream in(src);
   uint32_t r, g, b;
   for(int a = 0; a < 256; a++) {
     in>>r; in>>g; in>>b;
-    palette.append(r);
-    palette.append(g);
-    palette.append(b);
+    palette.colors.push_back(RawColor(r, g, b));
   }
   return palette;
 }

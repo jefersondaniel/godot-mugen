@@ -7,6 +7,14 @@ ByteArray::ByteArray(vector<uint8_t> &newbuffer) {
 	_buffer = newbuffer;
 }
 
+ByteArray::ByteArray(int size, uint8_t placeholder) {
+    _buffer = vector<uint8_t>(size);
+
+    for (int i = 0; i < size; ++i) {
+        _buffer[i] = placeholder;
+    }
+}
+
 ByteArray::ByteArray(const ByteArray &p_other) {
 	int _size = p_other.size();
 	resize(_size);
@@ -53,6 +61,12 @@ void ByteArray::append(ByteArray &other) {
 
 	resize(mySize + otherSize);
 	memcpy(ptr() + mySize, other.ptr(), otherSize);
+}
+
+void ByteArray::fill(uint8_t value) {
+    for (int i = 0; i < size(); i++) {
+        _buffer[i] = value;
+    }
 }
 
 void ByteArray::truncate(int newsize) {

@@ -3,11 +3,19 @@
 
 ByteArrayStream::ByteArrayStream(ByteArray &_data) {
 	this->data = _data;
-	this->pointer = 0;
+	this->position = 0;
 }
 
-bool ByteArrayStream::atEnd() {
-	return data.size() - pointer <= 0;
+bool ByteArrayStream::atEnd() const {
+	return data.size() - position <= 0;
+}
+
+int ByteArrayStream::pos() const {
+    return position;
+}
+
+void ByteArrayStream::seek(int _position) {
+    position = _position;
 }
 
 ByteArrayStream &ByteArrayStream::operator>>(uint8_t &dest) {
@@ -100,8 +108,8 @@ void ByteArrayStream::get_data(uint8_t *p_buffer, int p_bytes) {
 }
 
 void ByteArrayStream::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
-	if (pointer + p_bytes > this->data.size()) {
-		r_received = this->data.size() - pointer;
+	if (position + p_bytes > this->data.size()) {
+		r_received = this->data.size() - position;
 		if (r_received <= 0) {
 			r_received = 0;
 			return;
@@ -110,7 +118,7 @@ void ByteArrayStream::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_re
 		r_received = p_bytes;
 	}
 
-	memcpy(p_buffer, this->data.ptr() + pointer, r_received);
+	memcpy(p_buffer, this->data.ptr() + position, r_received);
 
-	pointer += r_received;
+	position += r_received;
 }

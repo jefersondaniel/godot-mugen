@@ -24,7 +24,7 @@
 #include "../../data/ByteArray.hpp"
 #include "../../data/ByteArrayStream.hpp"
 #include "../../data/FileStream.hpp"
-#include "../../data/PCXImage.hpp"
+#include "../../image/RawImage.hpp"
 #include "SffV2.h"
 #include "internal_sffv2_structs.h"
 #include "internal_sffv2_rle5-lz5_decode.h"
@@ -118,7 +118,7 @@ bool SffV2::read(String filename)
             offset += (uint64_t)sprnode[a].offset;
             sffFile->seek(offset);
 
-            PCXImage img;
+            RawImage img;
             ByteArray tmpArr;
             in.readRawData(tmpArr, ((int)sprnode[a].len));
 
@@ -132,7 +132,7 @@ bool SffV2::read(String filename)
 
             //adding image
             if (sprnode[a].colordepth == 5 || sprnode[a].colordepth == 8) {
-                img = PCXImage(tmpArr, ((int)sprnode[a].w), ((int)sprnode[a].h), paldata[sffitem.palindex].pal);
+                img = RawImage(tmpArr, ((int)sprnode[a].w), ((int)sprnode[a].h), paldata[sffitem.palindex].pal);
             }
 
             sffitem.image = img;
@@ -150,6 +150,8 @@ bool SffV2::read(String filename)
             paldata[b].usedby = a;
         }
     }
+
+    sffFile->close();
 
     return true;
 }

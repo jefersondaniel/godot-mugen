@@ -4,12 +4,12 @@
 #include <Godot.hpp>
 #include <Image.hpp>
 #include "data/ByteArray.hpp"
-#include "data/PCXImage.hpp"
+#include "image/RawImage.hpp"
 
 //! Structure that contains the info for a single palette
 struct SffPal {
   //! palette data
-  ByteArray pal;
+  Palette pal;
   //! pal itemno
   int itemno;
   //! pal groupno
@@ -31,7 +31,7 @@ struct SffPal {
 //! Structure that contains the info for a single sprite
 struct SffData {
   //! Image Drawing
-  PCXImage image;
+  RawImage image;
   //! image groupno
   int groupno;
   //! image imageno
