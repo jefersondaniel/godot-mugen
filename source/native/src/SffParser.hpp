@@ -5,7 +5,7 @@
 #include <File.hpp>
 #include <Image.hpp>
 #include <Reference.hpp>
-#include "sff/ByteArray.hpp"
+#include "sff/data/ByteArray.hpp"
 
 using namespace godot;
 

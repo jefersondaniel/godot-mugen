@@ -1,8 +1,8 @@
 Import('env')
 
-sources = Glob("*.cpp")
-    + Glob("data/*.cpp")
-    + Glob("plugins/SffV1/*.cpp")
+sources = Glob("*.cpp")\
+    + Glob("data/*.cpp")\
+    + Glob("plugins/SffV1/*.cpp")\
     + Glob("plugins/SffV2/*.cpp")
 
 lib = env.Library("sff", sources)

@@ -1,4 +1,0 @@
-Import('env')
-
-lib = env.Library("sff", Glob("*.cpp"))
-env.Prepend(LIBS=[lib])

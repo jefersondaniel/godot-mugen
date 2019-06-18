@@ -1,59 +1,26 @@
-/*
- * Nomen - a New Opensource Mugen Editor by Nobun
- *
- *
- *  Copyright (C) 2011  Nobun
- *  http://mugenrebirth.forumfree.it
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program (GPL.txt).  If not, see <http://www.gnu.org/licenses/>.
- *
- ******************************************************/
-
-// SFFv1 INTERNAL ONLY. DON'T USE THIS HEADER OUTSIDE sffv1
-
-struct _SFFV1_NOMEN_STRUCT {
-  //this struct is used only internally by Nomen, during writing, to reoder image in the right
-  //order for a good-working sffv1 file
-  int palindex;
-  vector<SffData> sffdata;
-};
-
-
 struct _SFFV1_SFF_HEADER {
   char signature[12];
   uint8_t verhi; //0
   uint8_t verlo; //1
   uint8_t verlo2; //0
   uint8_t verlo3; //1
-  long numGroups;
-  long numImages;
-  long first_offset;
-  long subheader_size; //=32
+  uint32_t numGroups;
+  uint32_t numImages;
+  uint32_t first_offset;
+  uint32_t subheader_size; //=32
   bool isShared;
   char reserved[3];
   char comments[476];
 };
 
-
 struct _SFFV1_SFF_SPRITE_HEADER {
-  long offsetNextSprite;
-  long subfileLen;
-  short x;
-  short y;
-  short groupno;
-  short imageno;
-  short linked;
+  uint32_t offsetNextSprite;
+  uint32_t subfileLen;
+  int16_t x;
+  int16_t y;
+  int16_t groupno;
+  int16_t imageno;
+  int16_t linked;
   bool isShared;
   char blank[13];
 };

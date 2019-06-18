@@ -52,31 +52,9 @@ SffHandler * select_sff_plugin_reader(String filename) {
       return NULL;
 }
 
-void exec_sff_plugin_wText(String _snapdest, const String _imgf, const String _palf, vector<SffData> & _sffdata, vector<SffPal> & _paldata) {
-  #ifdef ADD_SFF_PLUGIN
-  #undef ADD_SFF_PLUGIN
-  #endif
-
-  #define ADD_SFF_PLUGIN(SFF_PLUGIN_CLASS, SFF_PLUGIN_DESCRIPTION) \
-    { SFF_PLUGIN_CLASS * pointer = new SFF_PLUGIN_CLASS; \
-      pointer->wText(_snapdest, _imgf, _palf, _sffdata, _paldata); \
-      delete pointer; }
-
-  #include "SffPluginsList.h"
-  #undef ADD_SFF_PLUGIN
-}
-
-/*
-  Here stands the definition for non-virtual functions of SffHandler class
-
-  SffHandler::sffGroupCount() counts how many groups are used in sff and returns that value
-*/
-
-
 SffHandler::SffHandler() {
    this->removeDuplicates = true;
 }
-
 
 const int SffHandler::sffGroupCount() {
     vector <int> values;

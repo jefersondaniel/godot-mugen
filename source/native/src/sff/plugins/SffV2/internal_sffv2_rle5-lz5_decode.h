@@ -33,12 +33,12 @@ struct _SFFV2_RLE5_PACKET {
 };
 
 
-DataStream &operator>>( DataStream &ds, _SFFV2_RLE5_PACKET &rle5 )
+ByteArrayStream &operator>>( ByteArrayStream &ds, _SFFV2_RLE5_PACKET &rle5 )
 {
-  ds.readRawData((char *) &rle5.run_len, 1);
+  ds >> rle5.run_len;
   {
     unsigned char byte_process;
-    ds.readRawData((char *) &byte_process, 1);
+    ds >> byte_process;
 	rle5.color_bit = (byte_process & 0x80) /0x80; //1 if bit7 = 1; 0 if bit7 = 0
 	rle5.data_len = byte_process & 0x7f; //value of bits 0-6
   }
@@ -49,16 +49,16 @@ DataStream &operator>>( DataStream &ds, _SFFV2_RLE5_PACKET &rle5 )
 void _sffv2_rle5Decode(ByteArray &src) {
   ByteArray dest;
   {
-    DataStream in(src);
+    ByteArrayStream in(src);
     unsigned char color=0;
     {uint32_t tmp; in>>tmp; } //skip first 4 bytes - they specify the size of uncompressed data (useless)
     while(!in.atEnd()) {
 	  _SFFV2_RLE5_PACKET rle5; in>>rle5;
-	  if(rle5.color_bit == 1) in.readRawData((char *) &color, 1);
+	  if(rle5.color_bit == 1) in >> color;
 	  if(rle5.color_bit == 0) color=0;
 	  for(unsigned char run_count=0; run_count <= rle5.run_len; run_count++) dest.append((char) color);
 	  for(unsigned char bytes_processed=0; bytes_processed < rle5.data_len; bytes_processed++) {
-	    unsigned char one_byte; in.readRawData((char *)&one_byte, 1);
+	    unsigned char one_byte; in >> one_byte;
 	    color = one_byte & 0x1f;
 	    unsigned char run_len = one_byte >> 5;
 	    for(unsigned char run_count = 0; run_count <= run_len; run_count++) dest.append((char) color);
@@ -82,7 +82,7 @@ struct _SFFV2_LZ5_CONTROL_PACKET {
 
 
 struct _SFFV2_LZ5_RLE_PACKET {
-  quint8 color;
+  uint8_t color;
   int numtimes;
 };
 
@@ -99,10 +99,10 @@ struct _SFFV2_LZ5_LZ_PACKET {
 };
 
 
-DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_CONTROL_PACKET &pack )
+ByteArrayStream &operator>>( ByteArrayStream &ds, _SFFV2_LZ5_CONTROL_PACKET &pack )
 {
   {
-    quint8 byte; ds>>byte;
+    uint8_t byte; ds>>byte;
     pack.flags[7] = (byte & 0x80) /0x80; //org = from 0 to 7
     pack.flags[6] = (byte & 0x40) /0x40;
     pack.flags[5] = (byte & 0x20) /0x20;
@@ -116,10 +116,10 @@ DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_CONTROL_PACKET &pack )
 }
 
 
-DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_RLE_PACKET &pack )
+ByteArrayStream &operator>>( ByteArrayStream &ds, _SFFV2_LZ5_RLE_PACKET &pack )
 {
   {
-    quint8 byte1, byte2; ds>>byte1;
+    uint8_t byte1, byte2; ds>>byte1;
     pack.numtimes = (int) ( (byte1 & 0xe0) >> 5);
     if(pack.numtimes == 0) {
 	  ds>>byte2;
@@ -131,11 +131,11 @@ DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_RLE_PACKET &pack )
 }
 
 
-DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_LZ_PACKET &pack )
+ByteArrayStream &operator>>( ByteArrayStream &ds, _SFFV2_LZ5_LZ_PACKET &pack )
 {
   //tenere in considerazione eventualità di cui sopra
   {
-	quint8 byte1, byte2, byte3; ds>>byte1;
+	uint8_t byte1, byte2, byte3; ds>>byte1;
 	pack.len = (int) (byte1 & 0x3f);
 	if(pack.len == 0) {
 	  //long lz packet
@@ -150,7 +150,7 @@ DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_LZ_PACKET &pack )
     else {
 	  //short lz packet
 	  pack.len++;
-	  quint8 tmp_recyc = byte1 & 0xc0;
+	  uint8_t tmp_recyc = byte1 & 0xc0;
 	  //if(pack.recycled_bits_filled==0) do nothing
       if(pack.recycled_bits_filled==2) tmp_recyc = tmp_recyc >>2;
       if(pack.recycled_bits_filled==4) tmp_recyc = tmp_recyc >>4;
@@ -175,7 +175,7 @@ DataStream &operator>>( DataStream &ds, _SFFV2_LZ5_LZ_PACKET &pack )
 
 void _sffv2_lz5Decode(ByteArray &src) {
   ByteArray dest;
-  DataStream in(src);
+  ByteArrayStream in(src);
   _SFFV2_LZ5_CONTROL_PACKET ctrl;
   _SFFV2_LZ5_RLE_PACKET rle;
   _SFFV2_LZ5_LZ_PACKET lz;lz.reset();

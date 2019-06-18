@@ -27,10 +27,13 @@ public:
 	void truncate(int size);
 	void resize(int size);
 	void reserve(int size);
+    void clear();
+    ByteArray right(int size);
 	ByteArray subarray(int start, int end);
 	uint8_t operator[](const int idx) const;
 	uint8_t& operator[](const int idx);
 	void operator=(const ByteArray &p_other);
+    bool operator==(const ByteArray &p_other);
 	operator PoolByteArray() const;
 };
 

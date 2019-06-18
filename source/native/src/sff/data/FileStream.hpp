@@ -12,6 +12,7 @@ private:
 	File *file;
 public:
 	FileStream(File *file);
+    bool atEnd() const;
 	void readRawData(char *buffer, size_t length);
 	void readRawData(ByteArray &dest, size_t length);
 	FileStream &operator>>(uint8_t &dest);

@@ -21,11 +21,11 @@
  ******************************************************/
 
 #include "../../SffHandler.h"
-#include "../../SffItem.h"
 #include "../../data/ByteArray.hpp"
 #include "../../data/ByteArrayStream.hpp"
 #include "../../data/FileStream.hpp"
 #include <Image.hpp>
+#include <File.hpp>
 #include "SffV1.h"
 #include "../../nomenSffFunctions.h"
 #include "internal_sffv1_structs.h"
@@ -39,20 +39,26 @@ bool SffV1::read(String filename)
     _SFFV1_SFF_SPRITE_HEADER spr;
 
     File* sffFile = File::_new();
-    Error error = file->open(filename, File::ModeFlags::READ);
+    Error error = sffFile->open(filename, File::ModeFlags::READ);
 
     if (error != Error::OK) {
         Godot::print("Error opening sff file");
         false;
     }
 
-    FileStream in(&sffFile);
+    FileStream in(sffFile);
 
     in >> head;
-    if (strcmp(&head.signature[0], "ElecbyteSpr") != 0)
+    if (strcmp(&head.signature[0], "ElecbyteSpr") != 0) {
+        Godot::print("SffV1::read invalid signature");
         return false;
-    if (head.verhi != 0 && head.verlo != 1 && head.verlo2 != 0 && head.verlo3 != 1)
+    }
+    if (head.verhi != 0 && head.verlo != 1 && head.verlo2 != 0 && head.verlo3 != 1) {
+        Godot::print("SffV1::read invalid version");
         return false;
+    }
+
+    Godot::print("SffV1::read start");
 
     long actual_offset = head.first_offset;
     //bool first_sprite = true;
@@ -68,15 +74,13 @@ bool SffV1::read(String filename)
         in >> spr;
         long arraySize = spr.offsetNextSprite - actual_offset - 32;
         if (arraySize > 0) { //normal image
-            char* tmpStr = new char[arraySize];
             ByteArray tmpArr;
-            in.readRawData(tmpStr, ((int)arraySize));
-            tmpArr.append(tmpStr, ((int)arraySize));
+            in.readRawData(tmpArr, ((int)arraySize));
 
             if (head.isShared == true && spr.isShared == true) {
-                sharedImage.append(counter); //add current image index to "sharedImages" list if it is a shared image and if it is a char-sff
+                sharedImage.push_back(counter); //add current image index to "sharedImages" list if it is a shared image and if it is a char-sff
                 for (int a = 0; a < 768; a++) {
-                    quint8 ch = 0;
+                    uint8_t ch = 0;
                     tmpArr.append(ch);
                 }
             }
@@ -86,7 +90,7 @@ bool SffV1::read(String filename)
             }
 
             if (spr.isShared == false) {
-                indImage.append(counter);
+                indImage.push_back(counter);
                 actual_palindex = paldata.size(); //actual pal index for this sff item. Starts as a new value to take if uses a new pal. Will change if the pal used is not new
                 palref = tmpArr;
                 palref = palref.right(768);
@@ -100,14 +104,14 @@ bool SffV1::read(String filename)
                 { //check if this pal is already present and if new add it to paldata
                     bool checked = false;
                     for (int k = 0; k < paldata.size(); k++) {
-                        if (nomenComparePalettes(sffpal.pal, paldata[k].pal) == true) {
+                        if (sffpal.pal == paldata[k].pal) {
                             checked = true;
                             actual_palindex = k;
                             break;
                         }
                     }
                     if (checked == false)
-                        paldata.append(sffpal); //append only if paldata is new
+                        paldata.push_back(sffpal); //append only if paldata is new
                 }
             }
             //assigning palindex to sffimage
@@ -118,7 +122,6 @@ bool SffV1::read(String filename)
                 //buffer.open(QIODevice::ReadOnly);
                 //sffitem.image.load(&buffer, "pcx"); // read image from tmpArr in pcx format
             }
-            delete[] tmpStr;
             tmpArr.clear();
         }
 
@@ -126,7 +129,7 @@ bool SffV1::read(String filename)
             sffitem.image = sffdata[spr.linked].image;
             sffitem.palindex = sffdata[spr.linked].palindex;
             if (head.isShared == true && spr.isShared == true)
-                sharedImage.append(counter);
+                sharedImage.push_back(counter);
         }
 
         sffitem.groupno = (int)spr.groupno;
@@ -137,7 +140,7 @@ bool SffV1::read(String filename)
         if (head.isShared == true && spr.isShared == true)
             sffitem.palindex = 0;
 
-        sffdata.append(sffitem);
+        sffdata.push_back(sffitem);
         actual_offset = spr.offsetNextSprite;
 
         /*{
@@ -158,7 +161,7 @@ bool SffV1::read(String filename)
 
     //final step... reapply palette for char-sff shared images - needed in order to avoid possible problems
     if (head.isShared) {
-        QVector<QRgb> forcePal;
+        ByteArray forcePal;
         //setting forcepal
         bool have0 = false; //have0 = checking if there is a 0,x individual image
         //verify if there is a 0,x individual
@@ -194,7 +197,7 @@ bool SffV1::read(String filename)
         {
             int k = 0;
             for (k = 0; k < paldata.size(); k++) {
-                if (nomenComparePalettes(forcePal, paldata[k].pal) == true)
+                if (forcePal == paldata[k].pal)
                     break;
             }
 
@@ -210,7 +213,10 @@ bool SffV1::read(String filename)
                 paldata[0].itemno = paldata[k].itemno;
                 paldata[k].groupno = 1;
                 paldata[k].itemno = 1;
-                paldata.swap(0, k);
+
+                SffPal aux = paldata[0];
+                paldata[0] = paldata[k];
+                paldata[k] = aux;
             }
         }
 

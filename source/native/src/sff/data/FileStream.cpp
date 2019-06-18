@@ -6,6 +6,10 @@ FileStream::FileStream(File *file) {
 	this->file = file;
 }
 
+bool FileStream::atEnd() const {
+    return file->eof_reached();
+}
+
 void FileStream::readRawData(char *dest, size_t length) {
 	PoolByteArray buffer = this->file->get_buffer(length);
 	memcpy(dest, buffer.read().ptr(), length);

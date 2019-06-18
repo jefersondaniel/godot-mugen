@@ -25,6 +25,7 @@
 
 #include <Godot.hpp>
 #include <vector>
+#include "SffStructs.h"
 
 using namespace std;
 

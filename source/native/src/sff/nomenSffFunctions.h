@@ -24,6 +24,7 @@
 #define NOMEN_SFF_FUNCTIONS_H
 
 #include <Godot.hpp>
+#include "data/ByteArray.hpp"
 
 //! returns true if pal1 == pal2. Else returns false
 bool nomenComparePalettes(ByteArray &pal1, ByteArray &pal2);

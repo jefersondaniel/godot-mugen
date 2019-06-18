@@ -1,4 +1,5 @@
 #include <Godot.hpp>
+#include "SffParser.hpp"
 #include "sff/SffHandler.h"
 
 using namespace godot;
@@ -12,10 +13,33 @@ void SffParser::_init() {
 }
 
 Variant SffParser::get_images(String path, int group, int selectedPalette, int defaultPalette) {
+    Godot::print("Selecting plugin");
     SffHandler *handler = select_sff_plugin_reader(path);
+    Godot::print("Plugin selected, will read");
     handler->read(path);
-    Godot::print("Done");
-    return Variant();
+    Godot::print("Done reading file");
+
+    Dictionary result;
+
+    for (int i = 0; i < handler->sffdata.size() - 1; i++) {
+        SffData sffData = handler->sffdata[i];
+
+        Dictionary dict;
+        dict["groupno"] = sffData.groupno;
+        dict["imageno"] = sffData.imageno;
+        dict["x"] = sffData.x;
+        dict["y"] = sffData.y;
+        dict["image"] = sffData.image.createImage();
+
+        std::string key = std::to_string(sffData.groupno) + "-" + std::to_string(sffData.imageno);
+        result[key.c_str()] = dict;
+    }
+
+    Godot::print("Done converting images");
+
+    cout << "size is " << handler->sffdata.size() << endl;
+
+    return result;
 }
 
 void SffParser::_register_methods() {

@@ -27,7 +27,7 @@
 
 void _sffv2_rle8Decode( ByteArray &src )
 {
-  DataStream in(src);
+  ByteArrayStream in(src);
   ByteArray dest;
   unsigned char ch, color;
   {uint32_t i; in>>i; } //undocumented: first 4 bytes = len of image

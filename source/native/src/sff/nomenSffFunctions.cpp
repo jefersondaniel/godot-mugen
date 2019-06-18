@@ -22,21 +22,6 @@
 
 #include "nomenSffFunctions.h"
 
-bool nomenComparePalettes(ByteArray& pal1, ByteArray& pal2)
-{
-    if (pal1->size() != pal2->size()) {
-        return false;
-    }
-
-    for (int a = 0; a < pal1.size(); a++) {
-        if (pal1[a] != pal2[a]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 //loading / saving Palettes:
 
 ByteArray nomenLoadPal_pal(String filename)

@@ -21,19 +21,15 @@
  ******************************************************/
 
 #include "../../SffHandler.h"
-#include "../../SffItem.h"
 #include "../../data/ByteArray.hpp"
 #include "../../data/ByteArrayStream.hpp"
 #include "../../data/FileStream.hpp"
-#include <Image.hpp>
+#include "../../data/PCXImage.hpp"
 #include "SffV2.h"
 #include "internal_sffv2_structs.h"
 #include "internal_sffv2_rle5-lz5_decode.h"
 #include "internal_sffv2_rle8.h"
-#include "internal_sffv2_matrix-image.h"
 #include "internal_sffv2_matrix-pal.h"
-#include "internal_sffv2_lz5_encode.h"
-#include "internal_sffv2_wText_calc.h"
 
 bool SffV2::read(String filename)
 {
@@ -42,33 +38,38 @@ bool SffV2::read(String filename)
     vector<_SFFV2_PAL_NODE_HEADER> palnode;
 
     File* sffFile = File::_new();
-    Error error = file->open(filename, File::ModeFlags::READ);
+    Error error = sffFile->open(filename, File::ModeFlags::READ);
 
     if (error != Error::OK) {
         Godot::print("Error opening sff file");
         false;
     }
 
-    DataStream in(&sffFile);
+    FileStream in(sffFile);
+
     in >> head;
-    if (strcmp(&head.signature[0], "ElecbyteSpr") != 0)
+    if (strcmp(&head.signature[0], "ElecbyteSpr") != 0) {
         return false;
-    if (head.verhi != 2)
+    }
+    if (head.verhi != 2) {
         return false;
+    }
 
     //reading palnodes
-    in->seek((uint64_t)head.first_palnode_offset);
+    sffFile->seek(head.first_palnode_offset);
     for (long a = 0; a < head.total_palettes; a++) {
         _SFFV2_PAL_NODE_HEADER tmp_palnode;
         in >> tmp_palnode;
-        palnode.append(tmp_palnode);
+        palnode.push_back(tmp_palnode);
     }
+    cout << "total frames: "  << head.total_frames << endl;
+    cout << "total palettes: "  << head.total_palettes << endl;
     //reading sprnodes
-    in->seek((uint64_t)head.first_sprnode_offset);
+    sffFile->seek(head.first_sprnode_offset);
     for (long a = 0; a < head.total_frames; a++) {
         _SFFV2_SPRITE_NODE_HEADER tmp_sprnode;
         in >> tmp_sprnode;
-        sprnode.append(tmp_sprnode);
+        sprnode.push_back(tmp_sprnode);
     }
 
     //reading pals
@@ -77,27 +78,23 @@ bool SffV2::read(String filename)
         sffpal.groupno = (int)palnode[a].groupno;
         sffpal.itemno = (int)palnode[a].itemno;
         if (palnode[a].len == 0) { //linked pal
-            sffpal.pal.clear();
-            sffpal.pal += paldata[palnode[a].linked].pal;
+            sffpal.pal = paldata[palnode[a].linked].pal;
         }
         if (palnode[a].len > 0) { //"normal" pal
-            sffpal.pal.clear();
+            //sffpal.pal.clear();
             uint64_t offset = (uint64_t)head.ldata_offset;
-            offset += (quint64)palnode[a].offset;
-            in->seek(offset);
+            offset += (uint64_t)palnode[a].offset;
+            sffFile->seek(offset);
 
             int k = (int)palnode[a].numcols;
             k = k * 4;
-            char* tmpStr = new char[k];
-            in.readRawData(tmpStr, k);
             ByteArray tmpArr;
-            tmpArr.append(tmpStr, k);
+            in.readRawData(tmpArr, k);
             k = k / 4;
-            sffpal.pal += _sffv2_matrixToPal(tmpArr, k);
-            delete[] tmpStr;
-            tmpArr.clear();
+            sffpal.pal = _sffv2_matrixToPal(tmpArr, k);
+            //tmpArr.clear();
         }
-        paldata.append(sffpal);
+        paldata.push_back(sffpal);
     }
 
     //reading images
@@ -119,13 +116,11 @@ bool SffV2::read(String filename)
             if (sprnode[a].flags != 0)
                 offset = (uint64_t)head.tdata_offset;
             offset += (uint64_t)sprnode[a].offset;
-            in->seek(offset);
+            sffFile->seek(offset);
 
-            Image* img;
-            char* tmpStr = new char[sprnode[a].len];
+            PCXImage img;
             ByteArray tmpArr;
-            in.readRawData(tmpStr, ((int)sprnode[a].len));
-            tmpArr.append(tmpStr, ((int)sprnode[a].len));
+            in.readRawData(tmpArr, ((int)sprnode[a].len));
 
             //decoding encoded data
             if (sprnode[a].fmt == 2)
@@ -137,18 +132,14 @@ bool SffV2::read(String filename)
 
             //adding image
             if (sprnode[a].colordepth == 5 || sprnode[a].colordepth == 8) {
-                img = _sffv2_matrixToImage8(tmpArr, ((int)sprnode[a].w),
-                    ((int)sprnode[a].h), paldata[sffitem.palindex].pal);
+                img = PCXImage(tmpArr, ((int)sprnode[a].w), ((int)sprnode[a].h), paldata[sffitem.palindex].pal);
             }
-            //altri casi da aggiungere (immagini a colori reali 16,24 e 32) qui
-            //al momento non vengono aggiunti perché non supportati
 
             sffitem.image = img;
             sffitem.linked = -1;
-            delete[] tmpStr;
-            tmpArr.clear();
+            //tmpArr.clear();
         }
-        sffdata.append(sffitem);
+        sffdata.push_back(sffitem);
     }
 
     //last step: matching for paldata isUsed and usedby

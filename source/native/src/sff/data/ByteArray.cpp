@@ -61,6 +61,10 @@ void ByteArray::truncate(int newsize) {
 	}
 }
 
+void ByteArray::clear() {
+    _buffer.clear();
+}
+
 ByteArray ByteArray::subarray(int start, int end) {
 	int mysize = size();
 	int newsize = end - start + 1;
@@ -76,6 +80,18 @@ ByteArray ByteArray::subarray(int start, int end) {
 	return ByteArray(newvec);
 }
 
+ByteArray ByteArray::right(int newSize) {
+    int actualSize = size();
+
+    if (newSize >= actualSize) {
+        return subarray(0, actualSize - 1);
+    }
+
+    int startIndex = actualSize - newSize;
+
+    return subarray(startIndex, actualSize - 1);
+}
+
 uint8_t ByteArray::operator[](const int idx) const {
 	return _buffer[idx];
 }
@@ -88,6 +104,20 @@ void ByteArray::operator=(const ByteArray &p_other) {
 	int _size = p_other.size();
 	resize(_size);
 	memcpy(&_buffer.front(), p_other.ptr(), _size);
+}
+
+bool ByteArray::operator==(const ByteArray &p_other) {
+    if (p_other.size() != size()) {
+        return false;
+    }
+
+    for (int i = 0; i < size() - 1; i++) {
+        if (_buffer[i] != p_other[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 ByteArray::operator PoolByteArray() const {

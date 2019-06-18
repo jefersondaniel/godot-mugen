@@ -30,8 +30,8 @@
 
 ByteArray _sffv2_matrixToPal (ByteArray &src, int dim) {
   ByteArray palette;
-  DataStream in(src);
-  uint_32_t r, g, b, skip;
+  ByteArrayStream in(src);
+  uint32_t r, g, b, skip;
   for(int a = 0; a < dim; a++) {
     in>>r; in>>g; in>>b; in>>skip;
     palette.append(r);

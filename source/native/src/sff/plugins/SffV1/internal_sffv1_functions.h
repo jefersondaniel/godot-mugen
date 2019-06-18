@@ -27,7 +27,7 @@
 ByteArray _sffv1_matrixToPal (ByteArray &src) {
   ByteArray palette;
   ByteArrayStream in(src);
-  uint_32_t r, g, b;
+  uint32_t r, g, b;
   for(int a = 0; a < 256; a++) {
     in>>r; in>>g; in>>b;
     palette.append(r);
@@ -38,7 +38,7 @@ ByteArray _sffv1_matrixToPal (ByteArray &src) {
 }
 
 Image* _sffv1_matrixToImage8 (ByteArray &src, int w, int h, int palindex) {
-    printf("TODO: _sffv1_matrixToImage8\n")
+    printf("TODO: _sffv1_matrixToImage8\n");
     return NULL;
     /*
     ByteArray dest;
