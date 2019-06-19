@@ -27,32 +27,10 @@
 Palette _sffv1_matrixToPal (ByteArray &src) {
   Palette palette;
   ByteArrayStream in(src);
-  uint32_t r, g, b;
+  uint8_t r, g, b;
   for(int a = 0; a < 256; a++) {
     in>>r; in>>g; in>>b;
-    palette.colors.push_back(RawColor(r, g, b));
+    palette.colors.push_back(RawColor(r, g, b, a == 0 ? 0 : 255));
   }
   return palette;
-}
-
-Image* _sffv1_matrixToImage8 (ByteArray &src, int w, int h, int palindex) {
-    printf("TODO: _sffv1_matrixToImage8\n");
-    return NULL;
-    /*
-    ByteArray dest;
-
-    dest.resize(w * h * 4);
-
-    const uint32_t* p_colors = reinterpret_cast<const uint32_t*>(colors.ptr());
-    uint32_t* p_image = reinterpret_cast<uint32_t*>(dest.ptr());
-
-    for (int i = 0; i < (w * h); i++) {
-        p_image[i] = p_colors[src[i]];
-    }
-
-    Image* image = Image::_new();
-    image->create_from_data(w, h, false, Image::Format::FORMAT_RGBA8, dest);
-
-    return image;
-    */
 }

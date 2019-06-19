@@ -59,8 +59,6 @@ bool SffV1::read(String filename)
         return false;
     }
 
-    Godot::print("SffV1::read start");
-
     long actual_offset = head.first_offset;
     //bool first_sprite = true;
     ByteArray palref;
@@ -146,21 +144,6 @@ bool SffV1::read(String filename)
 
         sffdata.push_back(sffitem);
         actual_offset = spr.offsetNextSprite;
-
-        /*{
-      QFile outdebugfile("debug.txt");
-      outdebugfile.open(QIODevice::Append | QIODevice::Text);
-      QTextStream outdebug(&outdebugfile);
-      outdebug<<"Image: "<<sffitem.groupno<<", "<<sffitem.imageno<<"\n";
-      outdebug<<"Shared Attributes -> SharedSff = ";
-      if(head.isShared==true) outdebug<<"Yes";
-      if(head.isShared==false) outdebug<<"No";
-      outdebug<<";  SharedImage = ";
-      if(spr.isShared==true) outdebug<<"Yes\n";
-      if(spr.isShared==false) outdebug<<"No\n";
-      outdebug<<"------------------------\n\n";
-      outdebugfile.close();
-    }*/
     }
 
     //final step... reapply palette for char-sff shared images - needed in order to avoid possible problems

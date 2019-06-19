@@ -4,14 +4,14 @@ RawColor::RawColor() {
     r = 0;
     g = 0;
     b = 0;
-    a = 1;
+    a = 255;
 }
 
 RawColor::RawColor(uint8_t _r, uint8_t _g, uint8_t _b) {
     r = _r;
     g = _g;
     b = _b;
-    a = 1;
+    a = 255;
 }
 
 RawColor::RawColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a) {
@@ -21,17 +21,25 @@ RawColor::RawColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a) {
     a = _a;
 }
 
+uint32_t RawColor::rgba() const {
+    uint32_t result = 0;
+
+    result ^= a << 24;
+    result ^= b << 16;
+    result ^= g << 8;
+    result ^= r;
+
+    return result;
+}
+
+string RawColor::toString() const
+{
+    return "rgba(" + to_string(r) + "," + to_string(g) + "," + to_string(b) + "," + to_string(a) + ")";
+}
+
 bool RawColor::operator==(const RawColor &p_other)
 {
     return r == p_other.r && g == p_other.g && b == p_other.b && a == p_other.a;
-}
-
-void RawColor::operator=(const RawColor &p_other)
-{
-    r == p_other.r;
-    g == p_other.g;
-    b == p_other.b;
-    a == p_other.a;
 }
 
 bool Palette::operator==(const Palette &p_other)
@@ -51,7 +59,7 @@ bool Palette::operator==(const Palette &p_other)
 
 void Palette::operator=(const Palette &p_other)
 {
-    // pass
+    colors = p_other.colors;
 }
 
 RawImage::RawImage()
@@ -132,11 +140,10 @@ Image* RawImage::createImage()
 
     dest.resize(_w * _h * 4);
 
-    const uint32_t* p_colors = reinterpret_cast<const uint32_t*>(&_colorTable.colors.front());
     uint32_t* p_image = reinterpret_cast<uint32_t*>(dest.ptr());
 
     for (int i = 0; i < (_w * _h); i++) {
-        p_image[i] = p_colors[_pixels[i]];
+        p_image[i] = _colorTable.colors[_pixels[i]].rgba();
     }
 
     godot::Image* image = godot::Image::_new();

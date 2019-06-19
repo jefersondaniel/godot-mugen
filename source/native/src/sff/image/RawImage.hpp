@@ -17,8 +17,9 @@ public:
     RawColor();
     RawColor(uint8_t _r, uint8_t _g, uint8_t _b);
     RawColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a);
+    uint32_t rgba() const;
     bool operator==(const RawColor &p_other);
-    void operator=(const RawColor &p_other);
+    string toString() const;
 };
 
 class Palette {

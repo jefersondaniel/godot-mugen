@@ -114,8 +114,10 @@ static void readImage8(RawImage& img, ByteArrayStream& s, const PCXHEADER& heade
         uint8_t r, g, b;
         for (int i = 0; i < 256; ++i) {
             s >> r >> g >> b;
-            img.setColor(i, RawColor(r, g, b));
+            img.setColor(i, RawColor(r, g, b, i == 0 ? 0 : 255));
         }
+    } else {
+        cerr << "error: unsupported pcx, palette not set" << endl;
     }
 }
 

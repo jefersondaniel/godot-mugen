@@ -62,8 +62,6 @@ bool SffV2::read(String filename)
         in >> tmp_palnode;
         palnode.push_back(tmp_palnode);
     }
-    cout << "total frames: "  << head.total_frames << endl;
-    cout << "total palettes: "  << head.total_palettes << endl;
     //reading sprnodes
     sffFile->seek(head.first_sprnode_offset);
     for (long a = 0; a < head.total_frames; a++) {
@@ -81,7 +79,6 @@ bool SffV2::read(String filename)
             sffpal.pal = paldata[palnode[a].linked].pal;
         }
         if (palnode[a].len > 0) { //"normal" pal
-            //sffpal.pal.clear();
             uint64_t offset = (uint64_t)head.ldata_offset;
             offset += (uint64_t)palnode[a].offset;
             sffFile->seek(offset);
@@ -92,7 +89,7 @@ bool SffV2::read(String filename)
             in.readRawData(tmpArr, k);
             k = k / 4;
             sffpal.pal = _sffv2_matrixToPal(tmpArr, k);
-            //tmpArr.clear();
+            tmpArr.clear();
         }
         paldata.push_back(sffpal);
     }
@@ -137,7 +134,7 @@ bool SffV2::read(String filename)
 
             sffitem.image = img;
             sffitem.linked = -1;
-            //tmpArr.clear();
+            tmpArr.clear();
         }
         sffdata.push_back(sffitem);
     }

@@ -13,9 +13,7 @@ void SffParser::_init() {
 }
 
 Variant SffParser::get_images(String path, int group, int selectedPalette, int defaultPalette) {
-    Godot::print("Selecting plugin");
     SffHandler *handler = select_sff_plugin_reader(path);
-    Godot::print("Done reading file");
 
     if (handler == NULL) {
         return Variant();
@@ -36,10 +34,6 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
         std::string key = std::to_string(sffData.groupno) + "-" + std::to_string(sffData.imageno);
         result[key.c_str()] = dict;
     }
-
-    Godot::print("Done converting images");
-
-    cout << "size is " << handler->sffdata.size() << endl;
 
     return result;
 }
