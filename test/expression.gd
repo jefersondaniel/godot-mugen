@@ -65,6 +65,7 @@ func _init():
     execute_expression("-sqrt(9)", context)
     execute_expression("debug(16, 16)", context)
     execute_expression("16, 16", context)
+    execute_expression("gametime = [0,650]", context)
     execute_expression("life := 1000", context)
     execute_expression("helper, life := 100", context)
     # execute_expression("life, helper, (life, life)", context)

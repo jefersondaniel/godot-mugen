@@ -2,21 +2,22 @@
 #define SFF_PARSER_H
 
 #include <Godot.hpp>
-#include <File.hpp>
-#include <Image.hpp>
 #include <Reference.hpp>
-#include "sff/data/ByteArray.hpp"
+#include <vector>
+#include "sff/SffStructs.hpp"
 
 using namespace godot;
 
 class SffParser : public Reference {
     GODOT_CLASS(SffParser, Reference);
+private:
+    Variant create_dictionary(std::vector<SffData> sprites);
 public:
     SffParser();
 
     void _init();
 
-    Variant get_images(String path, int group, int selectedPalette, int defaultPalette);
+    Variant get_images(String path, Variant selectedPalette);
 
     static void _register_methods();
 };

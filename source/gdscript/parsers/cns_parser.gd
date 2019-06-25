@@ -4,44 +4,60 @@ var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var MugenExpression = load('res://source/native/mugen_expression.gdns')
 
 func read(path):
-    var data = cfg_parser.read(path, false, true)
+    var sections = cfg_parser.read(path)
 
     var states = {
         '-3': {'controllers': []},
         '-2': {'controllers': []},
         '-1': {'controllers': []},
     }
-    var item_name: String = ''
+    var current_state: String = ''
 
-    for key in data:
+    var definitions = {
+        'data': {},
+        'size': {},
+        'velocity': {},
+        'movement': {},
+        'quotes': {},
+    }
+
+    for section in sections:
+        var key: String = section['key']
+
+        if definitions.has(key):
+            for attribute in section['attributes']:
+                definitions[key][attribute] = section['attributes'][attribute]
+            continue
+
         var statedef_idx: int = key.find('statedef')
         var start_index: int = 0
         var length: int = key.length()
 
         if statedef_idx == 0:
             start_index = statedef_idx + 9
-            item_name = key.substr(start_index, length - start_index).strip_edges()
-            states[item_name] = data[key]
-            states[item_name]['number'] = key
-            states[item_name]['controllers'] = []
+            current_state = key.substr(start_index, length - start_index).strip_edges()
+            if states.has(current_state) == false:
+                states[current_state] = section['attributes']
+                states[current_state]['number'] = key
+                states[current_state]['controllers'] = []
             continue
 
-        var state_idx = key.find('state')
-        var comma_idx: int = key.find(',')
+        var state_idx = key.find('state ')
 
-        if state_idx == 0 and comma_idx > 0:
-            start_index = state_idx + 6
-            item_name = key.substr(start_index, comma_idx - start_index).strip_edges()
-            if item_name in states:
-                states[item_name]['controllers'].append(parse_controller(data[key], key))
+        if current_state != '' && state_idx == 0:
+            if section['attributes'].has('type') == false:
+                continue
+            if section['attributes']['type'].to_lower() == 'null':
+                continue
+            states[current_state]['controllers'].append(parse_controller(section['attributes'], key))
             continue
 
     return {
-        'data': data.get('data', {}),
-        'size': data.get('size', {}),
-        'velocity': data.get('velocity', {}),
-        'movement': data.get('movement', {}),
-        'quotes': data.get('quotes', {}),
+        'data': definitions['data'],
+        'size': definitions['size'],
+        'velocity': definitions['velocity'],
+        'movement': definitions['movement'],
+        'quotes': definitions['quotes'],
         'states': states,
     }
 
@@ -50,7 +66,7 @@ func parse_controller(data: Dictionary, key: String):
     var type: String = data['type'].to_lower()
     var controller: Dictionary = {
         'type': type,
-        'key': key.split(",")[1].strip_edges()
+        'key': key.strip_edges(),
     }
 
     for key in data:

@@ -18,10 +18,21 @@ var KEY_MAP: Dictionary = {
 }
 
 func read(path):
-    var data: Dictionary = cfg_parser.read(path, true)
-    var defaults: Dictionary = data.get('defaults', [{}])[0]
-    var remap: Dictionary = data.get('remap', [{}])[0]
+    var sections: Dictionary = cfg_parser.read(path)
+    var defaults: Dictionary = {}
+    var remap: Dictionary = {}
     var commands: Array = []
+
+    for section in sections:
+        if section['key'] == 'defaults':
+            for key in section['attributes']:
+                defaults[key] = section['attributes'][key]
+            continue
+
+        if section['key'] == 'remap':
+            for key in section['attributes']:
+                defaults[key] = section['attributes'][key]
+            continue
 
     var default_time: int = 1
     var default_buffer_time: int = 15
@@ -32,7 +43,10 @@ func read(path):
     if 'command.buffer.time' in defaults:
         default_buffer_time = int(defaults['command.buffer.time'])
 
-    for command in data['command']:
+    for section in sections:
+        if section['key'] != 'command':
+            continue
+        var command: Dictionary = section['attributes']
         var cmd: Array = []
         var name: String = command['name'].lstrip(" \"").rstrip(" \"")
 

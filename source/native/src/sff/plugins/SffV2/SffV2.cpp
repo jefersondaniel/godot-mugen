@@ -1,31 +1,9 @@
-/*
- * Nomen - a New Opensource Mugen Editor by Nobun
- *
- *
- *  Copyright (C) 2011  Nobun
- *  http://mugenrebirth.forumfree.it
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program (GPL.txt).  If not, see <http://www.gnu.org/licenses/>.
- *
- ******************************************************/
-
-#include "../../SffHandler.h"
+#include "../../SffHandler.hpp"
 #include "../../data/ByteArray.hpp"
 #include "../../data/ByteArrayStream.hpp"
 #include "../../data/FileStream.hpp"
 #include "../../image/RawImage.hpp"
-#include "SffV2.h"
+#include "SffV2.hpp"
 #include "internal_sffv2_structs.h"
 #include "internal_sffv2_rle5-lz5_decode.h"
 #include "internal_sffv2_rle8.h"
@@ -42,7 +20,7 @@ bool SffV2::read(String filename)
 
     if (error != Error::OK) {
         Godot::print("Error opening sff file");
-        false;
+        return false;
     }
 
     FileStream in(sffFile);

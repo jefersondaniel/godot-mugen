@@ -227,8 +227,6 @@ func _process(delta):
 
     get_node('/root/Node2D/text').text = text
 
-    #print([command_manager.current_tick, state_manager.current_tick])
-
 func _physics_process(delta):
     var ground_friction: float = 0
     var relative_position: Vector2 = get_relative_position()

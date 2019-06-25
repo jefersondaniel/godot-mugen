@@ -5,7 +5,13 @@ var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var cns_parser = load('res://source/gdscript/parsers/cns_parser.gd').new()
 var cmd_parser = load('res://source/gdscript/parsers/cmd_parser.gd').new()
+var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
+var st_regex: RegEx
+
+func _init():
+    st_regex = RegEx.new()
+    st_regex.compile("^st[0-9]+$")
 
 func load(path: String, input_prefix: String):
     var sprite_path: String
@@ -13,7 +19,7 @@ func load(path: String, input_prefix: String):
     var command_path: String
     var state_paths: Array
 
-    var definition = cfg_parser.read(path)
+    var definition = def_parser.read(path)
     var folder = path.substr(0, path.find_last('/'))
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
@@ -26,6 +32,12 @@ func load(path: String, input_prefix: String):
     for key in ['cmd', 'st']:
         if key in definition['files']:
             state_paths.append('%s/%s' % [folder, definition['files'][key]])
+
+    for key in definition['files']:
+        var result = st_regex.search(key.to_lower())
+        if not result:
+            continue
+        state_paths.append('%s/%s' % [folder, definition['files'][key]])
 
     var images = sff_parser.get_images(sprite_path, -1, -1, 0)
     var animations = air_parser.read(animation_path)

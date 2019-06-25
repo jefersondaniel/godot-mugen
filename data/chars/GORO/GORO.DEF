@@ -1,0 +1,33 @@
+
+
+; Player information
+[Info]
+name = "goro"
+displayname = "goro"
+versiondate = 06,03,2001    ;Version date of character
+mugenversion = 04,01,2001   ;Version of M.U.G.E.N character works on
+pal.defaults = 1,2   
+
+; Files for the player
+[Files]
+cmd      = goro.cmd   ;Command set
+cns      = 1.cns   ;Constants
+st       = 1.cns   ;States
+st2      = sp.st ;Specials
+st3      = pit.st
+st5      = Fatality.st
+stcommon = common1.cns     ;Common states
+sprite   = goro.sff   ;Sprite
+anim     = goro.air   ;Animation
+sound    = goro.snd   ;Sound
+pal1     = Goro1.act   ;Palettes 
+pal2     = Goro1.act   ;Palettes 
+;pal3     = 3.act   ;Palettes 
+;pal4     = 4.act   ;Palettes 
+; Arcade mode
+
+[Arcade]
+;intro.storyboard = intro.def
+;ending.storyboard = ending.def
+
+

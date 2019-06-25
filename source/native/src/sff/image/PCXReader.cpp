@@ -171,6 +171,7 @@ bool PCXReader::read(RawImage* outImage)
     s >> header;
 
     if (header.Manufacturer != 10 || s.atEnd()) {
+        cerr << "error: invalid pcx header: " << to_string(header.Manufacturer) << endl;
         return false;
     }
 
@@ -194,6 +195,7 @@ bool PCXReader::read(RawImage* outImage)
         return true;
     }
     else {
+        cerr << "error: 0 pixels pcx image" << endl;
         return false;
     }
 }

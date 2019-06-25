@@ -67,6 +67,8 @@ func _init(_images, _animations):
         for set_key in range(0, animation_size):
             var animation_name = '%s-%s' % [animation_key, set_key]
             var animation_frames = animations[animation_key]['sets'][set_key]['frames']
+            if null == animation_frames.back():
+                print(animation_key)
             var loop = false if animation_frames.back()['ticks'] == -1 else true
             var image = null
             var image_offset = null
@@ -90,11 +92,13 @@ func _init(_images, _animations):
             var frame_value = 0
             var current_set_time = 0.0
             var tick_length = 1.0 / 60.0
+            var frame_key: String
 
             for frame in animation_frames:
-                if frame['groupno'] >= 0:
-                    frame_value = frame_mapping['%s-%s' % [frame['groupno'], frame['imageno']]]
-                    image_offset = offset_mapping['%s-%s' % [frame['groupno'], frame['imageno']]]
+                frame_key = '%s-%s' % [frame['groupno'], frame['imageno']]
+                if frame['groupno'] >= 0 && frame_mapping.has(frame_key):
+                    frame_value = frame_mapping[frame_key]
+                    image_offset = offset_mapping[frame_key]
                 else:
                     frame_value = 0
                     image_offset = Vector2(0, 0)

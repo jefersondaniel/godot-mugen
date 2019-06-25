@@ -7,7 +7,8 @@ var gravity = Vector2(0, 0.35)
 var ground_y = 400
 
 func _init():
-    var character = CharacterLoader.load('res://resources/chars/goro/GORO.DEF', 'P1_')
+    var character = CharacterLoader.load('res://data/chars/GORO/GORO.DEF', 'P1_')
+    #var character = CharacterLoader.load('res://data/chars/kfm/kfm.def', 'P1_')
 
     character.stage = self
     character.position = Vector2(300, ground_y)

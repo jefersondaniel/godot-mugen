@@ -1,18 +1,22 @@
 #include <Godot.hpp>
 #include "SffParser.hpp"
-#include "sff/SffHandler.h"
+#include "sff/SffHandler.hpp"
+#include "sff/SffFunctions.hpp"
 
 using namespace godot;
 
-SffParser::SffParser() {
+SffParser::SffParser()
+{
     // pass
 }
 
-void SffParser::_init() {
+void SffParser::_init()
+{
     // pass
 }
 
-Variant SffParser::get_images(String path, int group, int selectedPalette, int defaultPalette) {
+Variant SffParser::get_images(String path, Variant selectedPalette)
+{
     SffHandler *handler = select_sff_plugin_reader(path);
 
     if (handler == NULL) {
@@ -20,9 +24,42 @@ Variant SffParser::get_images(String path, int group, int selectedPalette, int d
     }
 
     Dictionary result;
+    Palette palette;
+    int defaultPalette = 0;
+
+    if (selectedPalette.get_type() == Variant::INT) {
+        int selectedPaletteIndex = selectedPalette;
+        if (selectedPaletteIndex > 0 && selectedPaletteIndex <= handler->paldata.size()) {
+            palette = handler->paldata[selectedPaletteIndex - 1].pal;
+        } else if (selectedPaletteIndex > 0) {
+            Godot::print("Invalid palette index");
+        }
+    } else if (selectedPalette.get_type() == Variant::STRING) {
+        String actExtension = ".act";
+        String palettePath = selectedPalette;
+
+        if (palettePath.to_lower().ends_with(actExtension)) {
+            palette = loadPalFormatAct(palettePath);
+        } else {
+            palette = loadPalFormatPal(palettePath);
+        }
+    }
 
     for (int i = 0; i < handler->sffdata.size() - 1; i++) {
-        SffData sffData = handler->sffdata[i];
+        if (palette.colors.size() > 0 && handler->sffdata[i].palindex == defaultPalette) {
+            handler->sffdata[i].image.setColorTable(palette);
+        }
+    }
+
+    return create_dictionary(handler->sffdata);
+}
+
+Variant SffParser::create_dictionary(std::vector<SffData> sprites)
+{
+    Dictionary result;
+
+    for (int i = 0; i < sprites.size() - 1; i++) {
+        SffData sffData = sprites[i];
 
         Dictionary dict;
         dict["groupno"] = sffData.groupno;
