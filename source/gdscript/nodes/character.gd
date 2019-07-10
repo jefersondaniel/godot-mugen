@@ -2,7 +2,6 @@ extends KinematicBody2D
 
 # Dependencies
 var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
-var CommandManager = load('res://source/gdscript/nodes/command_manager.gd')
 var StateManager = load('res://source/gdscript/nodes/state_manager.gd')
 
 # Nodes
@@ -43,11 +42,13 @@ var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
 var sprpriority: int = 0
 var ctrl: int = 1
+var team: int = 0
+var is_facing_right: bool = true
 
-func _init(_consts, images, animations, commands, input_prefix):
+func _init(_consts, images, animations, _command_manager):
     consts = _consts
     character_sprite = CharacterSprite.new(images, animations)
-    command_manager = CommandManager.new(commands, input_prefix)
+    command_manager = _command_manager
     state_manager = StateManager.new(self)
 
     alive = 1
@@ -204,6 +205,11 @@ func assert_special(flag: String):
 func reset_assert_special():
     special_flags = []
 
+func set_facing_right(value: bool):
+    character_sprite.set_flip_h(!value)
+    is_facing_right = value
+    command_manager.is_facing_right = is_facing_right
+
 func _process(delta):
     var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
@@ -244,4 +250,16 @@ func _physics_process(delta):
         if relative_position.y < 0:
             velocity += stage.gravity
 
+    if is_facing_right == false && ctrl == 1:
+        velocity.x = -velocity.x
+
     self.move_and_collide(velocity)
+
+    var enemy = stage.get_nearest_enemy(self)
+
+    if enemy:
+        if enemy.position.x < position.x:
+            set_facing_right(false)
+        else:
+            set_facing_right(true)
+

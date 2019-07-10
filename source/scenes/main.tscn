@@ -12,8 +12,4 @@ margin_left = 10.0
 margin_top = 10.0
 margin_right = 630.0
 margin_bottom = 160.0
-text = "Tick: 0,dsad
-dasda
-dsada
-"
-
+text = "Error"

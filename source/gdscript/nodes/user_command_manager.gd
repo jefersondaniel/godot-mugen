@@ -13,22 +13,23 @@ var input_map: Dictionary = {
     's': constants.KEY_s,
 }
 
-var buffer: Array
+var buffer: Array = []
 var buffer_size: int = 120
 var buffer_index: int
-var commands: Array
-var old_active_commands: Array
-var active_commands: Array
+var commands: Array = []
+var old_active_commands: Array = []
+var active_commands: Array = []
 var current_tick = 0
 var is_facing_right: bool = true
 var code: int = 0
 
-func _init(_commands, _input_prefix):
-    commands = _commands
+func _init(_input_prefix):
     input_prefix = _input_prefix
-    buffer = []
     for i in range(0, buffer_size):
         buffer.append({'code': 0, 'tick': 0})
+
+func set_commands(_commands: Array):
+    commands = _commands
 
 func _process(_delta: float):
     code = 0

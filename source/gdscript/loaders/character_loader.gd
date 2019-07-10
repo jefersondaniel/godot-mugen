@@ -13,7 +13,7 @@ func _init():
     st_regex = RegEx.new()
     st_regex.compile("^st[0-9]+$")
 
-func load(path: String, input_prefix: String):
+func load(path: String, palette, command_manager):
     var sprite_path: String
     var animation_path: String
     var command_path: String
@@ -39,7 +39,7 @@ func load(path: String, input_prefix: String):
             continue
         state_paths.append('%s/%s' % [folder, definition['files'][key]])
 
-    var images = sff_parser.get_images(sprite_path, -1, -1, 0)
+    var images = sff_parser.get_images(sprite_path, palette)
     var animations = air_parser.read(animation_path)
     var commands: Array =  cmd_parser.read(command_path)
     var consts: Dictionary = {
@@ -57,7 +57,9 @@ func load(path: String, input_prefix: String):
         var new_states = cns_parser.read(path)
         merge_states(new_states, consts)
 
-    return Character.new(consts, images, animations, commands, input_prefix)
+    command_manager.set_commands(commands)
+
+    return Character.new(consts, images, animations, command_manager)
 
 func merge_states(new_states, states):
     for parent_key in states.keys():
