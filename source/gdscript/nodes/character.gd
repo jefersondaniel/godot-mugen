@@ -128,7 +128,7 @@ func get_state_def(number: int):
 
 func set_context_variable(key, value):
     if key == "vel_x":
-        velocity.x = value
+        velocity.x = value if is_facing_right else -value
     elif key == "vel_y":
         velocity.y = value
     else:
@@ -140,7 +140,7 @@ func get_context_variable(key):
     if key == "animtime":
         return character_sprite.get_time_from_the_end()
     if key == "vel_x":
-        return velocity.x
+        return velocity.x if is_facing_right else -velocity.x
     if key == "vel_y":
         return velocity.y
     if key == "pos_x":
@@ -210,6 +210,23 @@ func set_facing_right(value: bool):
     is_facing_right = value
     command_manager.is_facing_right = is_facing_right
 
+func set_velocity(_velocity):
+    if not is_facing_right:
+       _velocity.x = -_velocity.x
+    velocity = _velocity
+
+func add_velocity(_velocity):
+    if not is_facing_right:
+       _velocity.x = -_velocity.x
+    velocity.x += _velocity.x
+    velocity.y += _velocity.y
+
+func mul_velocity(_velocity):
+    if not is_facing_right:
+       _velocity.x = -_velocity.x
+    velocity.x += _velocity.x
+    velocity.y += _velocity.y
+
 func _process(delta):
     var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
@@ -249,9 +266,6 @@ func _physics_process(delta):
     if physics == constants.FLAG_A:
         if relative_position.y < 0:
             velocity += stage.gravity
-
-    if is_facing_right == false && ctrl == 1:
-        velocity.x = -velocity.x
 
     self.move_and_collide(velocity)
 

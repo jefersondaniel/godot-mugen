@@ -59,7 +59,7 @@ func activate_state(stateno):
 
     if statedef.has('velset'):
         var velset = statedef['velset'].split_floats(",")
-        character.velocity = Vector2(velset[0], velset[1])
+        character.set_velocity(Vector2(velset[0], velset[1]))
 
     # TODO: Implement movetype, poweradd, juggle, facep2, (hitdef|movehit|hitcount)persist, sprpriority
 
@@ -146,24 +146,24 @@ func handle_changeanim(controller):
 
 func handle_velset(controller):
     if 'x' in controller:
-        character.velocity.x = controller['x'].execute(character)
+        character.set_velocity(Vector2(controller['x'].execute(character), character.velocity.y))
 
     if 'y' in controller:
-        character.velocity.y = controller['y'].execute(character)
+        character.set_velocity(Vector2(character.velocity.x, controller['y'].execute(character)))
 
 func handle_veladd(controller):
     if 'x' in controller:
-        character.velocity.x += controller['x'].execute(character)
+        character.add_velocity(Vector2(controller['x'].execute(character), 0))
 
     if 'y' in controller:
-        character.velocity.y += controller['y'].execute(character)
+        character.add_velocity(Vector2(0, controller['y'].execute(character)))
 
 func handle_velmul(controller):
     if 'x' in controller:
-        character.velocity.x *= controller['x'].execute(character)
+        character.mul_velocity(Vector2(controller['x'].execute(character), 1))
 
     if 'y' in controller:
-        character.velocity.y *= controller['y'].execute(character)
+        character.mul_velocity(Vector2(1, controller['y'].execute(character)))
 
 func handle_varset(controller):
     var type: String
