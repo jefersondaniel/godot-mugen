@@ -10,19 +10,21 @@ func _init(_character):
     var_regex = RegEx.new()
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
 
-func _physics_process(_delta: float):
+func handle_tick(_delta: float):
     var oldstateno = character.stateno
 
     process_state(character.get_state_def(-1))
     process_state(character.get_state_def(-2))
     process_state(character.get_state_def(-3))
+    process_current_state()
 
-    if character.stateno == oldstateno:
-        # If the state was changed, then its was already executed
-        process_current_state()
-    else:
-        # TODO: Review assert special reset
-        character.reset_assert_special()
+    # if character.stateno == oldstateno:
+    #     # If the state was changed, then its was already executed
+    #     process_current_state()
+    # else:
+    #     # TODO: Review assert special reset
+    #     print("reset assert special")
+    #     character.reset_assert_special()
 
     current_tick += 1
     character.time = character.time + 1
@@ -86,7 +88,6 @@ func process_state(state):
             will_activate = true
             for trigger in triggers:
                 if not trigger.execute(character):
-                    triggerno += 1
                     will_activate = false
                     break
             if will_activate:

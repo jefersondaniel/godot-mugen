@@ -36,7 +36,7 @@ sprpriority = 0
 [State 0, 1]
 type = ChangeAnim
 trigger1 = Anim != 0 && Anim != 5
-trigger2 = Anim = 5 && AnimTime = 0 ;Turn anim over
+trigger2 = Anim = 5 && AnimTime = 0
 value = 0
 
 [State 0, 2]

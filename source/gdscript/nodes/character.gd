@@ -187,7 +187,7 @@ func call_context_function(key, arguments):
     if key == 'fvar':
         return float_vars[arguments[0]]
     if key == "assertion":
-        return special_flags.has(arguments[0])
+        return special_flags.has(arguments[0].to_lower())
     push_warning("Method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
@@ -200,7 +200,7 @@ func change_state(stateno: int):
     state_manager.activate_state(stateno)
 
 func assert_special(flag: String):
-    special_flags.append(flag)
+    special_flags.append(flag.to_lower())
 
 func reset_assert_special():
     special_flags = []
@@ -224,8 +224,8 @@ func add_velocity(_velocity):
 func mul_velocity(_velocity):
     if not is_facing_right:
        _velocity.x = -_velocity.x
-    velocity.x += _velocity.x
-    velocity.y += _velocity.y
+    velocity.x *= _velocity.x
+    velocity.y *= _velocity.y
 
 func _process(delta):
     var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
@@ -250,7 +250,17 @@ func _process(delta):
 
     get_node('/root/Node2D/text').text = text
 
-func _physics_process(delta):
+func _physics_process(delta: float):
+    state_manager.handle_tick(delta)
+    self.handle_physics()
+    self.handle_facing()
+
+    self.move_and_collide(velocity)
+
+    self.reset_assert_special()
+
+
+func handle_physics():
     var ground_friction: float = 0
     var relative_position: Vector2 = get_relative_position()
 
@@ -267,13 +277,29 @@ func _physics_process(delta):
         if relative_position.y < 0:
             velocity += stage.gravity
 
-    self.move_and_collide(velocity)
-
+func handle_facing():
     var enemy = stage.get_nearest_enemy(self)
 
-    if enemy:
-        if enemy.position.x < position.x:
-            set_facing_right(false)
-        else:
-            set_facing_right(true)
+    if not enemy:
+        return
 
+    if is_facing_right == true and enemy.position.x >= position.x:
+        return
+
+    if is_facing_right == false and  enemy.position.x <= position.x:
+        return
+
+    if stateno == constants.STATE_STANDING and character_sprite.current_animation != 5 and not special_flags.has('noautoturn'):
+        set_facing_right(not is_facing_right)
+        change_anim(5)
+        return
+
+    if stateno == constants.STATE_WALKING and character_sprite.current_animation != 5 and not special_flags.has('noautoturn'):
+        set_facing_right(not is_facing_right)
+        change_anim(5)
+        return
+
+    if stateno == constants.STATE_CROUCHING and character_sprite.current_animation != 6 and not special_flags.has('noautoturn'):
+        set_facing_right(not is_facing_right)
+        change_anim(6)
+        return
