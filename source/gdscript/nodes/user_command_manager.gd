@@ -31,7 +31,7 @@ func _init(_input_prefix):
 func set_commands(_commands: Array):
     commands = _commands
 
-func _process(_delta: float):
+func handle_tick(_delta: float):
     code = 0
 
     if Input.is_action_pressed(input_prefix + 'F'):
@@ -43,7 +43,6 @@ func _process(_delta: float):
         if Input.is_action_pressed(input_prefix + input):
             code += input_map[input]
 
-func _physics_process(_delta: float):
     process_command()
     current_tick += 1
 

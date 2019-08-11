@@ -26,7 +26,7 @@ var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
 var sys_float_vars: PoolRealArray
 var velocity: Vector2
-var special_flags = []
+var special_flags = {}
 
 # State variables
 
@@ -187,7 +187,7 @@ func call_context_function(key, arguments):
     if key == 'fvar':
         return float_vars[arguments[0]]
     if key == "assertion":
-        return special_flags.has(arguments[0].to_lower())
+        return check_assert_special(arguments[0])
     push_warning("Method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
@@ -200,20 +200,28 @@ func change_state(stateno: int):
     state_manager.activate_state(stateno)
 
 func assert_special(flag: String):
-    special_flags.append(flag.to_lower())
+    special_flags[flag.to_lower()] = 2
 
 func reset_assert_special():
-    special_flags = []
+    for key in special_flags:
+        special_flags[key] = special_flags[key] - 1
+
+func check_assert_special(key):
+    key = key.to_lower()
+    return special_flags.has(key) && special_flags[key] > 0
 
 func set_facing_right(value: bool):
     character_sprite.set_flip_h(!value)
     is_facing_right = value
     command_manager.is_facing_right = is_facing_right
 
-func set_velocity(_velocity):
+func set_velocity_x(x):
     if not is_facing_right:
-       _velocity.x = -_velocity.x
-    velocity = _velocity
+       x = -x
+    velocity.x = x
+
+func set_velocity_y(y):
+    velocity.y = y
 
 func add_velocity(_velocity):
     if not is_facing_right:
@@ -251,13 +259,15 @@ func _process(delta):
     get_node('/root/Node2D/text').text = text
 
 func _physics_process(delta: float):
+    self.reset_assert_special()
+
+    command_manager.handle_tick(delta)
     state_manager.handle_tick(delta)
     self.handle_physics()
     self.handle_facing()
 
     self.move_and_collide(velocity)
 
-    self.reset_assert_special()
 
 
 func handle_physics():
@@ -289,17 +299,17 @@ func handle_facing():
     if is_facing_right == false and  enemy.position.x <= position.x:
         return
 
-    if stateno == constants.STATE_STANDING and character_sprite.current_animation != 5 and not special_flags.has('noautoturn'):
+    if stateno == constants.STATE_STANDING and character_sprite.current_animation != 5 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(5)
         return
 
-    if stateno == constants.STATE_WALKING and character_sprite.current_animation != 5 and not special_flags.has('noautoturn'):
+    if stateno == constants.STATE_WALKING and character_sprite.current_animation != 5 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(5)
         return
 
-    if stateno == constants.STATE_CROUCHING and character_sprite.current_animation != 6 and not special_flags.has('noautoturn'):
+    if stateno == constants.STATE_CROUCHING and character_sprite.current_animation != 6 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(6)
         return

@@ -6,3 +6,6 @@ var commands: Array = []
 
 func set_commands(_commands: Array):
     commands = _commands
+
+func handle_tick(delta):
+    pass

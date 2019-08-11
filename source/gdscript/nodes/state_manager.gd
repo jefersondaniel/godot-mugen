@@ -16,15 +16,9 @@ func handle_tick(_delta: float):
     process_state(character.get_state_def(-1))
     process_state(character.get_state_def(-2))
     process_state(character.get_state_def(-3))
-    process_current_state()
 
-    # if character.stateno == oldstateno:
-    #     # If the state was changed, then its was already executed
-    #     process_current_state()
-    # else:
-    #     # TODO: Review assert special reset
-    #     print("reset assert special")
-    #     character.reset_assert_special()
+    if character.stateno == oldstateno:
+        process_current_state()
 
     current_tick += 1
     character.time = character.time + 1
@@ -147,10 +141,10 @@ func handle_changeanim(controller):
 
 func handle_velset(controller):
     if 'x' in controller:
-        character.set_velocity(Vector2(controller['x'].execute(character), character.velocity.y))
+        character.set_velocity_x(controller['x'].execute(character))
 
     if 'y' in controller:
-        character.set_velocity(Vector2(character.velocity.x, controller['y'].execute(character)))
+        character.set_velocity_y(controller['y'].execute(character))
 
 func handle_veladd(controller):
     if 'x' in controller:
