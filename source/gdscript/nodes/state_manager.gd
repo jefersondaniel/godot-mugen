@@ -4,6 +4,9 @@ var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
 var current_tick: int = 0
+var trigger_names: Array = [
+    'movecontact'
+]
 
 func _init(_character):
     character = _character
@@ -55,7 +58,8 @@ func activate_state(stateno):
 
     if statedef.has('velset'):
         var velset = statedef['velset'].split_floats(",")
-        character.set_velocity(Vector2(velset[0], velset[1]))
+        character.set_velocity_x(velset[0])
+        character.set_velocity_y(velset[1])
 
     # TODO: Implement movetype, poweradd, juggle, facep2, (hitdef|movehit|hitcount)persist, sprpriority
 
@@ -123,7 +127,12 @@ func handle_state_controller(controller):
         elif persistence > 0 and counter % persistence != 0:
             return
 
-    self.call(method_name, controller)
+    return self.call(method_name, controller)
+
+func handle_trigger(name):
+    return self.handle_state_controller({
+        'type': name
+    })
 
 func handle_debug(controller):
     print('DEBUG: %s' % [controller['value'].execute(character)])
@@ -228,3 +237,31 @@ func handle_assertspecial(controller):
         character.assert_special(controller['flag2'].execute(character))
     if controller.has('flag3'):
         character.assert_special(controller['flag3'].execute(character))
+
+func handle_playsnd(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
+    pass
+
+func handle_makedust(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
+    pass
+
+func handle_explod(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#explod
+    pass
+
+func handle_hitdef(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#hitdef
+    pass
+
+func handle_width(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
+    pass
+
+func handle_sprpriority(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#sprpriority
+    pass
+
+func handle_movecontact(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/trigger.html#movecontact
+    return 0

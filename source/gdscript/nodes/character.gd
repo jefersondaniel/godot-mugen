@@ -32,6 +32,7 @@ var special_flags = {}
 
 var stage_variables: Array = ['roundstate']
 var state_variables: Array = []
+var power: int = 0
 var life: int = 0
 var alive: int = 0
 var time: int = 0
@@ -53,6 +54,7 @@ func _init(_consts, images, animations, _command_manager):
 
     alive = 1
     life = consts['data']['life']
+    power = consts['data'].get('power', 1000)
     velocity = Vector2(0, 0)
     setup_vars()
 
@@ -155,6 +157,10 @@ func get_context_variable(key):
         return stage.get(key)
     if key in constants.FLAGS:
         return constants.FLAGS[key]
+    if key == "statetime":
+        return get("time")
+    if key in state_manager.trigger_names:
+        return state_manager.handle_trigger(key)
     push_warning("variable not found: %s" % [key])
 
 func call_context_function(key, arguments):
