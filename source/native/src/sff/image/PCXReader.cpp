@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <sstream>
 #include "PCXReader.hpp"
 #include "structs.hpp"
 

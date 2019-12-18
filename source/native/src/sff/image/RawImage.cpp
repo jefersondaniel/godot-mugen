@@ -1,3 +1,4 @@
+#include <sstream>
 #include "RawImage.hpp"
 
 RawColor::RawColor() {

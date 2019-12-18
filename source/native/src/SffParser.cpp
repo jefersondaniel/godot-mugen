@@ -1,4 +1,5 @@
 #include <Godot.hpp>
+#include <sstream>
 #include "SffParser.hpp"
 #include "sff/SffHandler.hpp"
 #include "sff/SffFunctions.hpp"
