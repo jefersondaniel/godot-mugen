@@ -242,6 +242,12 @@ func mul_velocity(_velocity):
     velocity.y *= _velocity.y
 
 func _process(delta):
+    draw_debug_text()
+
+func draw_debug_text():
+    if team != 1:
+        return
+
     var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
         get_context_variable('prevstateno'),
@@ -270,11 +276,8 @@ func _physics_process(delta: float):
     command_manager.handle_tick(delta)
     state_manager.handle_tick(delta)
     self.handle_physics()
-    self.handle_facing()
 
     self.move_and_collide(velocity)
-
-
 
 func handle_physics():
     var ground_friction: float = 0
@@ -292,6 +295,8 @@ func handle_physics():
     if physics == constants.FLAG_A:
         if relative_position.y < 0:
             velocity += stage.gravity
+
+    self.handle_facing()
 
 func handle_facing():
     var enemy = stage.get_nearest_enemy(self)

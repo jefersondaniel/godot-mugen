@@ -32,7 +32,7 @@ func set_commands(_commands: Array):
     commands = _commands
 
 func handle_tick(_delta: float):
-    code = 0
+    code = 1
 
     if Input.is_action_pressed(input_prefix + 'F'):
         code += constants.KEY_F if is_facing_right else constants.KEY_B
@@ -52,31 +52,33 @@ func process_command():
     buffer[buffer_index]['code'] = code
     buffer[buffer_index]['tick'] = current_tick
 
+    # Check every command in the definition order
     for command in commands:
-        var n_time: int = -1
-        var n_last_time: int = -1
-        var curr_key_index: int = 0
-        var cmd: Dictionary = command['cmd']
-        var cmd_size: int = cmd.size()
+        var start_time: int = -1 # Command start time
+        var end_time: int = -1 # Command end time
+        var input_index_distance: int = 0 # Input item that is being verified, 0 means the last 
+        var steps: Dictionary = command['cmd']
+        var num_command_steps: int = steps.size()
 
-        for b in range(cmd_size - 1, -1, -1):
-            var b_command: bool = false
-            var modifier: int = cmd[b]['modifier']
-            var game_ticks_to_hold: int = cmd[b]['ticks']
-            var key_code: int = cmd[b]['code']
+        for step_index in range(num_command_steps - 1, -1, -1):
+            var step_match: bool = false
+            var modifier: int = steps[step_index]['modifier']
+            var game_ticks_to_hold: int = steps[step_index]['ticks']
+            var key_code: int = steps[step_index]['code']
             var on_release: bool = (modifier & constants.KEY_MODIFIER_ON_RELEASE) != 0
             var on_hold: bool = (modifier & constants.KEY_MODIFIER_MUST_BE_HELD) != 0
             var use4_way: bool = (modifier & constants.KEY_MODIFIER_DETECT_AS_4WAY) != 0
             var ban_other_input: bool = (modifier & constants.KEY_MODIFIER_BAN_OTHER_INPUT) != 0
+            # TODO: Implement ban other input
 
-            while curr_key_index < buffer_size:
-                var frame_input: Dictionary = buffer[(buffer_index - curr_key_index + buffer_size) % buffer_size]
-                var key_down: bool = (frame_input['code'] & key_code) == key_code
+            while input_index_distance < buffer_size:
+                var input_frame: Dictionary = buffer[(buffer_index - input_index_distance + buffer_size) % buffer_size]
+                var key_down: bool = (input_frame['code'] & key_code) == key_code
 
                 if key_down && !use4_way:
-                    var key_code_dirs: int = key_code & constants.ALL_DIRECTION_KEYS
-                    var frame_input_dirs: int = frame_input['code'] & constants.ALL_DIRECTION_KEYS
-                    key_down = !key_code_dirs || (key_code_dirs == frame_input_dirs)
+                    var key_code_direction: int = key_code & constants.ALL_DIRECTION_KEYS
+                    var input_frame_direction: int = input_frame['code'] & constants.ALL_DIRECTION_KEYS
+                    key_down = !key_code_direction || (key_code_direction == input_frame_direction)
 
                 var button_conditions_met: bool  = false
 
@@ -84,13 +86,13 @@ func process_command():
                 if on_release != key_down:
                     var game_ticks_held: int  = 0
 
-                    for k in range(curr_key_index + 1, buffer_size):
-                        var frame_input2: Dictionary = buffer[(buffer_index - k + buffer_size) % buffer_size]
-                        var key_down2: bool = (frame_input2['code'] & key_code) == key_code
+                    for k in range(input_index_distance + 1, buffer_size):
+                        var input_frame2: Dictionary = buffer[(buffer_index - k + buffer_size) % buffer_size]
+                        var key_down2: bool = (input_frame2['code'] & key_code) == key_code
                         if key_down2 && !use4_way:
-                            var key_code_dirs: int = key_code & constants.ALL_DIRECTION_KEYS
-                            var frame_input_dirs: int = frame_input2['code'] & constants.ALL_DIRECTION_KEYS
-                            key_down2 = !key_code_dirs || (key_code_dirs == frame_input_dirs)
+                            var key_code_direction: int = key_code & constants.ALL_DIRECTION_KEYS
+                            var input_frame_direction: int = input_frame2['code'] & constants.ALL_DIRECTION_KEYS
+                            key_down2 = !key_code_direction || (key_code_direction == input_frame_direction)
                         if key_down2:
                             game_ticks_held += 1
                             if on_hold:
@@ -101,7 +103,7 @@ func process_command():
                                     button_conditions_met = true
                                     break
                             else:
-                                button_conditions_met = b < cmd_size - 1
+                                button_conditions_met = step_index < num_command_steps - 1
                                 break
                         else:
                             button_conditions_met = !(on_hold || on_release)
@@ -109,26 +111,26 @@ func process_command():
 
                 if button_conditions_met:
                     # if its the first element store the time of it
-                    if b == 0:
-                        n_time = frame_input['tick']
+                    if step_index == 0:
+                        start_time = input_frame['tick']
 
-                    if b == (cmd_size - 1):
-                        n_last_time = frame_input['tick']
+                    if step_index == (num_command_steps - 1):
+                        end_time = input_frame['tick']
 
-                    b_command = true
-                    curr_key_index += 1
+                    step_match = true
+                    input_index_distance += 1
                     break
 
-                curr_key_index += 1
+                input_index_distance += 1
 
-            if !b_command:
+            if !step_match:
                 break
 
-        if n_time >= 0 and n_last_time > 0:
+        if start_time >= 0 and end_time > 0:
            # the last button of the sequenz must be pressed int the Current game tick to
            # be valid and then it must be check for how long it has taken to do the input
-           # print([current_tick, command['buffer_time'], command['time'], command['name'], (n_last_time - n_time)])
-           if n_last_time >= (current_tick - command['buffer_time']) && (n_last_time - n_time) <= command['time']:
+           # print([current_tick, command['buffer_time'], command['time'], command['name'], (end_time - start_time)])
+           if end_time >= (current_tick - command['buffer_time']) && (end_time - start_time) <= command['time']:
                 active_commands.push_back(command['name'])
 
     buffer_index = buffer_index + 1
