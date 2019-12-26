@@ -125,6 +125,18 @@ func set_relative_position(newpos):
     position.x = newpos.x
     position.y = newpos.y + stage.ground_y
 
+func add_relative_position(vector):
+    var newpos = get_relative_position()
+
+    newpos.y += vector.y
+
+    if is_facing_right:
+        newpos.x += vector.x
+    else:
+        newpos.x -= vector.x
+
+    set_relative_position(newpos)
+
 func get_state_def(number: int):
     return consts['states'][String(number)]
 
