@@ -32,7 +32,7 @@ func set_commands(_commands: Array):
     commands = _commands
 
 func handle_tick(_delta: float):
-    code = 1
+    code = 0
 
     if Input.is_action_pressed(input_prefix + 'F'):
         code += constants.KEY_F if is_facing_right else constants.KEY_B
@@ -68,8 +68,11 @@ func process_command():
             var on_release: bool = (modifier & constants.KEY_MODIFIER_ON_RELEASE) != 0
             var on_hold: bool = (modifier & constants.KEY_MODIFIER_MUST_BE_HELD) != 0
             var use4_way: bool = (modifier & constants.KEY_MODIFIER_DETECT_AS_4WAY) != 0
-            var ban_other_input: bool = (modifier & constants.KEY_MODIFIER_BAN_OTHER_INPUT) != 0
-            # TODO: Implement ban other input
+            var ban_other_input: bool = false
+            var distance_between_steps: int = 0
+
+            if step_index < num_command_steps - 1:
+                ban_other_input = (steps[step_index + 1]['modifier'] & constants.KEY_MODIFIER_BAN_OTHER_INPUT) != 0
 
             while input_index_distance < buffer_size:
                 var input_frame: Dictionary = buffer[(buffer_index - input_index_distance + buffer_size) % buffer_size]
@@ -83,6 +86,7 @@ func process_command():
                 var button_conditions_met: bool  = false
 
                 # check hold time
+                # if on release is true, then the conditions will be met if actual key is not down, but the previous are down
                 if on_release != key_down:
                     var game_ticks_held: int  = 0
 
@@ -121,7 +125,15 @@ func process_command():
                     input_index_distance += 1
                     break
 
+                var next_input_frame: Dictionary = buffer[(buffer_index - (input_index_distance - 1) + buffer_size) % buffer_size]
+                # as the input is checked in reversal order, the next input frame is the previously checked frame
+
+                if not key_down and ban_other_input and distance_between_steps and input_frame['code'] != next_input_frame['code']:
+                   break
+
+                # If button conditions not met, check next previous input
                 input_index_distance += 1
+                distance_between_steps += 1
 
             if !step_match:
                 break

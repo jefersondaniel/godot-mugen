@@ -49,12 +49,17 @@ func read(path):
         var command: Dictionary = section['attributes']
         var cmd: Array = []
         var name: String = command['name'].lstrip(" \"").rstrip(" \"")
+        var actual_step
+        var last_step
 
         for item in command['command'].split(',', false):
             var modifier: int = 0
             var ticks: int = default_time
             var code: int = 0
-            var aux
+            var is_actual_step_direction: int = 0
+            var is_last_step_direction: int = 0
+            var aux = null
+            var should_expand_succesive_directions: bool = false
 
             item = item.strip_edges()
 
@@ -67,17 +72,42 @@ func read(path):
                 modifier += constants.KEY_MODIFIER_MUST_BE_HELD
             if '$' in item:
                 modifier += constants.KEY_MODIFIER_DETECT_AS_4WAY
+            if '>' in item:
+                modifier += constants.KEY_MODIFIER_BAN_OTHER_INPUT
 
             for key_name in KEY_MAP.keys():
                 if not key_name in item:
                     continue
                 code += KEY_MAP[remap.get(key_name, key_name)]
-
-            cmd.append({
+                    
+            actual_step = {
                 'modifier': modifier,
                 'ticks': min(ticks, 1),
                 'code': code,
-            })
+            }
+
+            is_actual_step_direction = actual_step['code'] & constants.ALL_DIRECTION_KEYS
+            is_last_step_direction = last_step && (last_step['code'] & constants.ALL_DIRECTION_KEYS)
+            should_expand_succesive_directions = is_actual_step_direction \
+                && is_last_step_direction \
+                && actual_step['code'] == last_step['code']
+
+            if should_expand_succesive_directions:
+                cmd.append({
+                    'modifier': constants.KEY_MODIFIER_ON_RELEASE + constants.KEY_MODIFIER_BAN_OTHER_INPUT,
+                    'ticks': min(ticks, 1),
+                    'code': code
+                })
+
+                cmd.append({
+                    'modifier': constants.KEY_MODIFIER_BAN_OTHER_INPUT,
+                    'ticks': 1,
+                    'code': min(ticks, 1)
+                })
+            else:
+                cmd.append(actual_step)
+
+            last_step = actual_step
 
         commands.append({
             'name': name,
