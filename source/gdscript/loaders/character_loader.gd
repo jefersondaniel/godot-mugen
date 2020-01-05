@@ -24,7 +24,7 @@ func load(path: String, palette, command_manager):
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
     command_path = '%s/%s' % [folder, definition['files']['cmd']]
-    state_paths = ['res://data/data/internal.cns']
+    state_paths = []
 
     if 'stcommon' in definition['files']:
         state_paths.append('%s/%s' % ['res://data/data', definition['files']['stcommon']])
@@ -38,6 +38,8 @@ func load(path: String, palette, command_manager):
         if not result:
             continue
         state_paths.append('%s/%s' % [folder, definition['files'][key]])
+    
+    state_paths.append('res://data/data/internal.cns')
 
     var images = sff_parser.get_images(sprite_path, palette)
     var animations = air_parser.read(animation_path)
