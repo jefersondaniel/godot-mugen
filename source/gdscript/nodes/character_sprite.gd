@@ -1,6 +1,8 @@
 extends AnimatedSprite
 
 var animation_player: AnimationPlayer = null
+var attacking_area_2d: Area2D = null
+var collision_area_2d: Area2D = null
 var images: Dictionary = {}
 var animations: Dictionary = {}
 var looptimes: Dictionary = {}
@@ -125,7 +127,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
             animation.track_insert_key(element_number_track, current_set_time, current_animation_frame + 1)
             if collisions.get(current_animation_frame):
                 var method = {
-                    'method': 'change_boxes',
+                    'method': 'set_collision_boxes',
                     'args': [collisions[current_animation_frame]]
                 }
                 animation.track_insert_key(collision_track, current_set_time, method)
@@ -159,11 +161,71 @@ func change_anim(value: int):
 func has_anim(value: int):
     return animations.has(value)
 
-func change_boxes(_boxes):
+func set_collision_boxes(_boxes):
     boxes = {}
     for type in _boxes:
         boxes[type] = _boxes[type]
+    update_collision_boxes()
     update()
+
+func update_collision_boxes():
+    if self.attacking_area_2d:
+        self.attacking_area_2d.queue_free()
+
+    if self.collision_area_2d:
+        self.collision_area_2d.queue_free()
+
+    self.attacking_area_2d = Area2D.new()
+    self.attacking_area_2d.connect("area_entered", self, "on_attacking_area_collision")
+    self.attacking_area_2d.set_collision_layer(1)
+    self.attacking_area_2d.set_collision_mask_bit(1, true)
+    self.attacking_area_2d.set_collision_mask_bit(2, true)
+
+    self.collision_area_2d = Area2D.new()
+    self.collision_area_2d.set_collision_layer(2)
+    self.collision_area_2d.set_collision_mask_bit(1, true)
+    self.collision_area_2d.set_collision_mask_bit(2, true)
+
+    for type in boxes:
+        for points in boxes[type]:
+            self.create_collision_box(type, points)
+
+    self.add_child(self.attacking_area_2d)
+    self.add_child(self.collision_area_2d)
+
+func on_attacking_area_collision(other: Area2D):
+    if other.get_parent() == self:
+        return
+
+    print("on_attacking_area_collision: %s" % [other.collision_layer])
+
+func check_collision(other, type: int) -> bool:
+    if not other.collision_area_2d or not self.collision_area_2d or not other.attacking_area_2d or not self.attacking_area_2d:
+        return false
+
+    if type == 1:
+        return self.attacking_area_2d.overlaps_area(other.collision_area_2d) or self.attacking_area_2d.overlaps_area(other.attacking_area_2d)
+
+    if type == 2:
+        return self.collision_area_2d.overlaps_area(other.collision_area_2d) or self.collision_area_2d.overlaps_area(other.attacking_area_2d)
+
+    return false
+
+func create_collision_box(type: int, points: Array):
+    var rectangle_shape: RectangleShape2D = RectangleShape2D.new()
+    rectangle_shape.extents = Vector2(abs(points[2] - points[0]) / 2, abs(points[3] - points[1]) / 2)
+
+    var collision_shape: CollisionShape2D = CollisionShape2D.new()
+    collision_shape.position = Vector2(
+        points[0] + (points[2] - points[0]) / 2,
+        points[1] + (points[3] - points[1]) / 2
+    )
+    collision_shape.set_shape(rectangle_shape)
+
+    if type == 1:
+        self.attacking_area_2d.add_child(collision_shape)
+    else:
+        self.collision_area_2d.add_child(collision_shape)
 
 func image_to_texture(image):
     var texture = ImageTexture.new()

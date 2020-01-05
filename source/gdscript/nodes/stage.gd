@@ -51,3 +51,15 @@ func get_nearest_enemy(player):
                 nearest_enemy = other
 
     return nearest_enemy
+
+func get_enemies(player):
+    var results: Array = []
+
+    for team_id in teams:
+        if team_id == player.team:
+            continue
+
+        for other in teams[team_id]:
+            results.push_back(other)
+
+    return results

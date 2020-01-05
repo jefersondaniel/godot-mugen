@@ -32,8 +32,8 @@ var special_flags = {}
 
 var stage_variables: Array = ['roundstate']
 var state_variables: Array = []
-var power: int = 0
-var life: int = 0
+var power: float = 0
+var life: float = 0
 var alive: int = 0
 var time: int = 0
 var prevstateno: int = -1
@@ -45,6 +45,7 @@ var sprpriority: int = 0
 var ctrl: int = 1
 var team: int = 0
 var is_facing_right: bool = true
+var pushflag: bool = true
 
 func _init(_consts, images, animations, _command_manager):
     consts = _consts
@@ -136,6 +137,54 @@ func add_relative_position(vector):
         newpos.x -= vector.x
 
     set_relative_position(newpos)
+
+func get_left_location() -> float:
+    if is_facing_right:
+        return get_back_location()
+
+    return get_front_location()
+
+func get_right_location() -> float:
+    if is_facing_right:
+        return get_front_location()
+
+    return get_back_location()
+
+func get_front_location() -> float:
+    if is_facing_right:
+        return get_relative_position().x + get_front_width()
+
+    return get_relative_position().x - get_front_width()
+
+func get_back_location() -> float:
+    if is_facing_right:
+        return get_relative_position().x - get_back_width()
+
+    return get_relative_position().x + get_back_width()
+
+func get_front_width() -> float:
+    if is_ground_state():
+        return float(consts['size']['ground.front'])
+
+    if is_air_state():
+        return float(consts['size']['air.front'])
+
+    return 0.0
+
+func get_back_width() -> float:
+    if is_ground_state():
+        return float(consts['size']['ground.back'])
+
+    if is_air_state():
+        return float(consts['size']['air.back'])
+
+    return 0.0
+
+func is_ground_state() -> bool:
+    return statetype == constants.FLAG_S or statetype == constants.FLAG_C or statetype == constants.FLAG_L
+
+func is_air_state() -> bool:
+    return statetype == constants.FLAG_A
 
 func get_state_def(number: int):
     return consts['states'][String(number)]
@@ -253,6 +302,9 @@ func mul_velocity(_velocity):
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
+func check_collision(other: Node2D, type: int):
+    return self.character_sprite.check_collision(other.character_sprite, type)
+
 func _process(delta):
     draw_debug_text()
 
@@ -309,6 +361,7 @@ func handle_physics():
             velocity += stage.gravity
 
     self.handle_facing()
+    self.handle_pushing()
 
 func handle_facing():
     var enemy = stage.get_nearest_enemy(self)
@@ -336,3 +389,28 @@ func handle_facing():
         set_facing_right(not is_facing_right)
         change_anim(6)
         return
+
+func handle_pushing():
+    if not pushflag:
+        return
+
+    var enemies = stage.get_enemies(self)
+
+    for enemy in enemies:
+        if not enemy.pushflag:
+            continue
+
+        if not self.check_collision(enemy, 2):
+            continue
+        
+        var overlap: float = 0
+        var overlap_direction = 1
+
+        if position.x >= enemy.position.x:
+            overlap = enemy.get_right_location() - get_left_location()
+            overlap_direction = -1
+        else:
+            overlap = get_right_location() - enemy.get_left_location()
+            overlap_direction = 1
+       
+        enemy.position = enemy.position + Vector2(overlap * overlap_direction, 0)
