@@ -5,7 +5,6 @@ var target_fps = 60
 var KEY_MODIFIER_MUST_BE_HELD: int = 1 << 1
 var KEY_MODIFIER_DETECT_AS_4WAY: int = 1 << 2
 var KEY_MODIFIER_BAN_OTHER_INPUT: int = 1 << 3
-var KEY_MODIFIER_ON_RELEASE: int = 1 << 4
 
 var KEY_F: int = 1 << 0
 var KEY_B: int = 1 << 1
@@ -19,6 +18,11 @@ var KEY_y: int = 1 << 8
 var KEY_z: int = 1 << 9
 var KEY_s: int = 1 << 10
 var ALL_DIRECTION_KEYS = KEY_F + KEY_B + KEY_U + KEY_D
+
+var INPUT_STATE_DOWN: int = 1
+var INPUT_STATE_UP: int = 2
+var INPUT_STATE_RELEASED: int = 3
+var INPUT_STATE_PRESSED: int = 4
 
 var FLAGS = {}
 var REVERSE_FLAGS = {}

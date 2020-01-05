@@ -13,25 +13,41 @@ var input_map: Dictionary = {
     's': constants.KEY_s,
 }
 
-var buffer: Array = []
+var buffer: Array
 var buffer_size: int = 120
-var buffer_index: int
+var buffer_index: int = -1
+var command_countdown: Dictionary = {}
 var commands: Array = []
 var old_active_commands: Array = []
 var active_commands: Array = []
-var current_tick = 0
 var is_facing_right: bool = true
 var code: int = 0
 
 func _init(_input_prefix):
     input_prefix = _input_prefix
+    buffer = []
+    buffer.resize(buffer_size)
     for i in range(0, buffer_size):
-        buffer.append({'code': 0, 'tick': 0})
+        buffer[i] = 0
 
-func set_commands(_commands: Array):
+func set_commands(_commands: Array) -> void:
     commands = _commands
 
-func handle_tick(_delta: float):
+    for command in commands:
+        command_countdown[command['name']] = 0
+
+func handle_tick(_delta: float) -> void:
+    update_input_buffer()
+    update_command_countdown()
+    check_commands()
+    update_active_commands()
+
+func update_input_buffer() -> void:
+    buffer_index = buffer_index + 1
+
+    if buffer_index >= buffer_size:
+        buffer_index = 0
+
     code = 0
 
     if Input.is_action_pressed(input_prefix + 'F'):
@@ -43,112 +59,140 @@ func handle_tick(_delta: float):
         if Input.is_action_pressed(input_prefix + input):
             code += input_map[input]
 
-    process_command()
-    current_tick += 1
+    buffer[buffer_index] = code
 
-func process_command():
+func update_command_countdown() -> void:
+    for key in command_countdown:
+        command_countdown[key] = max(0, command_countdown[key] - 1)
+
+func check_commands() -> void:
+    for command in commands:
+        if not check_command(command):
+            continue
+
+        command_countdown[command['name']] = command['buffer_time']
+
+func update_active_commands() -> void:
     old_active_commands = active_commands
     active_commands = []
-    buffer[buffer_index]['code'] = code
-    buffer[buffer_index]['tick'] = current_tick
-
-    # Check every command in the definition order
-    for command in commands:
-        var start_time: int = -1 # Command start time
-        var end_time: int = -1 # Command end time
-        var input_index_distance: int = 0 # Input item that is being verified, 0 means the last 
-        var steps: Dictionary = command['cmd']
-        var num_command_steps: int = steps.size()
-
-        for step_index in range(num_command_steps - 1, -1, -1):
-            var step_match: bool = false
-            var modifier: int = steps[step_index]['modifier']
-            var game_ticks_to_hold: int = steps[step_index]['ticks']
-            var key_code: int = steps[step_index]['code']
-            var on_release: bool = (modifier & constants.KEY_MODIFIER_ON_RELEASE) != 0
-            var on_hold: bool = (modifier & constants.KEY_MODIFIER_MUST_BE_HELD) != 0
-            var use4_way: bool = (modifier & constants.KEY_MODIFIER_DETECT_AS_4WAY) != 0
-            var ban_other_input: bool = false
-            var distance_between_steps: int = 0
-
-            if step_index < num_command_steps - 1:
-                ban_other_input = (steps[step_index + 1]['modifier'] & constants.KEY_MODIFIER_BAN_OTHER_INPUT) != 0
-
-            while input_index_distance < buffer_size:
-                var input_frame: Dictionary = buffer[(buffer_index - input_index_distance + buffer_size) % buffer_size]
-                var key_down: bool = (input_frame['code'] & key_code) == key_code
-
-                if key_down && !use4_way:
-                    var key_code_direction: int = key_code & constants.ALL_DIRECTION_KEYS
-                    var input_frame_direction: int = input_frame['code'] & constants.ALL_DIRECTION_KEYS
-                    key_down = !key_code_direction || (key_code_direction == input_frame_direction)
-
-                var button_conditions_met: bool  = false
-
-                # check hold time
-                # if on release is true, then the conditions will be met if actual key is not down, but the previous are down
-                if on_release != key_down:
-                    var game_ticks_held: int  = 0
-
-                    for k in range(input_index_distance + 1, buffer_size):
-                        var input_frame2: Dictionary = buffer[(buffer_index - k + buffer_size) % buffer_size]
-                        var key_down2: bool = (input_frame2['code'] & key_code) == key_code
-                        if key_down2 && !use4_way:
-                            var key_code_direction: int = key_code & constants.ALL_DIRECTION_KEYS
-                            var input_frame_direction: int = input_frame2['code'] & constants.ALL_DIRECTION_KEYS
-                            key_down2 = !key_code_direction || (key_code_direction == input_frame_direction)
-                        if key_down2:
-                            game_ticks_held += 1
-                            if on_hold:
-                                button_conditions_met = key_down
-                                break
-                            elif on_release:
-                                if game_ticks_held >= game_ticks_to_hold:
-                                    button_conditions_met = true
-                                    break
-                            else:
-                                button_conditions_met = step_index < num_command_steps - 1
-                                break
-                        else:
-                            button_conditions_met = !(on_hold || on_release)
-                            break
-
-                if button_conditions_met:
-                    # if its the first element store the time of it
-                    if step_index == 0:
-                        start_time = input_frame['tick']
-
-                    if step_index == (num_command_steps - 1):
-                        end_time = input_frame['tick']
-
-                    step_match = true
-                    input_index_distance += 1
-                    break
-
-                var next_input_frame: Dictionary = buffer[(buffer_index - (input_index_distance - 1) + buffer_size) % buffer_size]
-                # as the input is checked in reversal order, the next input frame is the previously checked frame
-
-                if not key_down and ban_other_input and distance_between_steps and input_frame['code'] != next_input_frame['code']:
-                   break
-
-                # If button conditions not met, check next previous input
-                input_index_distance += 1
-                distance_between_steps += 1
-
-            if !step_match:
-                break
-
-        if start_time >= 0 and end_time > 0:
-           # the last button of the sequenz must be pressed int the Current game tick to
-           # be valid and then it must be check for how long it has taken to do the input
-           # print([current_tick, command['buffer_time'], command['time'], command['name'], (end_time - start_time)])
-           if end_time >= (current_tick - command['buffer_time']) && (end_time - start_time) <= command['time']:
-                active_commands.push_back(command['name'])
-
-    buffer_index = buffer_index + 1
+    
+    for key in command_countdown:
+        if command_countdown[key] <= 0:
+            continue
+        active_commands.push_back(key)
 
     if old_active_commands != active_commands:
         print("active commands: %s" % [active_commands])
 
-    if buffer_index >= buffer_size:
-        buffer_index = 0
+func check_command(command) -> bool:
+    var element_index: int = len(command['cmd']) - 1
+    var input_index: int = 0
+
+    while input_index != buffer_size:
+        var match_index: int = scan_for_match(command, element_index, input_index)
+
+        if match_index == -1:
+            return false
+
+        if element_index > 0:
+            if match_index > command['time']:
+                return false
+            element_index -= 1
+            input_index = match_index
+        elif element_index == 0:
+            return match_index <= command['time']
+        else:
+            return false
+
+        input_index += 1
+
+    return false
+
+func scan_for_match(command: Dictionary, element_index: int, input_index: int) -> int:
+    var element: Dictionary = command['cmd'][element_index]
+    var element_count: int = len(command['cmd'])
+    var scan_length: int = min(buffer_size, command['time'])
+
+    for i in range(input_index, input_index + scan_length):
+        if element_index == element_count - 1:
+            if element['ticks'] == -1:
+                if i != input_index:
+                    return -1
+            elif i - 1  != input_index and i != input_index:
+                return -1
+
+        if element_match(element, i):
+            if element_index < element_count - 1:
+                var next_element = command['cmd'][element_index + 1]
+                var nothing_else = (next_element['modifier'] & constants.KEY_MODIFIER_BAN_OTHER_INPUT) != 0
+                if nothing_else and not check_identical_input(input_index, i):
+                    continue
+
+            return i
+
+    return -1
+
+func element_match(element: Dictionary, input_index: int) -> bool:
+    var state: int = get_input_state(input_index, element)
+    var must_be_held = (element['modifier'] & constants.KEY_MODIFIER_MUST_BE_HELD) != 0
+
+    if must_be_held:
+        return state == constants.INPUT_STATE_DOWN or state == constants.INPUT_STATE_PRESSED
+
+    if element['ticks'] != -1:
+        if input_index >= buffer_size:
+            return false
+
+        if input_index == 0 or get_input_state(input_index - 1, element) != constants.INPUT_STATE_RELEASED:
+            return false
+
+        var hold_count: int = 1
+
+        for i in range(input_index + 1, buffer_size):
+            if get_input_state(i, element) != constants.INPUT_STATE_DOWN:
+                break
+            hold_count += 1
+
+        if hold_count < element['ticks']:
+            return false
+    elif state != constants.INPUT_STATE_PRESSED:
+        return false
+
+    return true
+
+func get_input_value(index: int) -> int:
+    return buffer[(buffer_index - index + buffer_size) % buffer_size]
+
+func get_input_state(index: int, element: Dictionary) -> int:
+    var current: int = get_input_value(index)
+    var previous: int = get_input_value(index + 1) if index != buffer_size - 1 else 0
+
+    var current_state: int = check_element_state(current, element)
+    var previous_state: int = check_element_state(previous, element)
+
+    if current_state:
+        return constants.INPUT_STATE_DOWN if previous_state else constants.INPUT_STATE_PRESSED
+
+    return constants.INPUT_STATE_RELEASED if previous_state else constants.INPUT_STATE_UP
+
+func check_identical_input(start_index: int, end_index: int) -> bool:
+    var input_value: int = get_input_value(start_index)
+
+    for i in range(start_index + 1, end_index):
+        if input_value != get_input_value(i):
+            return false
+
+    return true
+
+func check_element_state(input_code: int, element: Dictionary) -> bool:
+    var element_code: int = element['code']
+    var use4_way: bool = (element['modifier'] & constants.KEY_MODIFIER_DETECT_AS_4WAY) != 0
+    var key_down: bool = (input_code & element_code) == element_code
+
+    if key_down && !use4_way:
+        var input_direction: int = input_code & constants.ALL_DIRECTION_KEYS
+        var element_direction: int = element_code & constants.ALL_DIRECTION_KEYS
+
+        key_down = !input_direction || (input_direction == element_direction)
+
+    return key_down

@@ -54,7 +54,7 @@ func read(path):
 
         for item in command['command'].split(',', false):
             var modifier: int = 0
-            var ticks: int = default_time
+            var ticks: int = -1
             var code: int = 0
             var is_actual_step_direction: int = 0
             var is_last_step_direction: int = 0
@@ -64,7 +64,6 @@ func read(path):
             item = item.strip_edges()
 
             if '~' in item:
-                modifier += constants.KEY_MODIFIER_ON_RELEASE
                 aux = int(item)
                 if aux > 0:
                     ticks = aux
@@ -82,7 +81,7 @@ func read(path):
                     
             actual_step = {
                 'modifier': modifier,
-                'ticks': min(ticks, 1),
+                'ticks': ticks,
                 'code': code,
             }
 
@@ -94,15 +93,15 @@ func read(path):
 
             if should_expand_succesive_directions:
                 cmd.append({
-                    'modifier': constants.KEY_MODIFIER_ON_RELEASE + constants.KEY_MODIFIER_BAN_OTHER_INPUT,
-                    'ticks': min(ticks, 1),
+                    'modifier': constants.KEY_MODIFIER_BAN_OTHER_INPUT,
+                    'ticks': 0,
                     'code': code
                 })
 
                 cmd.append({
                     'modifier': constants.KEY_MODIFIER_BAN_OTHER_INPUT,
-                    'ticks': 1,
-                    'code': min(ticks, 1)
+                    'ticks': -1,
+                    'code': code
                 })
             else:
                 cmd.append(actual_step)
