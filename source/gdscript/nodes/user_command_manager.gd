@@ -18,7 +18,6 @@ var buffer_size: int = 120
 var buffer_index: int = -1
 var command_countdown: Dictionary = {}
 var commands: Array = []
-var old_active_commands: Array = []
 var active_commands: Array = []
 var is_facing_right: bool = true
 var code: int = 0
@@ -73,16 +72,12 @@ func check_commands() -> void:
         command_countdown[command['name']] = command['buffer_time']
 
 func update_active_commands() -> void:
-    old_active_commands = active_commands
     active_commands = []
     
     for key in command_countdown:
         if command_countdown[key] <= 0:
             continue
         active_commands.push_back(key)
-
-    if old_active_commands != active_commands:
-        print("active commands: %s" % [active_commands])
 
 func check_command(command) -> bool:
     var element_index: int = len(command['cmd']) - 1
