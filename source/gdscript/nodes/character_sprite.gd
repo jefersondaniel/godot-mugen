@@ -176,7 +176,6 @@ func update_collision_boxes():
         self.collision_area_2d.queue_free()
 
     self.attacking_area_2d = Area2D.new()
-    self.attacking_area_2d.connect("area_entered", self, "on_attacking_area_collision")
     self.attacking_area_2d.set_collision_layer(1)
     self.attacking_area_2d.set_collision_mask_bit(1, true)
     self.attacking_area_2d.set_collision_mask_bit(2, true)
@@ -192,12 +191,6 @@ func update_collision_boxes():
 
     self.add_child(self.attacking_area_2d)
     self.add_child(self.collision_area_2d)
-
-func on_attacking_area_collision(other: Area2D):
-    if other.get_parent() == self:
-        return
-
-    print("on_attacking_area_collision: %s" % [other.collision_layer])
 
 func check_collision(other, type: int) -> bool:
     if not other.collision_area_2d or not self.collision_area_2d or not other.attacking_area_2d or not self.attacking_area_2d:
@@ -243,7 +236,7 @@ func get_time_from_the_end():
 func inverse_boxes(boxes, is_facing_right):
     if is_facing_right:
         return boxes
-    
+
     var result: Array = []
 
     for box in boxes:

@@ -342,6 +342,7 @@ func _physics_process(delta: float):
     self.handle_physics()
 
     self.move_and_collide(velocity)
+    self.handle_pushing()
 
 func handle_physics():
     var ground_friction: float = 0
@@ -361,7 +362,6 @@ func handle_physics():
             velocity += stage.gravity
 
     self.handle_facing()
-    self.handle_pushing()
 
 func handle_facing():
     var enemy = stage.get_nearest_enemy(self)
@@ -402,7 +402,7 @@ func handle_pushing():
 
         if not self.check_collision(enemy, 2):
             continue
-        
+
         var overlap: float = 0
         var overlap_direction = 1
 
@@ -412,5 +412,8 @@ func handle_pushing():
         else:
             overlap = get_right_location() - enemy.get_left_location()
             overlap_direction = 1
-       
+
+        if overlap < 0:
+            continue
+
         enemy.position = enemy.position + Vector2(overlap * overlap_direction, 0)

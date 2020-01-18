@@ -63,8 +63,6 @@ func activate_state(stateno):
 
     # TODO: Implement movetype, poweradd, juggle, facep2, (hitdef|movehit|hitcount)persist, sprpriority
 
-    print("activate state: %s, previous: %s, current_tick: %s" % [stateno, character.prevstateno, current_tick])
-
 func process_state(state):
     var oldstateno = character.stateno
 
