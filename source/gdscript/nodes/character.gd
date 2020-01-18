@@ -302,6 +302,9 @@ func mul_velocity(_velocity):
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
+func add_power(_power):
+    power = power + _power
+
 func check_collision(other: Node2D, type: int):
     return self.character_sprite.check_collision(other.character_sprite, type)
 

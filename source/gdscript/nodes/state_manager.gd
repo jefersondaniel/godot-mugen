@@ -48,6 +48,11 @@ func activate_state(stateno):
     elif not statedef.has('type'):
         character.statetype = constants.FLAG_S
 
+    if statedef.has('movetype') && statedef['movetype'].to_lower() != 'u':
+        character.statetype = constants.FLAGS[statedef['movetype'].to_lower()]
+    elif not statedef.has('movetype'):
+        character.statetype = constants.FLAG_I
+
     if statedef.has('physics') && statedef['physics'].to_lower() != 'u':
         character.physics = constants.FLAGS[statedef['physics'].to_lower()]
     elif not statedef.has('physics'):
@@ -61,7 +66,10 @@ func activate_state(stateno):
         character.set_velocity_x(velset[0])
         character.set_velocity_y(velset[1])
 
-    # TODO: Implement movetype, poweradd, juggle, facep2, (hitdef|movehit|hitcount)persist, sprpriority
+    if statedef.has('poweradd'):
+        character.add_power(statedef['poweradd'])
+
+    # TODO: Implement juggle, facep2, (hitdef|movehit|hitcount)persist
 
 func process_state(state):
     var oldstateno = character.stateno
