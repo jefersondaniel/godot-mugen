@@ -2,13 +2,13 @@ extends KinematicBody2D
 
 # Dependencies
 var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
-var StateManager = load('res://source/gdscript/nodes/state_manager.gd')
+var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 
 # Nodes
 var character_sprite = null
 var command_manager = null
 var state_manager = null
-var stage = null
+var fight = null
 
 # Constants
 var consts: Dictionary = {
@@ -30,7 +30,7 @@ var special_flags = {}
 
 # State variables
 
-var stage_variables: Array = ['roundstate']
+var fight_variables: Array = ['roundstate']
 var state_variables: Array = []
 var power: float = 0
 var life: float = 0
@@ -86,8 +86,6 @@ func setup_vars():
         sys_float_vars[i] = 0
 
 func _ready():
-    self.add_child(command_manager)
-    self.add_child(state_manager)
     self.add_child(character_sprite)
 
 func get_const(fullname):
@@ -120,11 +118,11 @@ func get_const(fullname):
     return result
 
 func get_relative_position():
-    return Vector2(position.x, position.y - stage.ground_y)
+    return Vector2(position.x, position.y - fight.stage.ground_y)
 
 func set_relative_position(newpos):
     position.x = newpos.x
-    position.y = newpos.y + stage.ground_y
+    position.y = newpos.y + fight.stage.ground_y
 
 func add_relative_position(vector):
     var newpos = get_relative_position()
@@ -214,8 +212,8 @@ func get_context_variable(key):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
         return get(key)
-    if key in stage_variables:
-        return stage.get(key)
+    if key in fight_variables:
+        return fight.get(key)
     if key in constants.FLAGS:
         return constants.FLAGS[key]
     if key == "statetime":
@@ -362,12 +360,12 @@ func handle_physics():
 
     if physics == constants.FLAG_A:
         if relative_position.y < 0:
-            velocity += stage.gravity
+            velocity += fight.stage.gravity
 
     self.handle_facing()
 
 func handle_facing():
-    var enemy = stage.get_nearest_enemy(self)
+    var enemy = fight.get_nearest_enemy(self)
 
     if not enemy:
         return
@@ -397,7 +395,7 @@ func handle_pushing():
     if not pushflag:
         return
 
-    var enemies = stage.get_enemies(self)
+    var enemies = fight.get_enemies(self)
 
     for enemy in enemies:
         if not enemy.pushflag:

@@ -1,4 +1,4 @@
-extends Node
+extends Object
 
 var character: Object
 var var_regex: RegEx
@@ -49,9 +49,9 @@ func activate_state(stateno):
         character.statetype = constants.FLAG_S
 
     if statedef.has('movetype') && statedef['movetype'].to_lower() != 'u':
-        character.statetype = constants.FLAGS[statedef['movetype'].to_lower()]
+        character.movetype = constants.FLAGS[statedef['movetype'].to_lower()]
     elif not statedef.has('movetype'):
-        character.statetype = constants.FLAG_I
+        character.movetype = constants.FLAG_I
 
     if statedef.has('physics') && statedef['physics'].to_lower() != 'u':
         character.physics = constants.FLAGS[statedef['physics'].to_lower()]
@@ -67,7 +67,7 @@ func activate_state(stateno):
         character.set_velocity_y(velset[1])
 
     if statedef.has('poweradd'):
-        character.add_power(statedef['poweradd'])
+        character.add_power(float(statedef['poweradd']))
 
     # TODO: Implement juggle, facep2, (hitdef|movehit|hitcount)persist
 

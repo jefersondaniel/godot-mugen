@@ -41,7 +41,7 @@ var FLAG_S: int = 1 << 9;
 var FLAG_T: int = 1 << 10;
 var FLAG_U: int = 1 << 11;
 
-var MAF: int = constants.FLAG_H + constants.FLAG_L + constants.FLAG_A + constants.FLAG_F
+var MAF: int = FLAG_H + FLAG_L + FLAG_A + FLAG_F
 
 # Special flags for state controllers, uncomment when implemented
 

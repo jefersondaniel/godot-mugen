@@ -1,4 +1,4 @@
-extends Node
+extends Object
 
 var input_prefix: String = ''
 var input_map: Dictionary = {
@@ -188,6 +188,6 @@ func check_element_state(input_code: int, element: Dictionary) -> bool:
         var input_direction: int = input_code & constants.ALL_DIRECTION_KEYS
         var element_direction: int = element_code & constants.ALL_DIRECTION_KEYS
 
-        key_down = !input_direction || (input_direction == element_direction)
+        key_down = !element_direction || (input_direction == element_direction)
 
     return key_down
