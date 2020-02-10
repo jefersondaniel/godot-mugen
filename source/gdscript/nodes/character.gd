@@ -4,7 +4,7 @@ extends KinematicBody2D
 var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 
-# Nodes
+# Nodes and managers
 var character_sprite = null
 var command_manager = null
 var state_manager = null
@@ -20,16 +20,25 @@ var consts: Dictionary = {
     'states': {},
 }
 
-# Custom Variables
+# Private variables
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
 var sys_float_vars: PoolRealArray
 var velocity: Vector2
 var special_flags = {}
+var push_flag: bool = true
+var in_hit_pause: bool = false
+var is_facing_right: bool = true
+var hit_def = null
+var hit_by_1 = null
+var hit_by_2 = null
+var is_falling: bool = false
+var is_hit_def_active: bool = false
+var hit_count: int = 0
+var unique_hit_count: int = 0
 
-# State variables
-
+# Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
 var state_variables: Array = []
 var power: float = 0
@@ -44,8 +53,6 @@ var movetype: int = constants.FLAG_I
 var sprpriority: int = 0
 var ctrl: int = 1
 var team: int = 0
-var is_facing_right: bool = true
-var pushflag: bool = true
 
 func _init(_consts, images, animations, _command_manager):
     consts = _consts
@@ -84,6 +91,13 @@ func setup_vars():
         float_vars[i] = 0
         sys_int_vars[i] = 0
         sys_float_vars[i] = 0
+
+func reset_state_variables():
+    self.time = 0
+    self.hit_def = null
+    self.hit_by_1 = null
+    self.hit_by_2 = null
+    self.is_hit_def_active = false
 
 func _ready():
     self.add_child(character_sprite)
@@ -306,6 +320,12 @@ func add_power(_power):
 func check_collision(other: Node2D, type: int):
     return self.character_sprite.check_collision(other.character_sprite, type)
 
+func check_attack_collision(other: Node2D):
+    return self.character_sprite.check_attack_collision(other.character_sprite)
+
+func check_command(name: String) -> bool:
+    return self.command_manager.active_commands.has(name)
+
 func _process(delta):
     draw_debug_text()
 
@@ -392,13 +412,13 @@ func handle_facing():
         return
 
 func handle_pushing():
-    if not pushflag:
+    if not push_flag:
         return
 
     var enemies = fight.get_enemies(self)
 
     for enemy in enemies:
-        if not enemy.pushflag:
+        if not enemy.push_flag:
             continue
 
         if not self.check_collision(enemy, 2):

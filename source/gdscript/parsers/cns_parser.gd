@@ -1,6 +1,7 @@
 extends Object
 
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
+var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 var MugenExpression = load('res://source/native/mugen_expression.gdns')
 
 func read(path):
@@ -81,11 +82,14 @@ func parse_controller(data: Dictionary, key: String):
                 controller[key].append(parse_expression(item))
         else:
             if (type == 'hitby' || type == 'nothitby') and (key == "value" or key == "value2"):
-                # Hit def attributes can omit the first argument, example attr = , NA
-                # this means that any of the first argument is applyed: S, C or A
-                if value.substr(0, 1) == ",":
-                    value = "SCA" + value
-            controller[key] = parse_expression(value)
+                var hitattr = HitAttribute.new()
+                hitattr.parse(value)
+                controller[key] = hitattr
+            elif type == 'hitdef':
+                # This will be parsed at state manager
+                controller[key] = value.to_lower()
+            else:
+                controller[key] = parse_expression(value)
 
     return controller
 

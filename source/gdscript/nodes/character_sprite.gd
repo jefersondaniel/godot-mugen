@@ -204,6 +204,12 @@ func check_collision(other, type: int) -> bool:
 
     return false
 
+func check_attack_collision(other) -> bool:
+    if not other.collision_area_2d or not self.attacking_area_2d:
+        return false
+
+    return self.attacking_area_2d.overlaps_area(other.collision_area_2d)
+
 func create_collision_box(type: int, points: Array):
     var rectangle_shape: RectangleShape2D = RectangleShape2D.new()
     rectangle_shape.extents = Vector2(abs(points[2] - points[0]) / 2, abs(points[3] - points[1]) / 2)

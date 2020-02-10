@@ -1,5 +1,7 @@
 extends Object
 
+var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
+
 var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
@@ -35,7 +37,7 @@ func activate_state(stateno):
     trigger_counter = {}
     character.prevstateno = character.stateno
     character.stateno = stateno
-    character.time = 0
+    character.reset_state_variables()
 
     if statedef.has('anim'):
         character.change_anim(int(statedef['anim']))
@@ -257,8 +259,12 @@ func handle_explod(controller):
     pass
 
 func handle_hitdef(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#hitdef
-    pass
+    var hit_def = HitDef.new()
+
+    hit_def.parse(controller, character)
+
+    character.hit_def = hit_def
+    character.is_hit_def_active = true
 
 func handle_width(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
