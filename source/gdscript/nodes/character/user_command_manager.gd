@@ -35,7 +35,7 @@ func set_commands(_commands: Array) -> void:
     for command in commands:
         command_countdown[command['name']] = 0
 
-func handle_tick(_delta: float) -> void:
+func update() -> void:
     update_input_buffer()
     update_command_countdown()
     check_commands()

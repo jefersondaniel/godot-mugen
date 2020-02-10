@@ -77,11 +77,22 @@ func get_enemies(character):
     return results
 
 func _physics_process(delta: float):
+    self.update_characters()
+    self.update_combat()
+
+func update_combat():
     self.contacts = []
     self.cancelled_contacts = []
 
     self.check_move_contacts()
     self.run_character_contacts()
+
+func update_characters():
+    for character in self.characters:
+        character.update_state()
+
+    for character in self.characters:
+        character.update_physics()
 
 func run_character_contacts():
     for attack in self.contacts:
@@ -93,7 +104,7 @@ func run_character_contacts():
                 priority_check(attack, reverse)
             if self.cancelled_contacts.has(attack):
                 continue
-        self.run_attack(attack)
+        self.run_character_attack(attack)
 
     for character in self.characters:
         var hit_count: int = count_contacts(character, CONTACT_HIT)
@@ -103,10 +114,6 @@ func run_character_contacts():
             character.unique_hit_count += hit_count
         if block_count or hit_count:
             character.is_hit_def_active = false
-
-func run_attack(attack):
-    print("Running attack")
-    print(attack)
 
 func count_contacts(attacker, type):
     var count: int = 0
@@ -128,10 +135,10 @@ func priority_check(a, b):
     if a['type'] != CONTACT_HIT or b['type'] != CONTACT_HIT:
         printerr("Invalid priority check")
 
-    var a_priority: int = a['hitdef'].priority
-    var a_priority_type: String = a['hitdef'].priority_type
-    var b_priority: int = b['hitdef'].priority
-    var b_priority_type: String = b['hitdef'].priority_type
+    var a_priority: int = a['hit_def'].priority
+    var a_priority_type: String = a['hit_def'].priority_type
+    var b_priority: int = b['hit_def'].priority
+    var b_priority_type: String = b['hit_def'].priority_type
 
     if a_priority > b_priority:
         self.cancelled_contacts.append(b)
@@ -247,3 +254,86 @@ func sort_contacts(a, b):
         return hit_def_a.priority < hit_def_b.priority
 
     return false
+
+func run_character_attack(attack):
+    if attack['type'] == CONTACT_HIT:
+        on_character_attack(attack['attacker'], attack['target'], attack['hit_def'], false)
+    elif attack['type'] == CONTACT_BLOCK:
+        on_character_attack(attack['attacker'], attack['target'], attack['hit_def'], true)
+    # elif attack['type'] == CONTACT_MISS_BLOCK:
+    #     out_of_range_block(attack.Target)
+
+func on_character_attack(attacker, target, hit_def, blocked):
+    target.handle_hit_target(hit_def, attacker, blocked)
+    attacker.handle_hit_attacker(target.received_hit_def, target, blocked)
+    # set_facing(attacker, target, target.received_hit_def)
+
+    var received_hit_def = target.received_hit_def
+
+    # if not blocked:
+    #     do_env_shake(received_hit_def)
+    #     play_sound(attacker, target, received_hit_def.hitsound, received_hit_def.hitsound_source)
+    #     make_spark(attacker, target, received_hit_def.sparkno, received_hit_def.sparkxy, received_hit_def.sparkno_source)
+    # else:
+    #     play_sound(attacker, target, received_hit_def.guardsound, received_hit_def.guardsound_source);
+    #     make_spark(attacker, target, received_hit_def.guard_sparkno, received_hit_def.sparkxy, received_hit_def.guard_sparkno_source)
+
+    # var hitoverride = target.get_hit_override(received_hit_def)
+
+    # if hitoverride:
+    #     if hitoverride.force_air:
+    #         received_hit_def.fall = 1
+    #     target.state_manager.foreign_manager = null
+    #     target.change_state(hitoverride.state_number)
+    # else:
+    #     if not blocked:
+    #         on_attack_hit(attacker, target, received_hit_def)
+    #     else
+    #         on_attack_block(attacker, target, received_hit_def)
+
+    if not blocked: # TODO: Remove and implement hit override
+        on_attack_hit(attacker, target, received_hit_def)
+    # else:
+    #     on_attack_block(attacker, target, received_hit_def)
+
+func on_attack_hit(attacker, target, hit_def):
+    # apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
+
+    if target.life == 0:
+        target.killed = true
+        hit_def.fall = 1
+
+    match target.hit_state_type:
+        constants.FLAG_S, constants.FLAG_C, constants.FLAG_L:
+            target.hit_time = hit_def.ground_hittime
+        constants.FLAG_A:
+            target.hit_time = hit_def.air_hittime
+        _:
+            printerr("Invalid hit state type: " % [target.hit_state_type])
+
+    if hit_def.p1stateno > 0:
+        attacker.change_state(hit_def.p1stateno)
+
+    if hit_def.p2stateno > 0:
+        if hit_def.p2getp1state:
+            target.state_manager.foreign_manager = attacker.state_manager
+        else:
+            target.state_manager.foreign_manager = null
+        target.change_state(hit_def.p2stateno)
+    else:
+        target.state_manager.foreign_manager = null
+
+        if hit_def.ground_type == 'trip':
+            target.change_state(constants.STATE_HIT_TRIP)
+        else:
+            match target.hit_state_type:
+                constants.FLAG_S:
+                    target.change_state(constants.STATE_STANDING_HIT_SHAKING)
+                constants.FLAG_C:
+                    target.change_state(constants.STATE_CROUCHING_HIT_SHAKING)
+                constants.FLAG_A:
+                    target.change_state(constants.STATE_AIR_HIT_SHAKING)
+                constants.FLAG_L:
+                    target.change_state(constants.STATE_HIT_PRONE_SHAKING)
+                _:
+                    printerr("Invalid hit state type: " % [target.hit_state_type])

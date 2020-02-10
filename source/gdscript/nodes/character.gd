@@ -31,12 +31,28 @@ var push_flag: bool = true
 var in_hit_pause: bool = false
 var is_facing_right: bool = true
 var hit_def = null
+var received_hit_def = null
 var hit_by_1 = null
 var hit_by_2 = null
 var is_falling: bool = false
 var is_hit_def_active: bool = false
 var hit_count: int = 0
 var unique_hit_count: int = 0
+var attacker = null
+var targets: Array = []
+var blocked: bool = false
+var killed: bool = false
+var remaining_juggle_points: int = 15
+var required_juggle_points: int = 0
+var hit_pause_time: int = 0
+var move_contact: int = 0
+var move_guarded: int = 0
+var move_hit: int = 0
+var move_reversed: int = 0
+var hit_overrides: Array = []
+var hit_time: int = 0
+var hit_shake_time: int = 0
+var hit_state_type: int = 0
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
@@ -103,6 +119,9 @@ func _ready():
     self.add_child(character_sprite)
 
 func get_const(fullname):
+    if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
+        return 1 # TODO: Implement parsing global constants
+
     var data = fullname.to_lower().split(".", false, 1)
     var kind = data[0]
     var name = data[1]
@@ -222,6 +241,10 @@ func get_context_variable(key):
         return get_relative_position().x
     if key == "pos_y":
         return get_relative_position().y
+    if key == "hitshakeover":
+        return hit_shake_time <= 0
+    if key == "hitfall":
+        return is_falling
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
@@ -355,14 +378,54 @@ func draw_debug_text():
 
     get_node('/root/Node2D/text').text = text
 
-func _physics_process(delta: float):
+func update_state():
     self.reset_assert_special()
 
-    command_manager.handle_tick(delta)
-    state_manager.handle_tick(delta)
-    self.handle_physics()
+    self.command_manager.update()
+    self.state_manager.update()
 
-    self.move_and_collide(velocity)
+    if not self.in_hit_pause:
+        self.update_hit_state()
+
+func update_hit_state():
+    if self.move_contact > 0:
+        self.move_contact += 1
+
+    if self.move_hit > 0:
+        self.move_hit += 1
+
+    if self.move_guarded > 0:
+        self.move_guarded += 1
+
+    if self.move_reversed > 0:
+        self.move_reversed += 1
+
+    if self.hit_by_1:
+        self.hit_by_1.update()
+    
+    if self.hit_by_2:
+        self.hit_by_2.update()
+
+    if self.hit_shake_time > 0:
+        self.hit_shake_time = self.hit_shake_time - 1
+    elif self.hit_time > -1:
+        self.hit_time = self.hit_time - 1
+
+    if self.hit_shake_time < 0:
+        self.hit_shake_time = 0
+
+    if self.hit_time < 0:
+        self.hit_time = 0
+
+    if self.received_hit_def and self.stateno == constants.STATE_HIT_GET_UP and self.time == 0:
+        self.received_hit_def.fall = 0
+
+    for hit_override in self.hit_overrides:
+        hit_override.update()
+
+func update_physics():
+    self.handle_physics()
+    self.move_and_collide(self.velocity)
     self.handle_pushing()
 
 func handle_physics():
@@ -438,3 +501,54 @@ func handle_pushing():
             continue
 
         enemy.position = enemy.position + Vector2(overlap * overlap_direction, 0)
+
+func handle_hit_target(hit_def, attacker, blocked):
+    self.received_hit_def = hit_def.duplicate()
+    self.attacker = attacker
+    self.blocked = blocked
+
+    if self.is_falling:
+        self.received_hit_def.fall = 1
+    else:
+        self.remaining_juggle_points = int(self.get_const('data.airjuggle'))
+        print("remaining juggle points = %s" % [self.remaining_juggle_points])
+
+    self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
+    self.hit_state_type = self.statetype
+
+    self.set_z_index(self.received_hit_def.p2sprpriority)
+    self.ctrl = 0
+    self.movetype = constants.FLAG_H
+
+    if self.blocked:
+        self.hit_shake_time = self.received_hit_def.guard_shaketime
+        self.add_power(self.received_hit_def.p2_guard_power)
+    else:
+        self.hit_shake_time = self.received_hit_def.shaketime
+        self.add_power(self.received_hit_def.p2_power)
+
+        # TODO: Apply pallete fx
+
+        if is_falling:
+            self.remaining_juggle_points -= attacker.required_juggle_points
+
+func handle_hit_attacker(hit_def, target, blocked):
+    self.set_z_index(hit_def.p1sprpriority)
+
+    if not self.targets.has(target):
+        self.targets.append(target)
+
+    if blocked:
+        self.add_power(hit_def.p1_guard_power)
+        hit_pause_time = hit_def.guard_pausetime
+        move_contact = 1
+        move_guarded = 1
+        move_hit = 0
+        move_reversed = 0
+    else:
+        self.add_power(hit_def.p1_power)
+        hit_pause_time = hit_def.pausetime
+        move_contact = 1
+        move_guarded = 0
+        move_hit = 1
+        move_reversed = 0

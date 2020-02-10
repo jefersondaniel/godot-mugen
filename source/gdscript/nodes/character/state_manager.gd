@@ -9,13 +9,14 @@ var current_tick: int = 0
 var trigger_names: Array = [
     'movecontact'
 ]
+var foreign_manager = null # TODO: Implement foreign
 
 func _init(_character):
     character = _character
     var_regex = RegEx.new()
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
 
-func handle_tick(_delta: float):
+func update():
     var oldstateno = character.stateno
 
     process_state(character.get_state_def(-1))
@@ -70,6 +71,9 @@ func activate_state(stateno):
 
     if statedef.has('poweradd'):
         character.add_power(float(statedef['poweradd']))
+    
+    if statedef.has('juggle'):
+        character.required_juggle_points = int(statedef['juggle'])
 
     # TODO: Implement juggle, facep2, (hitdef|movehit|hitcount)persist
 

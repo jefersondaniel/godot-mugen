@@ -15,12 +15,14 @@ var priority: int = 4
 var priority_type: String = 'hit'
 var hit_damage: int = 0
 var guard_damage: int = 0
-var p1_pausetime: int = 0
-var p2_shaketime: int = 0
-var p1_guard_pausetime: int = 0
-var p2_guard_shaketime: int = 0
+var pausetime: int = 0
+var shaketime: int = 0
+var guard_pausetime: int = 0
+var guard_shaketime: int = 0
 var sparkno: int = 0 # Defaults to the value set in the player variables if omitted.
+var sparkno_source: String = 'common'
 var guard_sparkno: int = 0
+var guard_sparkno_source: String = 'common'
 var sparkxy: Vector2 = Vector2(0, 0)
 var hitsound_source: String = 'common' # common or player
 var hitsound: Array = [] # Defaults to player variable
@@ -78,8 +80,10 @@ var kill: int = 1
 var guard_kill: int = 1
 var fall_kill: int = 1
 var numhints: int = 1
-var getpower: Array = [0, 0] # TODO: If omitted, p1power defaults to hit_damage (from "damage" parameter) multiplied by the value of Default.Attack.LifeToPowerMul specified in data/mugen.cfg. If p1gpower is omitted, it defaults to the value specified for p1power divided by 2.
-var givepower: Array = [0, 0] # If omitted, p1power defaults to hit_damage (from "damage" parameter) multiplied by the value of Default.GetHit.LifeToPowerMul specified in data/mugen.cfg. If p1gpower is omitted, it defaults to the value specified for p1power divided by 2.
+var p1_power: int = 0
+var p1_guard_power: int = 0
+var p2_power: int = 0
+var p2_guard_power: int = 0
 var palfx_time: int = 0
 var palfx_mul: Array = [0, 0, 0]
 var palfx_add: Array = [0, 0, 0]
@@ -136,21 +140,25 @@ func parse(data: Dictionary, context):
 
     if data.has('pausetime'):
         aux_array = data['pausetime'].split(',')
-        p1_pausetime = int(evaluate_expression(aux_array[0], context))
+        pausetime = int(evaluate_expression(aux_array[0], context))
         if len(aux_array) > 1:
-            p2_shaketime = int(evaluate_expression(aux_array[1], context))
+            shaketime = int(evaluate_expression(aux_array[1], context))
 
     if data.has('guard.pausetime'):
         aux_array = data['guard.pausetime'].split(',')
-        p1_guard_pausetime = int(evaluate_expression(aux_array[0], context))
+        guard_pausetime = int(evaluate_expression(aux_array[0], context))
         if len(aux_array) > 1:
-            p2_guard_shaketime = int(evaluate_expression(aux_array[1], context))
+            guard_shaketime = int(evaluate_expression(aux_array[1], context))
     
     if data.has('sparkno'):
-        sparkno = int(evaluate_expression(data['sparkno'], context))
+        if data['sparkno'].begins_with('s'):
+            sparkno_source = 'player'
+        sparkno = int(evaluate_expression(data['sparkno'].lstrip('s'), context))
 
     if data.has('guard.sparkno'):
-        guard_sparkno = int(evaluate_expression(data['guard.sparkno'], context))
+        if data['guard.sparkno'].begins_with('s'):
+            guard_sparkno_source = 'player'
+        guard_sparkno = int(evaluate_expression(data['guard.sparkno'].lstrip('s'), context))
 
     if data.has('sparkxy'):
         sparkxy = parse_vector(data['sparkxy'], context)
@@ -348,10 +356,27 @@ func parse(data: Dictionary, context):
         numhints = int(evaluate_expression(data['numhints'], context))
 
     if data.has('getpower'):
-        getpower = parse_array(data['getpower'], context)
+        # TODO: implement default variable parsing
+        aux_array = parse_array(data['getpower'], context)
+        p1_power = aux_array[0]
+        if aux_array.size() > 1:
+            p1_guard_power = aux_array[1]
+        else:
+            p1_guard_power = p1_power / 2
+    else:
+        p1_power = hit_damage * context.get_const('default.attack.lifetopowermul')
+        p1_guard_power = p1_power / 2
 
     if data.has('givepower'):
-        givepower = parse_array(data['givepower'], context)
+        aux_array = parse_array(data['givepower'], context)
+        p2_power = aux_array[0]
+        if aux_array.size() > 1:
+            p2_guard_power = aux_array[1]
+        else:
+            p2_guard_power = p2_power / 2
+    else:
+        p2_power = hit_damage * context.get_const('default.gethit.lifetopowermul')
+        p2_guard_power = p2_power / 2
 
     if data.has('palfx.time'):
         palfx_time = int(evaluate_expression(data['palfx.time'], context))
@@ -428,8 +453,10 @@ func parse_array(value: String, context) -> Array:
 
     if typeof(result) == TYPE_ARRAY:
         return result
-    else:
+    elif typeof(result) != TYPE_NIL:
         return [result]
+
+    return []
 
 func evaluate_expression(text, context):
     var expression = MugenExpression.new()
@@ -459,3 +486,11 @@ func allow_hit_air() -> bool:
 
 func allow_hit_down() -> bool:
     return bool(hitflag & constants.FLAG_D)
+
+func duplicate():
+    var result = get_script().new()
+
+    for property in self.get_property_list():
+        result.set(property['name'], self.get(property['name']))
+
+    return result
