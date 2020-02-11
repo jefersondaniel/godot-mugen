@@ -252,7 +252,8 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
          *
          * This is a trigger that checks if the attr is in the list, result:
          *
-         * HitDefAttr = A, SA, HA => HitDefAttr("A", "SA", "HA")
+         * HitDefAttr = A, SA, HA => HitDefAttr("=", "A", "SA", "HA")
+         * HitDefAttr = , SA, HA => HitDefAttr("=", "SCA", "SA", "HA")
          */
 
         // Convert hitdeff expression to a function call
@@ -261,12 +262,21 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
             && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "hitdefattr"
             && (MATCH_TOKEN_TYPE(oldtokens, i + 1, "=") || MATCH_TOKEN_TYPE(oldtokens, i + 1, "!="));
 
+        string sca = "sca";
+
         if (isHitDefAttr) {
             newtokens.push_back(oldtokens[i]);
             newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
             newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(oldtokens[i + 1]->type))));
             newtokens.push_back(shared_ptr<Token>(new CommaToken(parser)));
             i += 2;
+
+            if (MATCH_TOKEN_TYPE(oldtokens, i, ",")) {
+                newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(sca))));
+                newtokens.push_back(shared_ptr<Token>(new CommaToken(parser)));
+                i += 1;
+            }
+
             while (MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")) {
                 newtokens.push_back(oldtokens[i]);
 
@@ -410,17 +420,18 @@ vector<shared_ptr<Token>> Tokenizer::postprocess(Parser *parser, vector<shared_p
         }
 
         /**
-         * The const function transform the argument in a string if its a indentifier:
+         * Transform the argument in a string if its a indentifier:
          * const(velocity.x) => const("velocity.x")
+         * gethitvar(velocity.x) => gethitvar("velocity.x")
          */
 
-        bool isConst = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
-            && dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "const"
+        bool isGetter = MATCH_TOKEN_TYPE(oldtokens, i, "(identifier)")
+            && (dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "const" || dynamic_pointer_cast<IdentifierToken>(oldtokens[i])->name == "gethitvar")
             && MATCH_TOKEN_TYPE(oldtokens, i + 1, "(")
             && MATCH_TOKEN_TYPE(oldtokens, i + 2, "(identifier)")
             && MATCH_TOKEN_TYPE(oldtokens, i + 3, ")");
 
-        if (isConst) {
+        if (isGetter) {
             newtokens.push_back(oldtokens[i]);
             newtokens.push_back(shared_ptr<Token>(new ParenthesisOpenToken(parser)));
             newtokens.push_back(shared_ptr<Token>(new LiteralToken(parser, Value(dynamic_pointer_cast<IdentifierToken>(oldtokens[i + 2])->name))));
