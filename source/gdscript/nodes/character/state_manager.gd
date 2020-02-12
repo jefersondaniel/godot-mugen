@@ -284,6 +284,9 @@ func handle_hitvelset(controller):
     character.set_velocity_x(new_velocity.x)
     character.set_velocity_y(new_velocity.y)
 
+func handle_movecontact(controller):
+    return character.move_contact if character.movetype == constants.FLAG_A else 0
+
 func handle_playsnd(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
     pass
@@ -303,10 +306,6 @@ func handle_width(controller):
 func handle_sprpriority(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#sprpriority
     pass
-
-func handle_movecontact(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/trigger.html#movecontact
-    return 0
 
 func handle_forcefeedback(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
