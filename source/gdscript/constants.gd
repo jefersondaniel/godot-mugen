@@ -120,6 +120,21 @@ var STATE_HIT_AIR_FALL_RECOVER: int = 5210
 var STATE_CONTINUE: int = 5500
 var STATE_INITIALIZE: int = 5900
 
+var ANIM_TYPE_ID = {
+    'light': 0,
+    'medium': 1,
+    'hard': 2,
+    'back': 3,
+    'up': 4,
+    'diagup': 5,
+}
+
+var HIT_TYPE_ID = {
+    'high': 1,
+    'low': 2,
+    'trip': 3
+}
+
 func _init():
     for p in get_property_list():
         if not p['name'].begins_with('FLAG_'):

@@ -3,6 +3,7 @@ extends KinematicBody2D
 # Dependencies
 var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
+var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 
 # Nodes and managers
 var character_sprite = null
@@ -53,6 +54,7 @@ var hit_overrides: Array = []
 var hit_time: int = 0
 var hit_shake_time: int = 0
 var hit_state_type: int = 0
+var defense_multiplier: float = 1
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
@@ -150,6 +152,88 @@ func get_const(fullname):
 
     return result
 
+func get_hit_var(key):
+    if not received_hit_def:
+        printerr("No hitdef active")
+        return null
+
+    match key:
+        'fall.envshake.time':
+            return received_hit_def.fall_envshake_time
+        'fall.envshake.freq':
+            return received_hit_def.fall_envshake_freq
+        'fall.envshake.ampl':
+            return received_hit_def.fall_envshake_ampl
+        'fall.envshake.phase':
+            return received_hit_def.fall_envshake_phase
+        'guarded':
+            return blocked
+        'chainid':
+            return received_hit_def.chainid
+        'fall':
+            return is_falling
+        'fall.damage':
+            return received_hit_def.fall_damage
+        'fall.recover':
+            return received_hit_def.fall_recover
+        'fall.kill':
+            return received_hit_def.fall_kill
+        'fall.recovertime':
+            return received_hit_def.fall_recovertime
+        'fall.xvel':
+            return received_hit_def.fall_xvelocity.x
+        'fall.yvel':
+            return received_hit_def.fall_xvelocity.y
+        'recovertime':
+            return 0 # implement this
+        'hitcount':
+            return hit_count
+        'xvel':
+            return get_hit_velocity().x
+        'yvel':
+            return get_hit_velocity().y
+        'type':
+            if life == 0:
+                return 3
+            return get_hit_var('airtype') if hit_state_type == constants.FLAG_A else get_hit_var('groundtype')
+        'airtype':
+            var airtype: String = received_hit_def.air_type
+            return constants.HIT_TYPE_ID[airtype] if constants.HIT_TYPE_ID.has(airtype) else 4
+        'groundtype':
+            var groundtype: String = received_hit_def.ground_type
+            return constants.HIT_TYPE_ID[groundtype] if constants.HIT_TYPE_ID.has(groundtype) else 0
+        'animtype':
+            var animtype: String = ''
+            if is_falling:
+                animtype = received_hit_def.fall_animtype
+            elif hit_state_type == constants.FLAG_A:
+                animtype = received_hit_def.air_animtype
+            else:
+                animtype = received_hit_def.animtype
+            return constants.ANIM_TYPE_ID[animtype] if constants.ANIM_TYPE_ID.has(animtype) else null
+        'damage':
+            return received_hit_def.hit_damage if not blocked else received_hit_def.guard_damage
+        'hitshaketime':
+            return hit_shake_time
+        'hittime':
+            return hit_time
+        'slidetime':
+            return received_hit_def.ground_slidetime if not blocked else received_hit_def.guard_slidetime
+        'ctrltime':
+            return received_hit_def.airguard_ctrltime if hit_state_type == constants.FLAG_A else received_hit_def.guard_ctrltime
+        'xoff':
+            return received_hit_def.snap.x if received_hit_def.snap else null
+        'yoff':
+            return received_hit_def.snap.y if received_hit_def.snap else null
+        'yaccel':
+            return received_hit_def.yaccel
+        'isbound':
+            printerr("TODO: Implement bind")
+            return null
+        _:
+            printerr("Hit var not found: %s" % [key])
+            return null
+
 func get_relative_position():
     return Vector2(position.x, position.y - fight.stage.ground_y)
 
@@ -245,6 +329,8 @@ func get_context_variable(key):
         return hit_shake_time <= 0
     if key == "hitfall":
         return is_falling
+    if key == "hitover":
+        return hit_time <= 0
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
@@ -271,6 +357,8 @@ func call_context_function(key, arguments):
         return abs(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
         return get_const(arguments[0])
+    if key == 'gethitvar':
+        return get_hit_var(arguments[0])
     if key == 'const720p':
         return arguments[0] # todo, multiply by resolution
     if key == 'const240p':
@@ -288,8 +376,10 @@ func call_context_function(key, arguments):
         return int_vars[arguments[0]]
     if key == 'fvar':
         return float_vars[arguments[0]]
-    if key == "assertion":
+    if key == 'assertion':
         return check_assert_special(arguments[0])
+    if key == 'hitdefattr':
+        return check_hit_def_attr(arguments)
     push_warning("Method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
@@ -337,6 +427,19 @@ func mul_velocity(_velocity):
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
+func get_hit_velocity() -> Vector2:
+    var hit_velocity: Vector2 = Vector2(0, 0)
+
+    if blocked:
+        hit_velocity = received_hit_def.airguard_velocity if hit_state_type == constants.FLAG_A else received_hit_def.guard_velocity
+    else:
+        hit_velocity = received_hit_def.air_velocity if hit_state_type == constants.FLAG_A else received_hit_def.ground_velocity
+        if killed:
+            hit_velocity.x = hit_velocity.x * 0.66 # TODO: Put this constant in global file
+            hit_velocity.y = -6
+
+    return hit_velocity
+
 func add_power(_power):
     power = power + _power
 
@@ -348,6 +451,13 @@ func check_attack_collision(other: Node2D):
 
 func check_command(name: String) -> bool:
     return self.command_manager.active_commands.has(name)
+
+func check_hit_def_attr(args: Array) -> bool:
+    var operator: String = args.pop_front()
+    var attribute = HitAttribute.parse(args)
+    var result = received_hit_def.attribute.satisfy(attribute)
+
+    return result if operator == "=" else not result
 
 func _process(delta):
     draw_debug_text()
@@ -511,7 +621,6 @@ func handle_hit_target(hit_def, attacker, blocked):
         self.received_hit_def.fall = 1
     else:
         self.remaining_juggle_points = int(self.get_const('data.airjuggle'))
-        print("remaining juggle points = %s" % [self.remaining_juggle_points])
 
     self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
     self.hit_state_type = self.statetype

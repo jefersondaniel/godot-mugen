@@ -250,6 +250,40 @@ func handle_assertspecial(controller):
     if controller.has('flag3'):
         character.assert_special(controller['flag3'].execute(character))
 
+func handle_defencemulset(controller):
+    var value = controller['value'].execute(character)
+    character.defense_multiplier = float(value)
+
+func handle_hitdef(controller):
+    var hit_def = HitDef.new()
+    hit_def.parse(controller, character)
+    character.hit_def = hit_def
+    character.is_hit_def_active = true
+
+func handle_hitvelset(controller):
+    var xflag = 1
+    var yflag = 1
+
+    if controller.has('x'):
+        xflag = controller['x'].execute(character)
+
+    if controller.has('y'):
+        yflag = controller['y'].execute(character)
+
+    var new_velocity = character.get_hit_velocity()
+
+    if character.attacker.is_facing_right == character.is_facing_right:
+        new_velocity.x = -new_velocity.x
+
+    if not xflag:
+        new_velocity.x = character.velocity.x
+
+    if not yflag:
+        new_velocity.x = character.velocity.x
+
+    character.set_velocity_x(new_velocity.x)
+    character.set_velocity_y(new_velocity.y)
+
 func handle_playsnd(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
     pass
@@ -262,14 +296,6 @@ func handle_explod(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#explod
     pass
 
-func handle_hitdef(controller):
-    var hit_def = HitDef.new()
-
-    hit_def.parse(controller, character)
-
-    character.hit_def = hit_def
-    character.is_hit_def_active = true
-
 func handle_width(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
     pass
@@ -280,4 +306,8 @@ func handle_sprpriority(controller):
 
 func handle_movecontact(controller):
     # TODO: http://www.elecbyte.com/mugendocs/trigger.html#movecontact
+    return 0
+
+func handle_forcefeedback(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
     return 0

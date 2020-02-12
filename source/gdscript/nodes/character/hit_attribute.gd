@@ -3,8 +3,16 @@ extends Object
 var state_type: int = 0
 var attack_types: Array = []
 
-func parse(value: String):
-    var pieces: Array = value.to_lower().split(",")
+func parse(value):
+    var pieces: Array = []
+
+    if typeof(value) == TYPE_STRING:
+        pieces = value.to_lower().split(",")
+    elif typeof(value) == TYPE_ARRAY:
+        pieces = value
+    else:
+        printerr("Invalid input: %s" % [value])
+
     var piece: String = ''
     var attack_intensity: int = 0
     var attack_category: int = 0
