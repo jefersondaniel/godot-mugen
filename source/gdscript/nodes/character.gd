@@ -55,6 +55,7 @@ var hit_time: int = 0
 var hit_shake_time: int = 0
 var hit_state_type: int = 0
 var defense_multiplier: float = 1
+var attack_multiplier: float = 1
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
@@ -443,6 +444,14 @@ func get_hit_velocity() -> Vector2:
 
 func add_power(_power):
     power = power + _power
+
+func get_attack_power() -> float:
+    var result = get_const('data.attack')
+    return float(result) if result != null else 0.0
+
+func get_defence_power() -> float:
+    var result = get_const('data.defence')
+    return float(result) if result != null else 0.0
 
 func check_collision(other: Node2D, type: int):
     return self.character_sprite.check_collision(other.character_sprite, type)

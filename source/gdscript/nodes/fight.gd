@@ -306,7 +306,7 @@ func on_character_attack(attacker, target, hit_def, blocked):
     #     on_attack_block(attacker, target, received_hit_def)
 
 func on_attack_hit(attacker, target, hit_def):
-    # apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
+    apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
 
     if target.life == 0:
         target.killed = true
@@ -346,3 +346,11 @@ func on_attack_hit(attacker, target, hit_def):
                     target.change_state(constants.STATE_HIT_PRONE_SHAKING)
                 _:
                     printerr("Invalid hit state type: " % [target.hit_state_type])
+
+func apply_damage(attacker, target, amount, cankill):
+    var offensive_multiplier = attacker.attack_multiplier * (attacker.get_attack_power() / 100.0)
+    var defensive_multiplier = target.defense_multiplier * (target.get_defence_power() / 100.0)
+    amount = int(amount * offensive_multiplier / defensive_multiplier)
+    target.life -= amount
+    if target.life == 0 and not cankill:
+        target.life = 1

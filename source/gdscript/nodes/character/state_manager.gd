@@ -287,6 +287,10 @@ func handle_defencemulset(controller):
     var value = controller['value'].execute(character)
     character.defense_multiplier = float(value)
 
+func handle_attackmulset(controller):
+    var value = controller['value'].execute(character)
+    character.attack_multiplier = float(value)
+
 func handle_hitdef(controller):
     var hit_def = HitDef.new()
     hit_def.parse(controller, character)
