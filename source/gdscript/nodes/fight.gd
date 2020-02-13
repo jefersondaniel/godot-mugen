@@ -89,6 +89,15 @@ func update_combat():
 
 func update_characters():
     for character in self.characters:
+        character.cleanup()
+
+    for character in self.characters:
+        character.update_input()
+
+    for character in self.characters:
+        character.update_animation()
+
+    for character in self.characters:
         character.update_state()
 
     for character in self.characters:

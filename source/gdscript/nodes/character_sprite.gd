@@ -12,6 +12,7 @@ var current_animation: int = 0
 var animation_time: int = 0
 var animation_element: int = 0
 var animation_looptime: int = 0
+var tick_length: float = 1
 
 func _init(_images, _animations):
     var empty_image = Image.new()
@@ -24,6 +25,7 @@ func _init(_images, _animations):
     animations = _animations
     images = _images
     animation_player = AnimationPlayer.new()
+    animation_player.playback_active = false
 
     # Prepare an empty texture
     empty_image.create_from_data(1, 1, false, Image.FORMAT_RGBA8, PoolByteArray([0,0,0,0]))
@@ -80,7 +82,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         var animation_name = '%s-%s' % [animation_key, set_key]
         var animation_frames = animations[animation_key]['sets'][set_key]['frames']
         if null == animation_frames.back():
-            print(animation_key)
+            printerr("Invalid animation key")
         var loop = false if animation_frames.back()['ticks'] == -1 else true
         var image = null
         var image_offset = null
@@ -104,7 +106,6 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         var frame_value = 0
         var frame_width = 0
         var current_set_time = 0.0
-        var tick_length = 1.0 / 60.0
         var frame_key: String
 
         for frame in animation_frames:
@@ -144,7 +145,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
     element_by_tick[animation_key] = current_element_by_tick
 
 func change_anim(value: int):
-    animation_time = 0
+    animation_time = -1
     animation_element = 0
     current_animation = value
     animation_looptime = looptimes[value]
@@ -255,7 +256,8 @@ func inverse_boxes(boxes, is_facing_right):
 
     return result
 
-func _process(delta):
+func handle_tick():
+    animation_player.advance(tick_length)
     animation_time = animation_time + 1
 
 func _draw():

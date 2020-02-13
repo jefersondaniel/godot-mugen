@@ -68,7 +68,6 @@ var stateno: int = 0
 var statetype: int = constants.FLAG_S
 var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
-var sprpriority: int = 0
 var ctrl: int = 1
 var team: int = 0
 
@@ -325,6 +324,8 @@ func get_context_variable(key):
         return get_relative_position().x
     if key == "pos_y":
         return get_relative_position().y
+    if key == "sprpriority":
+        return z_index
     if key == "hitshakeover":
         return hit_shake_time <= 0
     if key == "hitfall":
@@ -392,7 +393,7 @@ func change_state(stateno: int):
     state_manager.activate_state(stateno)
 
 func assert_special(flag: String):
-    special_flags[flag.to_lower()] = 2
+    special_flags[flag.to_lower()] = 1
 
 func reset_assert_special():
     for key in special_flags:
@@ -488,55 +489,72 @@ func draw_debug_text():
 
     get_node('/root/Node2D/text').text = text
 
+func cleanup():
+    if hit_pause_time > 1:
+        in_hit_pause = true
+        hit_pause_time = hit_pause_time - 1
+    else:
+        in_hit_pause = false
+        hit_pause_time = 0
+
+    reset_assert_special()
+
+func update_animation():
+    if not in_hit_pause:
+        character_sprite.handle_tick()
+
+func update_input():
+    command_manager.update(in_hit_pause)
+
 func update_state():
-    self.reset_assert_special()
+    state_manager.update()
 
-    self.command_manager.update()
-    self.state_manager.update()
-
-    if not self.in_hit_pause:
-        self.update_hit_state()
+    if not in_hit_pause:
+        update_hit_state()
 
 func update_hit_state():
-    if self.move_contact > 0:
-        self.move_contact += 1
+    if move_contact > 0:
+        move_contact += 1
 
-    if self.move_hit > 0:
-        self.move_hit += 1
+    if move_hit > 0:
+        move_hit += 1
 
-    if self.move_guarded > 0:
-        self.move_guarded += 1
+    if move_guarded > 0:
+        move_guarded += 1
 
-    if self.move_reversed > 0:
-        self.move_reversed += 1
+    if move_reversed > 0:
+        move_reversed += 1
 
-    if self.hit_by_1:
-        self.hit_by_1.update()
+    if hit_by_1:
+        hit_by_1.update()
     
-    if self.hit_by_2:
-        self.hit_by_2.update()
+    if hit_by_2:
+        hit_by_2.update()
 
-    if self.hit_shake_time > 0:
-        self.hit_shake_time = self.hit_shake_time - 1
-    elif self.hit_time > -1:
-        self.hit_time = self.hit_time - 1
+    if hit_shake_time > 0:
+        hit_shake_time = hit_shake_time - 1
+    elif hit_time > -1:
+        hit_time = hit_time - 1
 
-    if self.hit_shake_time < 0:
-        self.hit_shake_time = 0
+    if hit_shake_time < 0:
+        hit_shake_time = 0
 
-    if self.hit_time < 0:
-        self.hit_time = 0
+    if hit_time < 0:
+        hit_time = 0
 
-    if self.received_hit_def and self.stateno == constants.STATE_HIT_GET_UP and self.time == 0:
-        self.received_hit_def.fall = 0
+    if received_hit_def and stateno == constants.STATE_HIT_GET_UP and time == 0:
+        received_hit_def.fall = 0
 
-    for hit_override in self.hit_overrides:
+    for hit_override in hit_overrides:
         hit_override.update()
 
 func update_physics():
-    self.handle_physics()
-    self.move_and_collide(self.velocity)
-    self.handle_pushing()
+    if in_hit_pause or hit_shake_time > 0:
+        return
+
+    handle_physics()
+    move_and_collide(velocity)
+    handle_pushing()
 
 func handle_physics():
     var ground_friction: float = 0
@@ -625,7 +643,7 @@ func handle_hit_target(hit_def, attacker, blocked):
     self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
     self.hit_state_type = self.statetype
 
-    self.set_z_index(self.received_hit_def.p2sprpriority)
+    self.z_index = self.received_hit_def.p2sprpriority
     self.ctrl = 0
     self.movetype = constants.FLAG_H
 
@@ -642,7 +660,7 @@ func handle_hit_target(hit_def, attacker, blocked):
             self.remaining_juggle_points -= attacker.required_juggle_points
 
 func handle_hit_attacker(hit_def, target, blocked):
-    self.set_z_index(hit_def.p1sprpriority)
+    self.z_index = hit_def.p1sprpriority
 
     if not self.targets.has(target):
         self.targets.append(target)

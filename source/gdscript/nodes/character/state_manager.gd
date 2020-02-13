@@ -5,7 +5,6 @@ var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
 var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
-var current_tick: int = 0
 var trigger_names: Array = [
     'movecontact'
 ]
@@ -26,8 +25,8 @@ func update():
     if character.stateno == oldstateno:
         process_current_state()
 
-    current_tick += 1
-    character.time = character.time + 1
+    if not character.in_hit_pause:
+        character.time = character.time + 1
 
 func process_current_state():
     process_state(character.get_state_def(character.stateno))
@@ -62,7 +61,7 @@ func activate_state(stateno):
         character.physics = constants.FLAG_N
 
     if statedef.has('sprpriority'):
-        character.sprpriority = int(statedef['sprpriority'])
+        character.z_index = int(statedef['sprpriority'])
 
     if statedef.has('velset'):
         var velset = statedef['velset'].split_floats(",")
@@ -75,7 +74,34 @@ func activate_state(stateno):
     if statedef.has('juggle'):
         character.required_juggle_points = int(statedef['juggle'])
 
-    # TODO: Implement juggle, facep2, (hitdef|movehit|hitcount)persist
+    var hitdefpersist: int = 0
+    var movehitpersist: int = 0
+    var hitcountpersist: int = 0
+
+    if statedef.has('hitdefpersist'):
+        hitdefpersist = int(statedef['hitdefpersist'])
+
+    if statedef.has('movehitpersist'):
+        movehitpersist = int(statedef['movehitpersist'])
+
+    if statedef.has('hitcountpersist'):
+        hitcountpersist = int(statedef['hitcountpersist'])
+
+    if not hitdefpersist:
+        character.is_hit_def_active = false
+        character.hit_pause_time = 0
+
+    if not movehitpersist:
+        character.move_reversed = 0
+        character.move_hit = 0
+        character.move_guarded = 0
+        character.move_contact = 0
+
+    if not hitcountpersist:
+        character.hit_count = 0
+        character.unique_hit_count = 0
+
+    # TODO: Implement facep2
 
 func process_state(state):
     var oldstateno = character.stateno
@@ -84,6 +110,13 @@ func process_state(state):
         var will_activate: bool = true
         var triggerno: int = 1
         var triggerall = controller.get('triggerall', [])
+        var ignorehitpause: int = 0
+
+        if controller.has('ignorehitpause'):
+            ignorehitpause = controller['ignorehitpause'].execute(character)
+
+        if character.in_hit_pause and not ignorehitpause:
+            continue
 
         for trigger in triggerall:
             if not trigger.execute(character):
@@ -287,6 +320,10 @@ func handle_hitvelset(controller):
 func handle_movecontact(controller):
     return character.move_contact if character.movetype == constants.FLAG_A else 0
 
+func handle_sprpriority(controller):
+    var value = controller['value'].execute(character)
+    character.z_index = value
+
 func handle_playsnd(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
     pass
@@ -301,10 +338,6 @@ func handle_explod(controller):
 
 func handle_width(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
-    pass
-
-func handle_sprpriority(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#sprpriority
     pass
 
 func handle_forcefeedback(controller):
