@@ -198,10 +198,10 @@ func check_move_contact(attacker, target):
             'type': CONTACT_MISS_BLOCK
         })
 
-func can_block(attacker, target, distance_check: bool) -> bool:
+func can_block(attacker, target, collision_check: bool) -> bool:
     var hit_def = attacker.hit_def
 
-    if distance_check and not attacker.check_attack_collision(target):
+    if collision_check and not attacker.check_attack_collision(target):
         return false
     if attacker.hit_def.affectteam == 'e' and target.team == attacker.team:
         return false
@@ -269,13 +269,13 @@ func run_character_attack(attack):
         on_character_attack(attack['attacker'], attack['target'], attack['hit_def'], false)
     elif attack['type'] == CONTACT_BLOCK:
         on_character_attack(attack['attacker'], attack['target'], attack['hit_def'], true)
-    # elif attack['type'] == CONTACT_MISS_BLOCK:
-    #     out_of_range_block(attack.Target)
+    elif attack['type'] == CONTACT_MISS_BLOCK:
+        out_of_range_block(attack['target'])
 
 func on_character_attack(attacker, target, hit_def, blocked):
     target.handle_hit_target(hit_def, attacker, blocked)
     attacker.handle_hit_attacker(target.received_hit_def, target, blocked)
-    # set_facing(attacker, target, target.received_hit_def)
+    set_facing(attacker, target, target.received_hit_def)
 
     var received_hit_def = target.received_hit_def
 
@@ -302,8 +302,8 @@ func on_character_attack(attacker, target, hit_def, blocked):
 
     if not blocked: # TODO: Remove and implement hit override
         on_attack_hit(attacker, target, received_hit_def)
-    # else:
-    #     on_attack_block(attacker, target, received_hit_def)
+    else:
+        on_attack_block(attacker, target, received_hit_def)
 
 func on_attack_hit(attacker, target, hit_def):
     apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
@@ -347,6 +347,18 @@ func on_attack_hit(attacker, target, hit_def):
                 _:
                     printerr("Invalid hit state type: " % [target.hit_state_type])
 
+func on_attack_block(attacker, target, hit_def):
+    target.hit_time = hit_def.guard_hittime;
+    apply_damage(attacker, target, hit_def.guard_damage, hit_def.guard_kill)
+
+    match (target.hit_state_type):
+        constants.FLAG_S:
+            target.change_state(constants.STATE_STANDING_GUARD_HIT_SHAKING)
+        constants.FLAG_A:
+            target.change_state(constants.STATE_AIR_GUARD_HIT_SHAKING)
+        constants.FLAG_C:
+            target.change_state(constants.STATE_CROUCHING_GUARD_HIT_SHAKING)
+
 func apply_damage(attacker, target, amount, cankill):
     var offensive_multiplier = attacker.attack_multiplier * (attacker.get_attack_power() / 100.0)
     var defensive_multiplier = target.defense_multiplier * (target.get_defence_power() / 100.0)
@@ -354,3 +366,21 @@ func apply_damage(attacker, target, amount, cankill):
     target.life -= amount
     if target.life == 0 and not cankill:
         target.life = 1
+
+func set_facing(attacker, target, hit_def):
+    if hit_def.p1facing == -1:
+        attacker.is_facing_right = not attacker.is_facing_right
+    if hit_def.p1getp2facing == -1:
+        attacker.is_facing_right = not target.is_facing_right
+    if hit_def.p1getp2facing == 1:
+        attacker.is_facing_right = target.is_facing_right
+    if hit_def.p2facing == 1:
+        target.is_facing_right = not attacker.is_facing_right
+    if hit_def.p2facing == -1:
+        target.is_facing_right = attacker.is_facing_right
+
+func out_of_range_block(character):
+    var stateno = character.stateno
+
+    if stateno < constants.STATE_GUARD_START or stateno > constants.STATE_GUARD_END:
+        character.change_state(constants.STATE_GUARD_START)

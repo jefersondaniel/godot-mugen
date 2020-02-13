@@ -433,7 +433,7 @@ func get_hit_velocity() -> Vector2:
     var hit_velocity: Vector2 = Vector2(0, 0)
 
     if blocked:
-        hit_velocity = received_hit_def.airguard_velocity if hit_state_type == constants.FLAG_A else received_hit_def.guard_velocity
+        hit_velocity = received_hit_def.airguard_velocity if hit_state_type == constants.FLAG_A else Vector2(received_hit_def.guard_velocity, 0)
     else:
         hit_velocity = received_hit_def.air_velocity if hit_state_type == constants.FLAG_A else received_hit_def.ground_velocity
         if killed:

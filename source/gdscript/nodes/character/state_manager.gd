@@ -328,6 +328,16 @@ func handle_sprpriority(controller):
     var value = controller['value'].execute(character)
     character.z_index = value
 
+func handle_statetypeset(controller):
+    if controller.has('statetype'):
+        character.statetype = controller['statetype'].execute(character)
+
+    if controller.has('movetype'):
+        character.movetype = controller['movetype'].execute(character)
+
+    if controller.has('physics'):
+        character.physics = controller['physics'].execute(character)
+
 func handle_playsnd(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
     pass
