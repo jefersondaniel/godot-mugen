@@ -35,10 +35,10 @@ func set_commands(_commands: Array) -> void:
     for command in commands:
         command_countdown[command['name']] = 0
 
-func handle_tick(_delta: float) -> void:
+func update(in_hit_pause: bool) -> void:
     update_input_buffer()
-    update_command_countdown()
-    check_commands()
+    update_command_countdown(in_hit_pause)
+    check_commands(in_hit_pause)
     update_active_commands()
 
 func update_input_buffer() -> void:
@@ -60,16 +60,24 @@ func update_input_buffer() -> void:
 
     buffer[buffer_index] = code
 
-func update_command_countdown() -> void:
+func update_command_countdown(in_hit_pause: bool) -> void:
+    if in_hit_pause:
+        return
+
     for key in command_countdown:
         command_countdown[key] = max(0, command_countdown[key] - 1)
 
-func check_commands() -> void:
+func check_commands(in_hit_pause: bool) -> void:
     for command in commands:
         if not check_command(command):
             continue
 
-        command_countdown[command['name']] = command['buffer_time']
+        var time: int = command['buffer_time']
+
+        if in_hit_pause:
+            time = time + 1
+
+        command_countdown[command['name']] = time
 
 func update_active_commands() -> void:
     active_commands = []

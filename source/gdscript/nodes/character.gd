@@ -3,8 +3,9 @@ extends KinematicBody2D
 # Dependencies
 var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
+var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 
-# Nodes
+# Nodes and managers
 var character_sprite = null
 var command_manager = null
 var state_manager = null
@@ -20,16 +21,43 @@ var consts: Dictionary = {
     'states': {},
 }
 
-# Custom Variables
+# Private variables
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
 var sys_float_vars: PoolRealArray
 var velocity: Vector2
 var special_flags = {}
+var push_flag: bool = true
+var in_hit_pause: bool = false
+var is_facing_right: bool = true
+var hit_def = null
+var received_hit_def = null
+var hit_by_1 = null
+var hit_by_2 = null
+var is_falling: bool = false
+var is_hit_def_active: bool = false
+var hit_count: int = 0
+var unique_hit_count: int = 0
+var attacker = null
+var targets: Array = []
+var blocked: bool = false
+var killed: bool = false
+var remaining_juggle_points: int = 15
+var required_juggle_points: int = 0
+var hit_pause_time: int = 0
+var move_contact: int = 0
+var move_guarded: int = 0
+var move_hit: int = 0
+var move_reversed: int = 0
+var hit_overrides: Array = []
+var hit_time: int = 0
+var hit_shake_time: int = 0
+var hit_state_type: int = 0
+var defense_multiplier: float = 1
+var attack_multiplier: float = 1
 
-# State variables
-
+# Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
 var state_variables: Array = []
 var power: float = 0
@@ -41,11 +69,8 @@ var stateno: int = 0
 var statetype: int = constants.FLAG_S
 var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
-var sprpriority: int = 0
 var ctrl: int = 1
 var team: int = 0
-var is_facing_right: bool = true
-var pushflag: bool = true
 
 func _init(_consts, images, animations, _command_manager):
     consts = _consts
@@ -85,10 +110,20 @@ func setup_vars():
         sys_int_vars[i] = 0
         sys_float_vars[i] = 0
 
+func reset_state_variables():
+    self.time = 0
+    self.hit_def = null
+    self.hit_by_1 = null
+    self.hit_by_2 = null
+    self.is_hit_def_active = false
+
 func _ready():
     self.add_child(character_sprite)
 
 func get_const(fullname):
+    if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
+        return 1 # TODO: Implement parsing global constants
+
     var data = fullname.to_lower().split(".", false, 1)
     var kind = data[0]
     var name = data[1]
@@ -116,6 +151,88 @@ func get_const(fullname):
         result = x if vector_attr == 'x' else y
 
     return result
+
+func get_hit_var(key):
+    if not received_hit_def:
+        printerr("No hitdef active")
+        return null
+
+    match key:
+        'fall.envshake.time':
+            return received_hit_def.fall_envshake_time
+        'fall.envshake.freq':
+            return received_hit_def.fall_envshake_freq
+        'fall.envshake.ampl':
+            return received_hit_def.fall_envshake_ampl
+        'fall.envshake.phase':
+            return received_hit_def.fall_envshake_phase
+        'guarded':
+            return blocked
+        'chainid':
+            return received_hit_def.chainid
+        'fall':
+            return is_falling
+        'fall.damage':
+            return received_hit_def.fall_damage
+        'fall.recover':
+            return received_hit_def.fall_recover
+        'fall.kill':
+            return received_hit_def.fall_kill
+        'fall.recovertime':
+            return received_hit_def.fall_recovertime
+        'fall.xvel':
+            return received_hit_def.fall_xvelocity.x
+        'fall.yvel':
+            return received_hit_def.fall_xvelocity.y
+        'recovertime':
+            return 0 # implement this
+        'hitcount':
+            return hit_count
+        'xvel':
+            return get_hit_velocity().x
+        'yvel':
+            return get_hit_velocity().y
+        'type':
+            if life == 0:
+                return 3
+            return get_hit_var('airtype') if hit_state_type == constants.FLAG_A else get_hit_var('groundtype')
+        'airtype':
+            var airtype: String = received_hit_def.air_type
+            return constants.HIT_TYPE_ID[airtype] if constants.HIT_TYPE_ID.has(airtype) else 4
+        'groundtype':
+            var groundtype: String = received_hit_def.ground_type
+            return constants.HIT_TYPE_ID[groundtype] if constants.HIT_TYPE_ID.has(groundtype) else 0
+        'animtype':
+            var animtype: String = ''
+            if is_falling:
+                animtype = received_hit_def.fall_animtype
+            elif hit_state_type == constants.FLAG_A:
+                animtype = received_hit_def.air_animtype
+            else:
+                animtype = received_hit_def.animtype
+            return constants.ANIM_TYPE_ID[animtype] if constants.ANIM_TYPE_ID.has(animtype) else null
+        'damage':
+            return received_hit_def.hit_damage if not blocked else received_hit_def.guard_damage
+        'hitshaketime':
+            return hit_shake_time
+        'hittime':
+            return hit_time
+        'slidetime':
+            return received_hit_def.ground_slidetime if not blocked else received_hit_def.guard_slidetime
+        'ctrltime':
+            return received_hit_def.airguard_ctrltime if hit_state_type == constants.FLAG_A else received_hit_def.guard_ctrltime
+        'xoff':
+            return received_hit_def.snap.x if received_hit_def.snap else null
+        'yoff':
+            return received_hit_def.snap.y if received_hit_def.snap else null
+        'yaccel':
+            return received_hit_def.yaccel
+        'isbound':
+            printerr("TODO: Implement bind")
+            return null
+        _:
+            printerr("Hit var not found: %s" % [key])
+            return null
 
 func get_relative_position():
     return Vector2(position.x, position.y - fight.stage.ground_y)
@@ -208,6 +325,14 @@ func get_context_variable(key):
         return get_relative_position().x
     if key == "pos_y":
         return get_relative_position().y
+    if key == "sprpriority":
+        return z_index
+    if key == "hitshakeover":
+        return hit_shake_time <= 0
+    if key == "hitfall":
+        return is_falling
+    if key == "hitover":
+        return hit_time <= 0
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
@@ -234,6 +359,8 @@ func call_context_function(key, arguments):
         return abs(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
         return get_const(arguments[0])
+    if key == 'gethitvar':
+        return get_hit_var(arguments[0])
     if key == 'const720p':
         return arguments[0] # todo, multiply by resolution
     if key == 'const240p':
@@ -251,8 +378,10 @@ func call_context_function(key, arguments):
         return int_vars[arguments[0]]
     if key == 'fvar':
         return float_vars[arguments[0]]
-    if key == "assertion":
+    if key == 'assertion':
         return check_assert_special(arguments[0])
+    if key == 'hitdefattr':
+        return check_hit_def_attr(arguments)
     push_warning("Method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
@@ -265,7 +394,7 @@ func change_state(stateno: int):
     state_manager.activate_state(stateno)
 
 func assert_special(flag: String):
-    special_flags[flag.to_lower()] = 2
+    special_flags[flag.to_lower()] = 1
 
 func reset_assert_special():
     for key in special_flags:
@@ -300,11 +429,45 @@ func mul_velocity(_velocity):
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
+func get_hit_velocity() -> Vector2:
+    var hit_velocity: Vector2 = Vector2(0, 0)
+
+    if blocked:
+        hit_velocity = received_hit_def.airguard_velocity if hit_state_type == constants.FLAG_A else Vector2(received_hit_def.guard_velocity, 0)
+    else:
+        hit_velocity = received_hit_def.air_velocity if hit_state_type == constants.FLAG_A else received_hit_def.ground_velocity
+        if killed:
+            hit_velocity.x = hit_velocity.x * 0.66 # TODO: Put this constant in global file
+            hit_velocity.y = -6
+
+    return hit_velocity
+
 func add_power(_power):
     power = power + _power
 
+func get_attack_power() -> float:
+    var result = get_const('data.attack')
+    return float(result) if result != null else 0.0
+
+func get_defence_power() -> float:
+    var result = get_const('data.defence')
+    return float(result) if result != null else 0.0
+
 func check_collision(other: Node2D, type: int):
     return self.character_sprite.check_collision(other.character_sprite, type)
+
+func check_attack_collision(other: Node2D):
+    return self.character_sprite.check_attack_collision(other.character_sprite)
+
+func check_command(name: String) -> bool:
+    return self.command_manager.active_commands.has(name)
+
+func check_hit_def_attr(args: Array) -> bool:
+    var operator: String = args.pop_front()
+    var attribute = HitAttribute.parse(args)
+    var result = received_hit_def.attribute.satisfy(attribute)
+
+    return result if operator == "=" else not result
 
 func _process(delta):
     draw_debug_text()
@@ -335,15 +498,72 @@ func draw_debug_text():
 
     get_node('/root/Node2D/text').text = text
 
-func _physics_process(delta: float):
-    self.reset_assert_special()
+func cleanup():
+    if hit_pause_time > 1:
+        in_hit_pause = true
+        hit_pause_time = hit_pause_time - 1
+    else:
+        in_hit_pause = false
+        hit_pause_time = 0
 
-    command_manager.handle_tick(delta)
-    state_manager.handle_tick(delta)
-    self.handle_physics()
+    reset_assert_special()
 
-    self.move_and_collide(velocity)
-    self.handle_pushing()
+func update_animation():
+    if not in_hit_pause:
+        character_sprite.handle_tick()
+
+func update_input():
+    command_manager.update(in_hit_pause)
+
+func update_state():
+    state_manager.update()
+
+    if not in_hit_pause:
+        update_hit_state()
+
+func update_hit_state():
+    if move_contact > 0:
+        move_contact += 1
+
+    if move_hit > 0:
+        move_hit += 1
+
+    if move_guarded > 0:
+        move_guarded += 1
+
+    if move_reversed > 0:
+        move_reversed += 1
+
+    if hit_by_1:
+        hit_by_1.update()
+    
+    if hit_by_2:
+        hit_by_2.update()
+
+    if hit_shake_time > 0:
+        hit_shake_time = hit_shake_time - 1
+    elif hit_time > -1:
+        hit_time = hit_time - 1
+
+    if hit_shake_time < 0:
+        hit_shake_time = 0
+
+    if hit_time < 0:
+        hit_time = 0
+
+    if received_hit_def and stateno == constants.STATE_HIT_GET_UP and time == 0:
+        received_hit_def.fall = 0
+
+    for hit_override in hit_overrides:
+        hit_override.update()
+
+func update_physics():
+    if in_hit_pause or hit_shake_time > 0:
+        return
+
+    handle_physics()
+    move_and_collide(velocity)
+    handle_pushing()
 
 func handle_physics():
     var ground_friction: float = 0
@@ -392,13 +612,13 @@ func handle_facing():
         return
 
 func handle_pushing():
-    if not pushflag:
+    if not push_flag:
         return
 
     var enemies = fight.get_enemies(self)
 
     for enemy in enemies:
-        if not enemy.pushflag:
+        if not enemy.push_flag:
             continue
 
         if not self.check_collision(enemy, 2):
@@ -418,3 +638,53 @@ func handle_pushing():
             continue
 
         enemy.position = enemy.position + Vector2(overlap * overlap_direction, 0)
+
+func handle_hit_target(hit_def, attacker, blocked):
+    self.received_hit_def = hit_def.duplicate()
+    self.attacker = attacker
+    self.blocked = blocked
+
+    if self.is_falling:
+        self.received_hit_def.fall = 1
+    else:
+        self.remaining_juggle_points = int(self.get_const('data.airjuggle'))
+
+    self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
+    self.hit_state_type = self.statetype
+
+    self.z_index = self.received_hit_def.p2sprpriority
+    self.ctrl = 0
+    self.movetype = constants.FLAG_H
+
+    if self.blocked:
+        self.hit_shake_time = self.received_hit_def.guard_shaketime
+        self.add_power(self.received_hit_def.p2_guard_power)
+    else:
+        self.hit_shake_time = self.received_hit_def.shaketime
+        self.add_power(self.received_hit_def.p2_power)
+
+        # TODO: Apply pallete fx
+
+        if is_falling:
+            self.remaining_juggle_points -= attacker.required_juggle_points
+
+func handle_hit_attacker(hit_def, target, blocked):
+    self.z_index = hit_def.p1sprpriority
+
+    if not self.targets.has(target):
+        self.targets.append(target)
+
+    if blocked:
+        self.add_power(hit_def.p1_guard_power)
+        hit_pause_time = hit_def.guard_pausetime
+        move_contact = 1
+        move_guarded = 1
+        move_hit = 0
+        move_reversed = 0
+    else:
+        self.add_power(hit_def.p1_power)
+        hit_pause_time = hit_def.pausetime
+        move_contact = 1
+        move_guarded = 0
+        move_hit = 1
+        move_reversed = 0

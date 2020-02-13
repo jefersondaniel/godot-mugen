@@ -1,19 +1,21 @@
 extends Object
 
+var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
+
 var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
-var current_tick: int = 0
 var trigger_names: Array = [
     'movecontact'
 ]
+var foreign_manager = null # TODO: Implement foreign
 
 func _init(_character):
     character = _character
     var_regex = RegEx.new()
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
 
-func handle_tick(_delta: float):
+func update():
     var oldstateno = character.stateno
 
     process_state(character.get_state_def(-1))
@@ -23,8 +25,8 @@ func handle_tick(_delta: float):
     if character.stateno == oldstateno:
         process_current_state()
 
-    current_tick += 1
-    character.time = character.time + 1
+    if not character.in_hit_pause:
+        character.time = character.time + 1
 
 func process_current_state():
     process_state(character.get_state_def(character.stateno))
@@ -35,7 +37,7 @@ func activate_state(stateno):
     trigger_counter = {}
     character.prevstateno = character.stateno
     character.stateno = stateno
-    character.time = 0
+    character.reset_state_variables()
 
     if statedef.has('anim'):
         character.change_anim(int(statedef['anim']))
@@ -59,7 +61,7 @@ func activate_state(stateno):
         character.physics = constants.FLAG_N
 
     if statedef.has('sprpriority'):
-        character.sprpriority = int(statedef['sprpriority'])
+        character.z_index = int(statedef['sprpriority'])
 
     if statedef.has('velset'):
         var velset = statedef['velset'].split_floats(",")
@@ -68,8 +70,38 @@ func activate_state(stateno):
 
     if statedef.has('poweradd'):
         character.add_power(float(statedef['poweradd']))
+    
+    if statedef.has('juggle'):
+        character.required_juggle_points = int(statedef['juggle'])
 
-    # TODO: Implement juggle, facep2, (hitdef|movehit|hitcount)persist
+    var hitdefpersist: int = 0
+    var movehitpersist: int = 0
+    var hitcountpersist: int = 0
+
+    if statedef.has('hitdefpersist'):
+        hitdefpersist = int(statedef['hitdefpersist'])
+
+    if statedef.has('movehitpersist'):
+        movehitpersist = int(statedef['movehitpersist'])
+
+    if statedef.has('hitcountpersist'):
+        hitcountpersist = int(statedef['hitcountpersist'])
+
+    if not hitdefpersist:
+        character.is_hit_def_active = false
+        character.hit_pause_time = 0
+
+    if not movehitpersist:
+        character.move_reversed = 0
+        character.move_hit = 0
+        character.move_guarded = 0
+        character.move_contact = 0
+
+    if not hitcountpersist:
+        character.hit_count = 0
+        character.unique_hit_count = 0
+
+    # TODO: Implement facep2
 
 func process_state(state):
     var oldstateno = character.stateno
@@ -78,6 +110,13 @@ func process_state(state):
         var will_activate: bool = true
         var triggerno: int = 1
         var triggerall = controller.get('triggerall', [])
+        var ignorehitpause: int = 0
+
+        if controller.has('ignorehitpause'):
+            ignorehitpause = controller['ignorehitpause'].execute(character)
+
+        if character.in_hit_pause and not ignorehitpause:
+            continue
 
         for trigger in triggerall:
             if not trigger.execute(character):
@@ -244,6 +283,61 @@ func handle_assertspecial(controller):
     if controller.has('flag3'):
         character.assert_special(controller['flag3'].execute(character))
 
+func handle_defencemulset(controller):
+    var value = controller['value'].execute(character)
+    character.defense_multiplier = float(value)
+
+func handle_attackmulset(controller):
+    var value = controller['value'].execute(character)
+    character.attack_multiplier = float(value)
+
+func handle_hitdef(controller):
+    var hit_def = HitDef.new()
+    hit_def.parse(controller, character)
+    character.hit_def = hit_def
+    character.is_hit_def_active = true
+
+func handle_hitvelset(controller):
+    var xflag = 1
+    var yflag = 1
+
+    if controller.has('x'):
+        xflag = controller['x'].execute(character)
+
+    if controller.has('y'):
+        yflag = controller['y'].execute(character)
+
+    var new_velocity = character.get_hit_velocity()
+
+    if character.attacker.is_facing_right == character.is_facing_right:
+        new_velocity.x = -new_velocity.x
+
+    if not xflag:
+        new_velocity.x = character.velocity.x
+
+    if not yflag:
+        new_velocity.x = character.velocity.x
+
+    character.set_velocity_x(new_velocity.x)
+    character.set_velocity_y(new_velocity.y)
+
+func handle_movecontact(controller):
+    return character.move_contact if character.movetype == constants.FLAG_A else 0
+
+func handle_sprpriority(controller):
+    var value = controller['value'].execute(character)
+    character.z_index = value
+
+func handle_statetypeset(controller):
+    if controller.has('statetype'):
+        character.statetype = controller['statetype'].execute(character)
+
+    if controller.has('movetype'):
+        character.movetype = controller['movetype'].execute(character)
+
+    if controller.has('physics'):
+        character.physics = controller['physics'].execute(character)
+
 func handle_playsnd(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
     pass
@@ -256,18 +350,10 @@ func handle_explod(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#explod
     pass
 
-func handle_hitdef(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#hitdef
-    pass
-
 func handle_width(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
     pass
 
-func handle_sprpriority(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#sprpriority
-    pass
-
-func handle_movecontact(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/trigger.html#movecontact
+func handle_forcefeedback(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
     return 0

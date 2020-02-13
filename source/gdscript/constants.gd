@@ -31,15 +31,16 @@ var REVERSE_FLAGS: Dictionary = {}
 
 var FLAG_A: int = 1 << 1;
 var FLAG_C: int = 1 << 2;
-var FLAG_F: int = 1 << 3;
-var FLAG_H: int = 1 << 4;
-var FLAG_I: int = 1 << 5;
-var FLAG_L: int = 1 << 6;
-var FLAG_N: int = 1 << 7;
-var FLAG_P: int = 1 << 8;
-var FLAG_S: int = 1 << 9;
-var FLAG_T: int = 1 << 10;
-var FLAG_U: int = 1 << 11;
+var FLAG_D: int = 1 << 3;
+var FLAG_F: int = 1 << 4;
+var FLAG_H: int = 1 << 5;
+var FLAG_I: int = 1 << 6;
+var FLAG_L: int = 1 << 7;
+var FLAG_N: int = 1 << 8;
+var FLAG_P: int = 1 << 9;
+var FLAG_S: int = 1 << 10;
+var FLAG_T: int = 1 << 11;
+var FLAG_U: int = 1 << 12;
 
 var MAF: int = FLAG_H + FLAG_L + FLAG_A + FLAG_F
 
@@ -118,6 +119,21 @@ var STATE_HIT_FALL_RECOVER2: int = 5201
 var STATE_HIT_AIR_FALL_RECOVER: int = 5210
 var STATE_CONTINUE: int = 5500
 var STATE_INITIALIZE: int = 5900
+
+var ANIM_TYPE_ID = {
+    'light': 0,
+    'medium': 1,
+    'hard': 2,
+    'back': 3,
+    'up': 4,
+    'diagup': 5,
+}
+
+var HIT_TYPE_ID = {
+    'high': 1,
+    'low': 2,
+    'trip': 3
+}
 
 func _init():
     for p in get_property_list():

@@ -33,11 +33,11 @@ class Context extends Object:
         if key == "const":
             print("const: %s" % [arguments])
             return 1
+        if key == "gethitvar":
+            print("gethitvar: %s" % [arguments])
+            return 1
         if key == "hitdefattr":
-            # var op = arguments[0]
-            # var values = arguments[1]
-            # var check = 'ha' in values
-            # return check if op == "=" else !check
+            print(arguments)
             return true
         if key == "command":
             return arguments[1] == "holdup"
@@ -54,10 +54,11 @@ class Context extends Object:
 func execute_expression(name, context):
     var expression = MugenExpression.new()
     expression.parse(name)
-    print(name)
+    print("parsing: %s" % [name])
     if (expression.has_error()):
         print(expression.get_error_text())
     print(expression.execute(context))
+    print("parsing completed\n")
 
 func _init():
     var context = Context.new()
@@ -75,8 +76,6 @@ func _init():
     execute_expression("(GameTime % 27) = 0", context)
     execute_expression("ScreenPos X >= GameWidth / 2", context)
     execute_expression("fall.vel", context)
-    execute_expression("HitDefAttr = A, SA, HA", context)
-    execute_expression("HitDefAttr = A, SA", context)
     execute_expression("!HitFall", context)
     execute_expression("debug(\"Some variable\")", context)
     execute_expression("debug(lala)", context)
@@ -88,3 +87,7 @@ func _init():
     execute_expression("animelem = 2, -1", context)
     execute_expression("0.5 + 0.5", context)
     execute_expression(".5 + .5", context)
+    execute_expression("HitDefAttr = A, SA, HA", context)
+    execute_expression("HitDefAttr = A, SA", context)
+    execute_expression("HitDefAttr != , SA", context)
+    execute_expression("GetHitVar(yaccel)", context)
