@@ -1,10 +1,5 @@
 extends Node2D
 
-var UserCommandManager = load('res://source/gdscript/nodes/character/user_command_manager.gd')
-var AiCommandManager = load('res://source/gdscript/nodes/character/ai_command_manager.gd')
-var CharacterLoader = load('res://source/gdscript/loaders/character_loader.gd').new()
-var Stage = load('res://source/gdscript/nodes/stage.gd')
-
 const CONTACT_HIT: int = 1 # This order is important for priority check
 const CONTACT_BLOCK: int = 2
 const CONTACT_MISS_BLOCK: int = 3
@@ -16,32 +11,17 @@ var stage = null
 var contacts = []
 var cancelled_contacts = []
 
-func _init():
-    stage = Stage.new()
+func set_stage(stage):
+    if self.stage:
+        self.stage.queue_free()
 
-    var character1 = create_character(1, 'res://data/chars/kfm/kfm.def', 0)
-    add_character(character1, Vector2(200, stage.ground_y), 1)
-
-    var character2 = create_ai('res://data/chars/kfm/kfm.def', 3)
-    add_character(character2, Vector2(400, stage.ground_y), 2)
-
-    self.add_child(stage)
-
-func create_character(index: int, path: String, palette: int):
-    var command_manager = UserCommandManager.new('P%s_' % [index])
-    var character = CharacterLoader.load(path, palette, command_manager)
-    character.fight = self
-    return character
-
-func create_ai(path: String, palette: int):
-    var command_manager = AiCommandManager.new()
-    var character = CharacterLoader.load(path, palette, command_manager)
-    character.fight = self
-    return character
+    self.stage = stage
+    self.add_child(self.stage)
 
 func add_character(character, position: Vector2, team: int):
     character.position = position
     character.team = team
+    character.fight = self
     if teams.has(team) == false:
         teams[team] = []
     teams[team].append(character)

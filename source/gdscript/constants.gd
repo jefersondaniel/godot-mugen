@@ -1,6 +1,7 @@
 extends Node
 
-var target_fps: int = 60
+var TARGET_FPS: int = 60
+var WINDOW_SIZE = Vector2(640, 480)
 
 var KEY_MODIFIER_MUST_BE_HELD: int = 1 << 1
 var KEY_MODIFIER_DETECT_AS_4WAY: int = 1 << 2
@@ -143,3 +144,8 @@ func _init():
         var value = get(p['name'])
         FLAGS[key] = value
         REVERSE_FLAGS[value] = key
+
+func get_scale(localcoord: Vector2):
+    var scale: int  = WINDOW_SIZE.x / localcoord.x
+
+    return Vector2(scale, scale)

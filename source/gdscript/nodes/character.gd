@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
 # Dependencies
-var CharacterSprite = load('res://source/gdscript/nodes/character_sprite.gd')
+var MugenSprite = load('res://source/gdscript/nodes/sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 
@@ -74,7 +74,7 @@ var team: int = 0
 
 func _init(_consts, images, animations, _command_manager):
     consts = _consts
-    character_sprite = CharacterSprite.new(images, animations)
+    character_sprite = MugenSprite.new(images, animations)
     command_manager = _command_manager
     state_manager = StateManager.new(self)
 
