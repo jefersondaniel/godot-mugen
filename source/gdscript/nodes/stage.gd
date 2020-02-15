@@ -105,8 +105,8 @@ func set_camera_position(position: Vector2):
 var direction: float = 1.0
 
 func _process(delta: float):
-    var width: float = 150.0
-    var velocity: float = 150.0
+    var width: float = 300.0
+    var velocity: float = 200.0
 
     if camera_handle.position.x > width:
         direction = -1
@@ -114,3 +114,6 @@ func _process(delta: float):
         direction = 1
 
     camera_handle.position.x += direction * velocity * delta
+
+    for background in backgrounds:
+        background.handle_camera_update(self)

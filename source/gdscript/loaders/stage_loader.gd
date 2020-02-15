@@ -142,7 +142,7 @@ func create_background(definition: Dictionary, images: Dictionary, animations: D
     if 'trans' in definition:
         background.trans = definition['trans'].to_lower()
     if 'alpha' in definition:
-        background.alpha = parse_float_array(definition['alpha'])
+        background.alpha = parse_vector(definition['alpha'])
     if 'mask' in definition:
         background.mask = int(definition['mask'])
     if 'tile' in definition:
@@ -153,6 +153,16 @@ func create_background(definition: Dictionary, images: Dictionary, animations: D
         background.window = parse_int_array(definition['window'])
     if 'windowdelta' in definition:
         background.windowdelta = parse_vector(definition['windowdelta'])
+    if 'width' in definition:
+        background.width = parse_float_array(definition['width'])
+    if 'xscale' in definition:
+        var float_array = parse_float_array(definition['xscale'])
+        background.top_xscale = float_array[0] if float_array.size() > 0 else 1
+        background.bottom_xscale = float_array[1] if float_array.size() > 1 else 1
+    if 'yscalestart' in definition:
+        background.yscalestart = int(definition['yscalestart'])
+    if 'yscaledelta' in definition:
+        background.yscaledelta = int(definition['yscaledelta'])
     return background
 
 func parse_int_array(value: String):
