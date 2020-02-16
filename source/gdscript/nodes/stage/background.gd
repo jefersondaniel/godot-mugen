@@ -25,8 +25,9 @@ var top_xscale: float = 1
 var bottom_xscale: float = 1
 var yscalestart: float = 100
 var yscaledelta: float = 1
-var stage_scale: Vector2 = Vector2(1, 1)
 
+var stage_scale: Vector2 = Vector2(1, 1)
+var tile_boxes: Array = [] # Each item is a Rect2
 var mesh: MeshInstance2D
 var texture: ImageTexture
 var st: SurfaceTool
@@ -52,23 +53,21 @@ func setup_mesh(stage):
     var offset = Vector2(image['x'], image['y'])
 
     create_mesh(image['image'])
-    update_mesh(stage)
 
-    # mesh.centered = false
     mesh.position = (start - offset)
-
-    # Scale
     mesh.position = stage_scale * mesh.position
+
+    create_tiles(stage)
+    update_mesh(stage)
 
     if trans == 'addalpha':
         # TODO: Implement alpha.y value
         mesh.modulate = Color(1, 1, 1, alpha.x / 256)
 
-    create_tiles(stage, mesh)
     add_child(mesh)
 
-func create_tiles(stage, base):
-    # TODO: Improve performance here if needed with regions
+func create_tiles(stage):
+    var size: Vector2 = texture.size * stage_scale
     var requested_tiles_top: int = tile.y
     var requested_tiles_left: int = tile.x
     var requested_tiles_right: int = tile.x
@@ -78,34 +77,22 @@ func create_tiles(stage, base):
     var bound_top = stage.get_bound_top()
     var bound_bottom = stage.get_bound_bottom()
 
-
     if tile.x == 1:
-        requested_tiles_left = ceil(abs(base.position.x - bound_left) / (base.texture.size.x * stage_scale.x))
-        requested_tiles_right = ceil(abs(base.position.x - bound_right) / (base.texture.size.x * stage_scale.x))
+        requested_tiles_left = ceil(abs(mesh.position.x - bound_left) / size.x)
+        requested_tiles_right = ceil(abs(mesh.position.x - bound_right) / size.x)
 
     if tile.y == 1:
-        requested_tiles_top = ceil(abs(base.position.y - bound_top) / (base.texture.size.y * stage_scale.y))
-        requested_tiles_bottom = ceil(abs(base.position.y - bound_bottom) / (base.texture.size.y * stage_scale.y))
+        requested_tiles_top = ceil(abs(mesh.position.y - bound_top) / size.y)
+        requested_tiles_bottom = ceil(abs(mesh.position.y - bound_bottom) / size.y)
 
-    for i in range(requested_tiles_left):
-        var tile = base.duplicate()
-        tile.position.x = base.position.x - (tilespacing.x + base.texture.size.x * stage_scale.x * (i + 1))
-        add_child(tile)
-
-    for i in range(requested_tiles_right):
-        var tile = base.duplicate()
-        tile.position.x = base.position.x + (tilespacing.x + base.texture.size.x * stage_scale.x * (i + 1))
-        add_child(tile)
-
-    for i in range(requested_tiles_top):
-        var tile = base.duplicate()
-        tile.position.y = base.position.y - (tilespacing.y + base.texture.size.y * stage_scale.y * (i + 1))
-        add_child(tile)
-
-    for i in range(requested_tiles_bottom):
-        var tile = base.duplicate()
-        tile.position.y = base.position.y + (tilespacing.y + base.texture.size.y * stage_scale.y * (i + 1))
-        add_child(tile)
+    for tile_x in range(requested_tiles_left + requested_tiles_right + 1):
+        for tile_y in range(requested_tiles_top + requested_tiles_bottom + 1):
+            tile_boxes.append(Rect2(
+                (tilespacing.x + size.x * tile_x) - (requested_tiles_left * size.x),
+                (tilespacing.y + size.y * tile_y) - (requested_tiles_top * size.x),
+                size.x,
+                size.y
+            ))
 
 func create_mesh(image):
     texture = ImageTexture.new()
@@ -119,7 +106,6 @@ func update_mesh(stage):
         return
 
     var camera_pos = stage.get_camera_relative_position()
-    var size: Vector2 = texture.size * stage_scale
     var automatic_offset: float = camera_pos.x * delta.x
     var required_top_offset: float = automatic_offset * top_xscale
     var required_bottom_offset: float = automatic_offset * bottom_xscale
@@ -128,20 +114,22 @@ func update_mesh(stage):
 
     st.clear()
     st.begin(Mesh.PRIMITIVE_TRIANGLES)
-    # First triangle
-    st.add_uv(Vector2(1, 0)) # Top Left
-    st.add_vertex(Vector3(0 - applied_top_xscale, 0, 0))
-    st.add_uv(Vector2(0, 0)) # Top Right
-    st.add_vertex(Vector3(size.x - applied_top_xscale, 0, 0))
-    st.add_uv(Vector2(0, 1)) # Bottom Right
-    st.add_vertex(Vector3(size.x - applied_bottom_xscale, size.y, 0))
-    # Second triangle
-    st.add_uv(Vector2(1, 0)) # Top Left
-    st.add_vertex(Vector3(0 - applied_top_xscale, 0, 0))
-    st.add_uv(Vector2(1, 1)) # Bottom Left
-    st.add_vertex(Vector3(0 - applied_bottom_xscale, size.y, 0))
-    st.add_uv(Vector2(0, 1)) # Bottom Right
-    st.add_vertex(Vector3(size.x - applied_bottom_xscale, size.y, 0))
+
+    for box in tile_boxes:
+        # First triangle
+        st.add_uv(Vector2(1, 0)) # Top Left
+        st.add_vertex(Vector3(box.position.x - applied_top_xscale, box.position.y, 0))
+        st.add_uv(Vector2(0, 0)) # Top Right
+        st.add_vertex(Vector3(box.position.x + box.size.x - applied_top_xscale, box.position.y, 0))
+        st.add_uv(Vector2(0, 1)) # Bottom Right
+        st.add_vertex(Vector3(box.position.x + box.size.x - applied_bottom_xscale, box.position.y + box.size.y, 0))
+        # Second triangle
+        st.add_uv(Vector2(1, 0)) # Top Left
+        st.add_vertex(Vector3(box.position.x - applied_top_xscale, box.position.y, 0))
+        st.add_uv(Vector2(1, 1)) # Bottom Left
+        st.add_vertex(Vector3(box.position.x - applied_bottom_xscale, box.position.y + box.size.y, 0))
+        st.add_uv(Vector2(0, 1)) # Bottom Right
+        st.add_vertex(Vector3(box.position.x + box.size.x - applied_bottom_xscale, box.position.y + box.size.y, 0))
 
     mesh.mesh = st.commit()
 
