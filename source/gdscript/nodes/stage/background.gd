@@ -23,8 +23,8 @@ var actionno: int = 0
 var width: Array = []
 var top_xscale: float = 1
 var bottom_xscale: float = 1
-var yscalestart: int = 0
-var yscaledelta: int = 0
+var yscalestart: float = 100
+var yscaledelta: float = 1
 var stage_scale: Vector2 = Vector2(1, 1)
 
 var mesh: MeshInstance2D
@@ -52,7 +52,7 @@ func setup_mesh(stage):
     var offset = Vector2(image['x'], image['y'])
 
     create_mesh(image['image'])
-    update_mesh(stage.camera)
+    update_mesh(stage)
 
     # mesh.centered = false
     mesh.position = (start - offset)
@@ -114,37 +114,36 @@ func create_mesh(image):
     mesh = MeshInstance2D.new()
     mesh.texture = texture
 
-func update_mesh(camera):
+func update_mesh(stage):
     if not texture:
         return
 
+    var camera_pos = stage.get_camera_relative_position()
     var size: Vector2 = texture.size * stage_scale
-    var camera_pos = camera.get_camera_position()
     var automatic_offset: float = camera_pos.x * delta.x
-    var required_top_offset: float = camera_pos.x * delta.x * top_xscale
-    var required_bottom_offset: float = camera_pos.x * delta.x * bottom_xscale
-
-    var applied_top_xscale = required_top_offset - automatic_offset
-    var applied_bottom_xscale = required_bottom_offset - automatic_offset
+    var required_top_offset: float = automatic_offset * top_xscale
+    var required_bottom_offset: float = automatic_offset * bottom_xscale
+    var applied_top_xscale: float = required_top_offset - automatic_offset
+    var applied_bottom_xscale: float = required_bottom_offset - automatic_offset
 
     st.clear()
     st.begin(Mesh.PRIMITIVE_TRIANGLES)
     # First triangle
     st.add_uv(Vector2(1, 0)) # Top Left
-    st.add_vertex(Vector3(0 + applied_top_xscale, 0, 0))
+    st.add_vertex(Vector3(0 - applied_top_xscale, 0, 0))
     st.add_uv(Vector2(0, 0)) # Top Right
-    st.add_vertex(Vector3(size.x + applied_top_xscale, 0, 0))
+    st.add_vertex(Vector3(size.x - applied_top_xscale, 0, 0))
     st.add_uv(Vector2(0, 1)) # Bottom Right
-    st.add_vertex(Vector3(size.x + applied_bottom_xscale, size.y, 0))
+    st.add_vertex(Vector3(size.x - applied_bottom_xscale, size.y, 0))
     # Second triangle
     st.add_uv(Vector2(1, 0)) # Top Left
-    st.add_vertex(Vector3(0 + applied_top_xscale, 0, 0))
+    st.add_vertex(Vector3(0 - applied_top_xscale, 0, 0))
     st.add_uv(Vector2(1, 1)) # Bottom Left
-    st.add_vertex(Vector3(0 + applied_bottom_xscale, size.y, 0))
+    st.add_vertex(Vector3(0 - applied_bottom_xscale, size.y, 0))
     st.add_uv(Vector2(0, 1)) # Bottom Right
-    st.add_vertex(Vector3(size.x + applied_bottom_xscale, size.y, 0))
+    st.add_vertex(Vector3(size.x - applied_bottom_xscale, size.y, 0))
 
     mesh.mesh = st.commit()
 
 func handle_camera_update(stage):
-    update_mesh(stage.camera)
+    update_mesh(stage)

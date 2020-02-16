@@ -160,9 +160,10 @@ func create_background(definition: Dictionary, images: Dictionary, animations: D
         background.top_xscale = float_array[0] if float_array.size() > 0 else 1
         background.bottom_xscale = float_array[1] if float_array.size() > 1 else 1
     if 'yscalestart' in definition:
-        background.yscalestart = int(definition['yscalestart'])
+        background.yscalestart = float(definition['yscalestart'])
     if 'yscaledelta' in definition:
-        background.yscaledelta = int(definition['yscaledelta'])
+        background.yscaledelta = float(definition['yscaledelta'])
+    # TODO: Implement scalestart and scaledelta
     return background
 
 func parse_int_array(value: String):

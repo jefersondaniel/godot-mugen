@@ -5,6 +5,7 @@ var ground_y = 400
 var backgrounds: Array = []
 var camera: Camera2D
 var camera_handle: Node2D
+var camera_offset: Vector2
 
 var info_name: String = ''
 var info_displayname: String = ''
@@ -55,6 +56,7 @@ func setup_camera():
     var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
 
     camera_handle = Node2D.new()
+    camera_offset = Vector2(0, constants.WINDOW_SIZE.y / 2)
 
     set_camera_position(Vector2(camera_startx, camera_starty) * scale)
 
@@ -97,10 +99,10 @@ func get_bound_bottom():
     return constants.WINDOW_SIZE.y + (camera_boundlow * scale.x)
 
 func set_camera_position(position: Vector2):
-    camera_handle.position = Vector2(
-        position.x,
-        position.y + constants.WINDOW_SIZE.y / 2
-    )
+    camera_handle.position = position + camera_offset
+
+func get_camera_relative_position() -> Vector2:
+    return camera.get_camera_position() - camera_offset
 
 var direction: float = 1.0
 

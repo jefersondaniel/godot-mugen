@@ -46,7 +46,7 @@ Variant SffParser::get_images(String path, Variant selectedPalette)
         }
     }
 
-    for (int i = 0; i < handler->sffdata.size() - 1; i++) {
+    for (int i = 0; i < handler->sffdata.size(); i++) {
         if (palette.colors.size() > 0 && handler->sffdata[i].palindex == defaultPalette) {
             handler->sffdata[i].image.setColorTable(palette);
         }
@@ -59,7 +59,7 @@ Variant SffParser::create_dictionary(std::vector<SffData> sprites)
 {
     Dictionary result;
 
-    for (int i = 0; i < sprites.size() - 1; i++) {
+    for (int i = 0; i < sprites.size(); i++) {
         SffData sffData = sprites[i];
 
         Dictionary dict;
