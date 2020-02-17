@@ -22,6 +22,7 @@ var consts: Dictionary = {
 }
 
 # Private variables
+var info_localcoord: Vector2
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
@@ -72,7 +73,7 @@ var movetype: int = constants.FLAG_I
 var ctrl: int = 1
 var team: int = 0
 
-func _init(_consts, images, animations, _command_manager):
+func setup(_consts, images, animations, _command_manager):
     consts = _consts
     character_sprite = MugenSprite.new(images, animations)
     command_manager = _command_manager
@@ -92,6 +93,8 @@ func _init(_consts, images, animations, _command_manager):
         if skip:
             continue
         state_variables.append(p['name'])
+
+    global_scale = constants.get_scale(info_localcoord)
 
 func setup_vars():
     int_vars = PoolIntArray()
@@ -235,11 +238,13 @@ func get_hit_var(key):
             return null
 
 func get_relative_position():
-    return Vector2(position.x, position.y - fight.stage.ground_y)
+    return Vector2(position.x, position.y - fight.stage.get_position_offset().y) / global_scale
 
 func set_relative_position(newpos):
+    newpos *= global_scale
+
     position.x = newpos.x
-    position.y = newpos.y + fight.stage.ground_y
+    position.y = newpos.y + fight.stage.get_position_offset().y
 
 func add_relative_position(vector):
     var newpos = get_relative_position()
@@ -267,31 +272,31 @@ func get_right_location() -> float:
 
 func get_front_location() -> float:
     if is_facing_right:
-        return get_relative_position().x + get_front_width()
+        return position.x + get_front_width()
 
-    return get_relative_position().x - get_front_width()
+    return position.x - get_front_width()
 
 func get_back_location() -> float:
     if is_facing_right:
-        return get_relative_position().x - get_back_width()
+        return position.x - get_back_width()
 
-    return get_relative_position().x + get_back_width()
+    return position.x + get_back_width()
 
 func get_front_width() -> float:
     if is_ground_state():
-        return float(consts['size']['ground.front'])
+        return float(consts['size']['ground.front']) * global_scale.x
 
     if is_air_state():
-        return float(consts['size']['air.front'])
+        return float(consts['size']['air.front']) * global_scale.x
 
     return 0.0
 
 func get_back_width() -> float:
     if is_ground_state():
-        return float(consts['size']['ground.back'])
+        return float(consts['size']['ground.back']) * global_scale.x
 
     if is_air_state():
-        return float(consts['size']['air.back'])
+        return float(consts['size']['air.back']) * global_scale.x
 
     return 0.0
 
@@ -496,7 +501,7 @@ func draw_debug_text():
 
     text += "commands: %s\n" % [command_manager.active_commands]
 
-    get_node('/root/Node2D/text').text = text
+    get_node('/root/Node2D/hud/text').text = text
 
 func cleanup():
     if hit_pause_time > 1:
@@ -562,8 +567,39 @@ func update_physics():
         return
 
     handle_physics()
-    move_and_collide(velocity)
+    handle_movement()
     handle_pushing()
+
+func handle_movement():
+    if not velocity:
+        return
+
+    position += velocity * global_scale
+    handle_movement_restriction()
+
+func handle_movement_restriction():
+    var stage = fight.stage
+    var viewport: Rect2 = stage.get_movement_area()
+    var min_x: float = viewport.position.x
+    var max_x: float = viewport.position.x + viewport.size.x
+    var width: float = get_width()
+    var left_position: float = get_left_position()
+    var right_position: float = get_right_position()
+
+    if left_position < min_x:
+        position.x = min_x + width / 2
+
+    if right_position > max_x:
+        position.x = max_x - width / 2
+
+func get_width() -> float:
+    return get_back_width() + get_front_width()
+
+func get_left_position() -> float:
+    return position.x - (get_back_width() + get_front_width()) / 2
+
+func get_right_position() -> float:
+    return position.x + (get_back_width() + get_front_width()) / 2
 
 func handle_physics():
     var ground_friction: float = 0
@@ -612,6 +648,7 @@ func handle_facing():
         return
 
 func handle_pushing():
+    # TODO: handle player height
     if not push_flag:
         return
 
@@ -638,6 +675,8 @@ func handle_pushing():
             continue
 
         enemy.position = enemy.position + Vector2(overlap * overlap_direction, 0)
+        enemy.handle_movement_restriction()
+        # TODO: Fix scale
 
 func handle_hit_target(hit_def, attacker, blocked):
     self.received_hit_def = hit_def.duplicate()

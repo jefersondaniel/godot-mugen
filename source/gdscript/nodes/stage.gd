@@ -1,7 +1,6 @@
 extends ParallaxBackground
 
-var gravity = Vector2(0, 0.50)
-var ground_y = 400
+var gravity = Vector2(0, 0.475)
 var backgrounds: Array = []
 var camera: Camera2D
 var camera_handle: Node2D
@@ -17,9 +16,9 @@ var camera_boundleft: int = 0
 var camera_boundright: int = 0
 var camera_boundhigh: int = 0
 var camera_boundlow: int = 0
-var camera_verticalfollow: int = 0
-var camera_floortension: int = 0
-var camera_tension: int = 0
+var camera_verticalfollow: float = 0
+var camera_floortension: float = 0
+var camera_tension: float = 0
 var player_p1startx: int = 0
 var player_p1starty: int = 0
 var player_p2startx: int = 0
@@ -44,6 +43,8 @@ var shadow_fade_range: Array = []
 var reflection_reflect: int = 0
 var music_bgmusic: String = ''
 var music_bgvolume: int = 0
+var player_layer: ParallaxLayer
+var players: Array = []
 
 func setup():
     setup_camera()
@@ -51,6 +52,10 @@ func setup():
     for background in backgrounds:
         background.setup(self)
         add_child(background)
+
+    player_layer = ParallaxLayer.new()
+    player_layer.motion_scale = Vector2(1, 1)
+    add_child(player_layer)
 
 func setup_camera():
     var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
@@ -62,18 +67,6 @@ func setup_camera():
 
     camera = Camera2D.new()
     # camera.offset = constants.WINDOW_SIZE / 2 * Vector2(0, 1)
-    # camera.limit_left = camera_boundleft * scale.x
-    # camera.limit_right = camera_boundright * scale.x
-    camera.limit_top = get_bound_top()
-    camera.limit_bottom = get_bound_bottom()
-
-    print({
-        'get_bound_left': get_bound_left(),
-        'get_bound_right': get_bound_right(),
-        'get_bound_top': get_bound_top(),
-        'get_bound_bottom': get_bound_bottom()
-    })
-
     camera_handle.add_child(camera)
     add_child(camera_handle)
     camera.make_current()
@@ -101,21 +94,74 @@ func get_bound_bottom():
 func set_camera_position(position: Vector2):
     camera_handle.position = position + camera_offset
 
+    for background in backgrounds:
+        background.handle_camera_update(self)
+
 func get_camera_relative_position() -> Vector2:
     return camera.get_camera_position() - camera_offset
 
-var direction: float = 1.0
+func get_movement_area() -> Rect2:
+    # Area that restrict player movement
+
+    return Rect2(
+        get_camera_relative_position() - constants.WINDOW_SIZE / 2,
+        constants.WINDOW_SIZE
+    )
+
+func get_position_offset():
+    return Vector2(
+        0,
+        stageinfo_zoffset + constants.WINDOW_SIZE.y / 2
+    )
+
+func get_starting_pos(team: int) -> Vector2:
+    var pos: Vector2
+    var offset: Vector2 = get_position_offset()
+
+    if team == 1:
+        pos = Vector2(player_p1startx + offset.x, player_p1starty + offset.y)
+    else:
+        pos = Vector2(player_p2startx + offset.x, player_p2starty + offset.y)
+
+    return pos
+
+func get_stage_scale() -> Vector2:
+    return constants.get_scale(stageinfo_localcoord)
+
+func add_player(player):
+    players.append(player)
+    player_layer.add_child(player)
 
 func _process(delta: float):
-    var width: float = 300.0
-    var velocity: float = 200.0
+    var scale: Vector2 = get_stage_scale()
+    var movement: Vector2 = Vector2(0, 0)
+    var min_pos: Vector2 = Vector2(100000, 100000)
+    var max_pos: Vector2 = Vector2(-100000, -100000)
+    var camera_relative_position: Vector2 = get_camera_relative_position()
+    var camera_left: float = camera_relative_position.x - constants.WINDOW_SIZE.x / 2
+    var camera_right: float = camera_relative_position.x + constants.WINDOW_SIZE.x / 2
+    var drag_margin_left: float = camera_left + camera_tension * scale.x
+    var drag_margin_right: float = camera_right - camera_tension * scale.x
 
-    if camera_handle.position.x > width:
-        direction = -1
-    elif camera_handle.position.x < -width:
-        direction = 1
+    for player in players:
+        var player_left: float = player.get_left_position()
+        var player_right: float = player.get_right_position()
 
-    camera_handle.position.x += direction * velocity * delta
+        # TODO: handle vertical camera
 
-    for background in backgrounds:
-        background.handle_camera_update(self)
+        if player_left < min_pos.x:
+            min_pos.x = player_left
+        if player_right > max_pos.x:
+            max_pos.x = player_right
+
+    if min_pos.x <= drag_margin_left:
+        movement.x -= abs(min_pos.x - drag_margin_left)
+    if max_pos.x >= drag_margin_right:
+        movement.x += abs(max_pos.x - drag_margin_right)
+
+    camera_handle.position += movement
+
+    if camera_handle.position.x - constants.WINDOW_SIZE.x / 2 < get_bound_left():
+        camera_handle.position.x = get_bound_left() + constants.WINDOW_SIZE.x / 2
+    if camera_handle.position.x + constants.WINDOW_SIZE.x / 2 > get_bound_right():
+        camera_handle.position.x = get_bound_right() - constants.WINDOW_SIZE.x / 2

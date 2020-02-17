@@ -16,11 +16,11 @@ func _init():
 
     fight.set_stage(stage)
 
-    # var character1 = load_character(1, 'res://data/chars/kfm/kfm.def', 0)
-    # fight.add_character(character1, Vector2(200, stage.ground_y), 1)
+    var character1 = load_character(1, 'res://data/chars/kfm/kfm.def', 0)
+    fight.add_character(character1, 1)
 
-    # var character2 = load_ai('res://data/chars/kfm/kfm.def', 3)
-    # fight.add_character(character2, Vector2(400, stage.ground_y), 2)
+    var character2 = load_ai('res://data/chars/kfm/kfm.def', 3)
+    fight.add_character(character2, 2)
 
     self.add_child(fight)
 

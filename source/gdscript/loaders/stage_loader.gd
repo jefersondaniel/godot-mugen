@@ -56,11 +56,11 @@ func create_stage(definition: Dictionary, backgrounds: Array):
     if 'boundlow' in camera:
         stage.camera_boundlow = int(camera['boundlow'])
     if 'verticalfollow' in camera:
-        stage.camera_verticalfollow = int(camera['verticalfollow'])
+        stage.camera_verticalfollow = float(camera['verticalfollow'])
     if 'floortension' in camera:
-        stage.camera_floortension = int(camera['floortension'])
+        stage.camera_floortension = float(camera['floortension'])
     if 'tension' in camera:
-        stage.camera_tension = int(camera['tension'])
+        stage.camera_tension = float(camera['tension'])
     if 'p1startx' in player:
         stage.player_p1startx = int(player['p1startx'])
     if 'p1starty' in player:

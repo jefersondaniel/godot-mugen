@@ -18,15 +18,15 @@ func set_stage(stage):
     self.stage = stage
     self.add_child(self.stage)
 
-func add_character(character, position: Vector2, team: int):
-    character.position = position
+func add_character(character, team: int):
+    character.position = stage.get_starting_pos(team)
     character.team = team
     character.fight = self
     if teams.has(team) == false:
         teams[team] = []
     teams[team].append(character)
     characters.append(character)
-    self.stage.add_child(character)
+    stage.add_player(character)
 
 func get_nearest_enemy(character):
     var nearest_enemy = null

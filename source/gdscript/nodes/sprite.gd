@@ -52,7 +52,6 @@ func _init(_images, _animations):
     self.set_sprite_frames(sprite_frames)
     self.set_animation('default')
     self.centered = false
-    self.scale = constants.scale
     self.name = 'AnimatedSprite'
     self.show_behind_parent = true
 

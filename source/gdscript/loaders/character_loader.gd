@@ -61,7 +61,14 @@ func load(path: String, palette, command_manager):
 
     command_manager.set_commands(commands)
 
-    return Character.new(consts, images, animations, command_manager)
+    var character = Character.new()
+
+    if 'localcoord' in definition['info']:
+        character.info_localcoord = parse_vector(definition['info']['localcoord'])
+
+    character.setup(consts, images, animations, command_manager)
+
+    return character
 
 func merge_states(new_states, states):
     for parent_key in states.keys():
@@ -77,3 +84,14 @@ func merge_states(new_states, states):
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:
                 states[parent_key][child_key] = new_states[parent_key][child_key]
+
+func parse_vector(value: String):
+    var raw_values = value.split(',')
+    var vector: Vector2 = Vector2(0, 0)
+
+    if raw_values.size() > 0:
+        vector.x = float(raw_values[0])
+    if raw_values.size() > 1:
+        vector.y = float(raw_values[1])
+
+    return vector
