@@ -22,7 +22,7 @@ var consts: Dictionary = {
 }
 
 # Private variables
-var info_localcoord: Vector2
+var info_localcoord: Vector2 = Vector2(320, 240)
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
