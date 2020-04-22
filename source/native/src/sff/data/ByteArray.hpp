@@ -32,6 +32,7 @@ public:
     void clear();
     ByteArray right(int size);
 	ByteArray subarray(int start, int end);
+	PoolByteArray toSigned();
 	uint8_t operator[](const int idx) const;
 	uint8_t& operator[](const int idx);
 	void operator=(const ByteArray &p_other);

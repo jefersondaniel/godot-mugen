@@ -94,6 +94,21 @@ ByteArray ByteArray::subarray(int start, int end) {
 	return ByteArray(newvec);
 }
 
+PoolByteArray ByteArray::toSigned() {
+	std::vector<int8_t> newvec;
+	newvec.resize(size());
+
+	for (int i = 0, c = size(); i < c; i++) {
+		newvec[i] = _buffer[i] - 128;
+	}
+
+	PoolByteArray result = PoolByteArray();
+	result.resize(size());
+	memcpy(result.write().ptr(), &newvec.front(), size());
+
+	return result;
+}
+
 ByteArray ByteArray::right(int newSize) {
     int actualSize = size();
 

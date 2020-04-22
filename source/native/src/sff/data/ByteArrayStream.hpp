@@ -11,13 +11,13 @@ private:
 	ByteArray data;
 	int size;
 	int position;
-	void get_data(uint8_t *p_buffer, int p_bytes);
 	void get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 public:
 	ByteArrayStream(ByteArray &data);
 	bool atEnd() const;
     int pos() const;
     void seek(int position);
+	void get_data(uint8_t *p_buffer, int p_bytes);
 	ByteArrayStream &operator>>(uint8_t &dest);
 	ByteArrayStream &operator>>(uint16_t &dest);
 	ByteArrayStream &operator>>(uint32_t &dest);
