@@ -74,7 +74,7 @@ func parse_controller(data: Dictionary, key: String):
         if key == 'type':
             continue
 
-        var value: String = data[key]
+        var value = data[key]
 
         if key.substr(0, 7) == 'trigger':
             controller[key] = []

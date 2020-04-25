@@ -18,7 +18,7 @@ var KEY_MAP: Dictionary = {
 }
 
 func read(path):
-    var sections: Dictionary = cfg_parser.read(path)
+    var sections: Array = cfg_parser.read(path)
     var defaults: Dictionary = {}
     var remap: Dictionary = {}
     var commands: Array = []
