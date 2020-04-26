@@ -7,6 +7,7 @@ var cns_parser = load('res://source/gdscript/parsers/cns_parser.gd').new()
 var cmd_parser = load('res://source/gdscript/parsers/cmd_parser.gd').new()
 var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
+var snd_parser = load('res://source/native/snd_parser.gdns').new()
 var st_regex: RegEx
 
 func _init():
@@ -18,12 +19,14 @@ func load(path: String, palette, command_manager):
     var animation_path: String
     var command_path: String
     var state_paths: Array
+    var sound_path: String
 
     var definition = def_parser.read(path)
     var folder = path.substr(0, path.find_last('/'))
     sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
     animation_path = '%s/%s' % [folder, definition['files']['anim']]
     command_path = '%s/%s' % [folder, definition['files']['cmd']]
+    sound_path = '%s/%s' % [folder, definition['files']['sound']]
     state_paths = []
 
     if 'stcommon' in definition['files']:
@@ -42,6 +45,7 @@ func load(path: String, palette, command_manager):
     state_paths.append('res://data/data/internal.cns')
 
     var images = sff_parser.get_images(sprite_path, palette)
+    var sounds = snd_parser.get_sounds(sound_path)
     var animations = air_parser.read(animation_path)
     var commands: Array =  cmd_parser.read(command_path)
     var consts: Dictionary = {
@@ -66,7 +70,7 @@ func load(path: String, palette, command_manager):
     if 'localcoord' in definition['info']:
         character.info_localcoord = parse_vector(definition['info']['localcoord'])
 
-    character.setup(consts, images, animations, command_manager)
+    character.setup(consts, images, animations, sounds, command_manager)
 
     return character
 

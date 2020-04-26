@@ -12,6 +12,11 @@ Value Expression::evaluate(Context* context)
     return Value(0);
 }
 
+string Expression::toString()
+{
+    return "";
+}
+
 BottomExpression::BottomExpression(): Expression("(bottom)")
 {
 }
@@ -19,6 +24,11 @@ BottomExpression::BottomExpression(): Expression("(bottom)")
 Value BottomExpression::evaluate(Context* context)
 {
     return Value();
+}
+
+string BottomExpression::toString()
+{
+    return "";
 }
 
 // LiteralExpression
@@ -32,6 +42,16 @@ Value LiteralExpression::evaluate(Context* context)
     return value;
 }
 
+string LiteralExpression::toString()
+{
+    if (value.isString()) {
+        return "\"" + value.stringValue() + "\"";
+    }
+
+    return value.stringValue();
+}
+
+
 // VariableExpression
 
 VariableExpression::VariableExpression(string name_): Expression("(variable)"), name(name_)
@@ -43,6 +63,11 @@ Value VariableExpression::evaluate(Context* context)
     return context->get(name);
 }
 
+string VariableExpression::toString()
+{
+    return name;
+}
+
 // DynamicVariableExpression
 
 DynamicVariableExpression::DynamicVariableExpression(string name_, shared_ptr<Expression> argument_): Expression("(dynamic_variable)"), baseName(name_), argument(argument_)
@@ -51,12 +76,17 @@ DynamicVariableExpression::DynamicVariableExpression(string name_, shared_ptr<Ex
 
 string DynamicVariableExpression::getName(Context* context)
 {
-    return baseName + "." + to_string(argument->evaluate(context).intValue());
+    return baseName + "." + std::to_string(argument->evaluate(context).intValue());
 }
 
 Value DynamicVariableExpression::evaluate(Context* context)
 {
     return context->get(getName(context));
+}
+
+string DynamicVariableExpression::toString()
+{
+    return baseName + "(" + argument->toString() + ")";
 }
 
 // FunctionCalExpression
@@ -72,6 +102,22 @@ Value FunctionCallExpression::evaluate(Context* context)
         evaluatedArguments.push_back(arguments[i]);
     }
     return context->call(name, evaluatedArguments);
+}
+
+string FunctionCallExpression::toString()
+{
+    string result = name + "(";
+
+    for (int i = 0, c = arguments.size(); i < c; i++) {
+        result += arguments[i]->toString();
+        if (i != c - 1) {
+            result += ",";
+        }
+    }
+
+    result += ")";
+
+    return result;
 }
 
 // BinaryOperatorExpression
@@ -139,6 +185,11 @@ Value BinaryOperatorExpression::evaluate(Context* context)
     return 0;
 }
 
+string BinaryOperatorExpression::toString()
+{
+    return left->toString() + op + right->toString();
+}
+
 // UnaryOperatorExpression
 
 UnaryOperatorExpression::UnaryOperatorExpression(
@@ -159,6 +210,11 @@ Value UnaryOperatorExpression::evaluate(Context* context)
         return right->evaluate(context).logicalNot();
     cerr << "Invalid operator: " << op << endl;
     return Value(0);
+}
+
+string UnaryOperatorExpression::toString()
+{
+    return op + right->toString();
 }
 
 // IntervalOperatorExpression
@@ -200,6 +256,13 @@ Value IntervalOperatorExpression::evaluate(Context* context)
     return op == "=" ? inRange : inRange.logicalNot();
 }
 
+string IntervalOperatorExpression::toString()
+{
+    string start = left.isString() ? "\"" + left.stringValue() + "\"" : left.stringValue();
+    string end = right.isString() ? "\"" + right.stringValue() + "\"" : right.stringValue();
+    return startOp + start + "," + end + endOp;
+}
+
 // RedirectionExpression
 
 RedirectionExpression::RedirectionExpression(shared_ptr<Expression> left_, shared_ptr<Expression> right_): Expression("(redirection)"), left(left_), right(right_)
@@ -227,6 +290,11 @@ Value RedirectionExpression::evaluate(Context* context)
     return right->evaluate(redirect.get());
 }
 
+string RedirectionExpression::toString()
+{
+    return "(" + left->toString()  + "," + right->toString() + ")";
+}
+
 // ArrayExpression
 
 ArrayExpression::ArrayExpression(vector<shared_ptr<Expression>> exps): Expression("(array)"), expressions(exps)
@@ -242,4 +310,18 @@ Value ArrayExpression::evaluate(Context* context)
     }
 
     return Value(values);
+}
+
+string ArrayExpression::toString()
+{
+    string result = "";
+
+    for (int i = 0, c = expressions.size(); i < c; i++) {
+        result += expressions[i]->toString();
+        if (i != c - 1) {
+            result += ",";
+        }
+    }
+
+    return result;
 }

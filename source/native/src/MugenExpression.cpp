@@ -11,6 +11,7 @@ void MugenExpression::_register_methods() {
 	register_method("parse", &MugenExpression::parse);
     register_method("execute", &MugenExpression::execute);
     register_method("get_error_text", &MugenExpression::get_error_text);
+    register_method("to_string", &MugenExpression::to_string);
     register_method("has_error", &MugenExpression::has_error);
 }
 
@@ -53,4 +54,9 @@ String MugenExpression::get_error_text() const
 bool MugenExpression::has_error() const
 {
     return error.size() > 0;
+}
+
+String MugenExpression::to_string() const
+{
+    return String(expression->toString().c_str());
 }

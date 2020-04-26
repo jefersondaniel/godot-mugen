@@ -3,12 +3,14 @@ extends KinematicBody2D
 # Dependencies
 var MugenSprite = load('res://source/gdscript/nodes/sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
+var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 
 # Nodes and managers
 var character_sprite = null
 var command_manager = null
 var state_manager = null
+var sound_manager = null
 var fight = null
 
 # Constants
@@ -57,6 +59,8 @@ var hit_shake_time: int = 0
 var hit_state_type: int = 0
 var defense_multiplier: float = 1
 var attack_multiplier: float = 1
+var string_variable_regex: RegEx
+
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
@@ -73,11 +77,12 @@ var movetype: int = constants.FLAG_I
 var ctrl: int = 1
 var team: int = 0
 
-func setup(_consts, images, animations, _command_manager):
+func setup(_consts, images, animations, sounds, _command_manager):
     consts = _consts
     character_sprite = MugenSprite.new(images, animations)
     command_manager = _command_manager
     state_manager = StateManager.new(self)
+    sound_manager = SoundManager.new(sounds)
 
     alive = 1
     life = consts['data']['life']
@@ -95,6 +100,9 @@ func setup(_consts, images, animations, _command_manager):
         state_variables.append(p['name'])
 
     global_scale = constants.get_scale(info_localcoord)
+
+    string_variable_regex = RegEx.new()
+    string_variable_regex.compile("^f[0-9]+$")
 
 func setup_vars():
     int_vars = PoolIntArray()
@@ -122,6 +130,7 @@ func reset_state_variables():
 
 func _ready():
     self.add_child(character_sprite)
+    self.add_child(sound_manager)
 
 func get_const(fullname):
     if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
@@ -350,6 +359,8 @@ func get_context_variable(key):
         return get("time")
     if key in state_manager.trigger_names:
         return state_manager.handle_trigger(key)
+    if string_variable_regex.search(key):
+        return key
     push_warning("variable not found: %s" % [key])
 
 func call_context_function(key, arguments):
@@ -395,8 +406,11 @@ func redirect_context(key):
 func change_anim(anim: int):
     character_sprite.change_anim(anim)
 
-func change_state(stateno: int):
-    state_manager.activate_state(stateno)
+func change_state(value: int):
+    state_manager.activate_state(value)
+
+func play_sound(parameters: Dictionary):
+    sound_manager.play_sound(parameters)
 
 func assert_special(flag: String):
     special_flags[flag.to_lower()] = 1
@@ -474,7 +488,7 @@ func check_hit_def_attr(args: Array) -> bool:
 
     return result if operator == "=" else not result
 
-func _process(delta):
+func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():

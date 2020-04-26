@@ -54,11 +54,11 @@ class Context extends Object:
 func execute_expression(name, context):
     var expression = MugenExpression.new()
     expression.parse(name)
-    print("parsing: %s" % [name])
     if (expression.has_error()):
         print(expression.get_error_text())
-    print(expression.execute(context))
-    print("parsing completed\n")
+    print("to_string: %s" % [expression.to_string()])
+    print("evaluate: %s" % [expression.execute(context)])
+    print("")
 
 func _init():
     var context = Context.new()

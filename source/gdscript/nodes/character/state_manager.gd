@@ -339,8 +339,11 @@ func handle_statetypeset(controller):
         character.physics = controller['physics'].execute(character)
 
 func handle_playsnd(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#playsnd
-    pass
+    var parameters: Dictionary = {
+        'value': controller['value'].execute(character),
+    }
+
+    character.play_sound(parameters)
 
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust

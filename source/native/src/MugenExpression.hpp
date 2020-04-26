@@ -19,6 +19,7 @@ public:
     Variant execute(Variant context);
     String get_error_text() const;
     bool has_error() const;
+    String to_string() const;
     void _init();
     static void _register_methods();
 };
