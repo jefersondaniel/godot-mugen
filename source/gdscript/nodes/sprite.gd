@@ -101,6 +101,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         animation.value_track_set_update_mode(offset_track, Animation.UPDATE_DISCRETE)
         animation.track_set_path(element_number_track, ':animation_element')
         animation.value_track_set_update_mode(element_number_track, Animation.UPDATE_DISCRETE)
+        animation.track_set_path(collision_track, '.')
 
         var frame_value = 0
         var frame_width = 0
