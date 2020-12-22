@@ -61,7 +61,7 @@ func activate_state(stateno):
         character.physics = constants.FLAG_N
 
     if statedef.has('sprpriority'):
-        character.z_index = int(statedef['sprpriority'])
+        character.update_z_index(int(statedef['sprpriority']))
 
     if statedef.has('velset'):
         var velset = statedef['velset'].split_floats(",")

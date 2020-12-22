@@ -56,7 +56,7 @@ func get_enemies(character):
 
     return results
 
-func _physics_process(delta: float):
+func update_tick():
     self.update_characters()
     self.update_combat()
 

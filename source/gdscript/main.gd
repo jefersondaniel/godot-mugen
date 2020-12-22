@@ -6,13 +6,14 @@ var CharacterLoader = load('res://source/gdscript/loaders/character_loader.gd').
 var StageLoader = load('res://source/gdscript/loaders/stage_loader.gd').new()
 var Fight = load('res://source/gdscript/nodes/fight.gd')
 var Stage = load('res://source/gdscript/nodes/stage.gd')
+var fight = null
+var stage = null
 
 func _init():
     Engine.set_target_fps(constants.TARGET_FPS)
 
-    var fight = Fight.new()
-
-    var stage = load_stage("res://data/stages/kfm.def")
+    fight = Fight.new()
+    stage = self.load_stage("res://data/stages/kfm.def")
 
     fight.set_stage(stage)
 
@@ -22,7 +23,11 @@ func _init():
     var character2 = load_ai('res://data/chars/kfm/kfm.def', 3)
     fight.add_character(character2, 2)
 
-    self.add_child(fight)
+    self.add_child(self.fight)
+
+func _process(_delta: float):
+    stage.update_tick()
+    fight.update_tick()
 
 func load_character(index: int, path: String, palette: int):
     var command_manager = UserCommandManager.new('P%s_' % [index])

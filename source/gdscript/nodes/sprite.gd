@@ -63,6 +63,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
     var last_defaults = {1: [], 2: []}
     var current_element_by_tick = {}
     var animation_name_suffix = 'left'
+    var loop = false
 
     if is_facing_right:
         animation_name_suffix = 'right'
@@ -82,7 +83,6 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         var animation_frames = animations[animation_key]['sets'][set_key]['frames']
         if null == animation_frames.back():
             printerr("Invalid animation key")
-        var loop = false if animation_frames.back()['ticks'] == -1 else true
         var image = null
         var image_offset = null
         var frame_offset = null
@@ -93,6 +93,7 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         var offset_track = animation.add_track(Animation.TYPE_VALUE)
         var element_number_track = animation.add_track(Animation.TYPE_VALUE)
         var collision_track = animation.add_track(Animation.TYPE_METHOD)
+        loop = false if animation_frames.back()['ticks'] == -1 else true
 
         animation.set_loop(loop)
         animation.track_set_path(frame_track, ':frame')
@@ -117,6 +118,8 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
             else:
                 frame_value = 0
                 image_offset = Vector2(0, 0)
+            if frame['groupno'] >= 0 and not frame_mapping.has(frame_key):
+                printerr("Image not found: %s,%s" % [frame['groupno'], frame['imageno']])
             frame_offset = Vector2(
                 image_offset.x - frame['offset'][0],
                 image_offset.y - frame['offset'][1]
@@ -141,11 +144,16 @@ func create_animation(animation_key, frame_mapping, image_mapping, is_facing_rig
         animation.set_length(current_set_time)
         animation_player.add_animation("%s-%s" % [animation_name, animation_name_suffix], animation)
 
-    looptimes[animation_key] = current_looptime
+    if loop:
+        looptimes[animation_key] = current_looptime
+    else:
+        looptimes[animation_key] = -1
+
     element_by_tick[animation_key] = current_element_by_tick
 
 func change_anim(value: int):
-    animation_time = -1
+    # TODO: Support element
+    animation_time = 0
     animation_element = 0
     current_animation = value
     animation_looptime = looptimes[value]
@@ -155,6 +163,7 @@ func change_anim(value: int):
         animation_name_suffix = 'right'
 
     var key = '%s-0-%s' % [value, animation_name_suffix]
+    animation_player.stop(true)
     animation_player.play(key)
     if animations[value]['sets'].size() > 1:
         animation_player.queue('%s-1-%s' % [value, animation_name_suffix])
@@ -237,8 +246,10 @@ func get_element_time(element):
     return current_element_by_tick[element - 1]
 
 func get_time_from_the_end():
-    var lala: int = animation_time % (animation_looptime + 1)
-    return min(0, -animation_looptime + lala)
+    if animation_looptime == -1:
+        return animation_time + 1
+
+    return animation_time - animation_looptime
 
 func inverse_boxes(boxes, is_facing_right):
     if is_facing_right:

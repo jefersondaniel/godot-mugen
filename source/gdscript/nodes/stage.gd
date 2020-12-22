@@ -132,7 +132,7 @@ func add_player(player):
     players.append(player)
     player_layer.add_child(player)
 
-func _process(delta: float):
+func update_tick():
     var scale: Vector2 = get_stage_scale()
     var movement: Vector2 = Vector2(0, 0)
     var min_pos: Vector2 = Vector2(100000, 100000)
@@ -154,10 +154,17 @@ func _process(delta: float):
         if player_right > max_pos.x:
             max_pos.x = player_right
 
-    if min_pos.x <= drag_margin_left:
-        movement.x -= abs(min_pos.x - drag_margin_left)
-    if max_pos.x >= drag_margin_right:
-        movement.x += abs(max_pos.x - drag_margin_right)
+    var must_scroll_left = min_pos.x <= drag_margin_left
+    var must_scroll_right = max_pos.x >= drag_margin_right
+    var left_margin_distance = -abs(min_pos.x - drag_margin_left)
+    var right_margin_distance = abs(max_pos.x - drag_margin_right)
+
+    if must_scroll_left:
+        movement.x = left_margin_distance
+    if must_scroll_right:
+        movement.x = right_margin_distance
+    if must_scroll_left and must_scroll_right:
+        movement.x = (left_margin_distance + right_margin_distance) / 2
 
     camera_handle.position += movement
 

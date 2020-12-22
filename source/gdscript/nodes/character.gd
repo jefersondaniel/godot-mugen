@@ -60,6 +60,7 @@ var hit_state_type: int = 0
 var defense_multiplier: float = 1
 var attack_multiplier: float = 1
 var string_variable_regex: RegEx
+var base_z_index = 100
 
 
 # Public variables (will be available in expressions)
@@ -100,9 +101,11 @@ func setup(_consts, images, animations, sounds, _command_manager):
         state_variables.append(p['name'])
 
     global_scale = constants.get_scale(info_localcoord)
+    z_index = base_z_index
 
     string_variable_regex = RegEx.new()
     string_variable_regex.compile("^f[0-9]+$")
+    
 
 func setup_vars():
     int_vars = PoolIntArray()
@@ -193,9 +196,9 @@ func get_hit_var(key):
         'fall.recovertime':
             return received_hit_def.fall_recovertime
         'fall.xvel':
-            return received_hit_def.fall_xvelocity.x
+            return received_hit_def.fall_xvelocity
         'fall.yvel':
-            return received_hit_def.fall_xvelocity.y
+            return received_hit_def.fall_yvelocity
         'recovertime':
             return 0 # implement this
         'hitcount':
@@ -492,12 +495,13 @@ func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():
-    if team != 1:
+    if team != 2:
         return
 
-    var text = "stateno: %s, prevstateno: %s, time: %s, animtime: %s, fps: %s\n" % [
+    var text = "stateno: %s, prevstateno: %s, anim: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
         get_context_variable('prevstateno'),
+        character_sprite.current_animation,
         get_context_variable('time'),
         get_context_variable('animtime'),
         Engine.get_frames_per_second()
@@ -568,7 +572,7 @@ func update_hit_state():
         hit_shake_time = 0
 
     if hit_time < 0:
-        hit_time = 0
+        hit_time = -1
 
     if received_hit_def and stateno == constants.STATE_HIT_GET_UP and time == 0:
         received_hit_def.fall = 0
@@ -614,6 +618,9 @@ func get_left_position() -> float:
 
 func get_right_position() -> float:
     return position.x + (get_back_width() + get_front_width()) / 2
+
+func update_z_index(new_index):
+    z_index = base_z_index  + new_index
 
 func handle_physics():
     var ground_friction: float = 0
@@ -705,7 +712,7 @@ func handle_hit_target(hit_def, attacker, blocked):
     self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
     self.hit_state_type = self.statetype
 
-    self.z_index = self.received_hit_def.p2sprpriority
+    self.update_z_index(self.received_hit_def.p2sprpriority)
     self.ctrl = 0
     self.movetype = constants.FLAG_H
 
