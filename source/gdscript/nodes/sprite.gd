@@ -165,6 +165,7 @@ func change_anim(value: int):
     var key = '%s-0-%s' % [value, animation_name_suffix]
     animation_player.stop(true)
     animation_player.play(key)
+    animation_player.advance(0.0)
     if animations[value]['sets'].size() > 1:
         animation_player.queue('%s-1-%s' % [value, animation_name_suffix])
 

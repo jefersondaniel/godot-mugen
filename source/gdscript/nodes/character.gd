@@ -169,8 +169,7 @@ func get_const(fullname):
 
 func get_hit_var(key):
     if not received_hit_def:
-        printerr("No hitdef active")
-        return null
+        return -1
 
     match key:
         'fall.envshake.time':
@@ -498,23 +497,26 @@ func draw_debug_text():
     if team != 2:
         return
 
-    var text = "stateno: %s, prevstateno: %s, anim: %s, time: %s, animtime: %s, fps: %s\n" % [
+    var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, animframe: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
         get_context_variable('prevstateno'),
         character_sprite.current_animation,
+        character_sprite.animation_element,
+        character_sprite.frame,
         get_context_variable('time'),
         get_context_variable('animtime'),
         Engine.get_frames_per_second()
     ]
 
-    text += "statetype: %s, movetype: %s, physics: %s, pos: (%.1f, %.1f), vel: (%.1f, %.1f)\n" % [
+    text += "statetype: %s, movetype: %s, physics: %s, hittime: %s, pos: (%.1f, %.1f), vel: (%.1f, %.1f)\n" % [
         constants.REVERSE_FLAGS[get_context_variable('statetype')],
         constants.REVERSE_FLAGS[get_context_variable('movetype')],
         constants.REVERSE_FLAGS[get_context_variable('physics')],
+        get_hit_var('hittime'),
         get_context_variable('pos_x'),
         get_context_variable('pos_y'),
         get_context_variable('vel_x'),
-        get_context_variable('vel_y'),
+        get_context_variable('vel_y')
     ]
 
     text += "commands: %s\n" % [command_manager.active_commands]
