@@ -345,6 +345,30 @@ func handle_playsnd(controller):
 
     character.play_sound(parameters)
 
+func handle_fallenvshake(_controller):
+    var hit_def = character.received_hit_def
+    var stage = character.get_stage()
+
+    if not hit_def:
+        push_error("Invalid fallenvshake, not hitdef")
+
+    stage.setup_envshake(
+        float(hit_def.fall_envshake_time),
+        hit_def.fall_envshake_freq,
+        hit_def.fall_envshake_ampl,
+        float(hit_def.fall_envshake_phase)
+    )
+
+func handle_hitfalldamage(_controller):
+    var hit_def = character.received_hit_def
+    var attacker = character.attacker
+    var fight = character.get_fight()
+
+    if not hit_def or not attacker:
+        push_error("Invalid hitfalldamage")
+
+    fight.apply_damage(attacker, character, hit_def.fall_damage, hit_def.kill)
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
