@@ -46,6 +46,14 @@ var music_bgvolume: int = 0
 var player_layer: ParallaxLayer
 var players: Array = []
 
+# EnvShake
+var envshake_timeticks: float = 0.0
+var envshake_time: float = 0.0
+var envshake_frequency: float = 0.0
+var envshake_amplitude: float = 0.0
+var envshake_phase: float = 0.0
+var envshake_offset: Vector2 = Vector2(0, 0)
+
 func setup():
     setup_camera()
 
@@ -133,6 +141,10 @@ func add_player(player):
     player_layer.add_child(player)
 
 func update_tick():
+    update_envshake()
+    update_camera()
+
+func update_camera():
     var scale: Vector2 = get_stage_scale()
     var movement: Vector2 = Vector2(0, 0)
     var min_pos: Vector2 = Vector2(100000, 100000)
@@ -167,8 +179,27 @@ func update_tick():
         movement.x = (left_margin_distance + right_margin_distance) / 2
 
     camera_handle.position += movement
+    camera_handle.position += envshake_offset
 
     if camera_handle.position.x - constants.WINDOW_SIZE.x / 2 < get_bound_left():
         camera_handle.position.x = get_bound_left() + constants.WINDOW_SIZE.x / 2
     if camera_handle.position.x + constants.WINDOW_SIZE.x / 2 > get_bound_right():
         camera_handle.position.x = get_bound_right() - constants.WINDOW_SIZE.x / 2
+
+func update_envshake():
+    var scale: Vector2 = get_stage_scale()
+
+    if envshake_time > 0 and envshake_timeticks < envshake_time:
+        envshake_timeticks += 1
+        var movement: float = envshake_amplitude * scale.y * sin(envshake_timeticks * envshake_frequency + envshake_phase);
+        envshake_offset = Vector2(0, movement)
+    else:
+        envshake_offset = Vector2(0, 0)
+
+func setup_envshake(time: float, frequency: float, amplitude: float, phase: float):
+    envshake_timeticks = 0
+    envshake_time = time
+    envshake_frequency = frequency
+    envshake_amplitude = amplitude
+    envshake_phase = phase
+

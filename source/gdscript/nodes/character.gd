@@ -400,7 +400,9 @@ func call_context_function(key, arguments):
         return check_assert_special(arguments[0])
     if key == 'hitdefattr':
         return check_hit_def_attr(arguments)
-    push_warning("Method not found: %s, arguments: %s" % [key, arguments])
+    if key == 'floor':
+        return floor(arguments[0])
+    push_warning("Context method not found: %s, arguments: %s" % [key, arguments])
 
 func redirect_context(key):
     push_warning("TODO: Trigger redirection")
@@ -623,6 +625,12 @@ func get_right_position() -> float:
 
 func update_z_index(new_index):
     z_index = base_z_index  + new_index
+
+func get_stage():
+    return fight.stage
+
+func get_fight():
+    return fight
 
 func handle_physics():
     var ground_friction: float = 0

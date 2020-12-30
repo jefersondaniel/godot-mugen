@@ -11,11 +11,11 @@ var stage = null
 var contacts = []
 var cancelled_contacts = []
 
-func set_stage(stage):
+func set_stage(_stage):
     if self.stage:
         self.stage.queue_free()
 
-    self.stage = stage
+    self.stage = _stage
     self.add_child(self.stage)
 
 func add_character(character, team: int):

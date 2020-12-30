@@ -389,27 +389,43 @@ func parse(data: Dictionary, context):
 
     if data.has('envshake.time'):
         envshake_time = int(evaluate_expression(data['envshake.time'], context))
+    else:
+        envshake_time = 0
 
     if data.has('envshake.freq'):
         envshake_freq = float(evaluate_expression(data['envshake.freq'], context))
+    else:
+        envshake_freq = 60.0
 
     if data.has('envshake.ampl'):
         envshake_ampl = int(evaluate_expression(data['envshake.ampl'], context))
+    else:
+        envshake_ampl = -16
 
     if data.has('envshake.phase'):
         envshake_phase = float(evaluate_expression(data['envshake_phase'], context))
+    else:
+        envshake_phase = 0 if envshake_freq < 90.0 else 90
 
     if data.has('fall.envshake.time'):
         fall_envshake_time = int(evaluate_expression(data['fall.envshake.time'], context))
+    else:
+        fall_envshake_time = 0
 
     if data.has('fall.envshake.freq'):
         fall_envshake_freq = float(evaluate_expression(data['fall.envshake.freq'], context))
+    else:
+        fall_envshake_freq = 60
 
     if data.has('fall.envshake.ampl'):
         fall_envshake_ampl = int(evaluate_expression(data['fall.envshake.ampl'], context))
+    else:
+        fall_envshake_ampl = -16
 
     if data.has('fall.envshake.phase'):
         fall_envshake_phase = float(evaluate_expression(data['fall.envshake.phase'], context))
+    else:
+        fall_envshake_phase = 0 if fall_envshake_freq < 90 else 90
 
 func parse_attack_flags(value: String):
     var result: int = 0
