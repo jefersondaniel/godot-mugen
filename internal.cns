@@ -1,33 +1,117 @@
 [Statedef -1]
 
-[State -1, internal-walk]
+[State -1, jump]
 type = ChangeState
-triggerall = assertion(nowalk) = 0 && ctrl && stateno = 0 && (command = "holdfwd" || command = "holdback")
-value = 20
+trigger1 = ctrl && command = "holdup" && roundstate = 2 && StateType = S && StateNo != 40
+value = 40
 
-[State -1, internal-crouch]
+[State -1, duck]
 type = ChangeState
-triggerall = ctrl && command = "holddown" && (stateno = 0 || stateno = 20)
+trigger1 = ctrl && command = "holddown" && StateNo != 10 && StateNo != 11 && StateType = S
 value = 10
 
-[State -1, internal-jump]
+[State -1, walk]
 type = ChangeState
-triggerall = ctrl && command = "holdup" && statetype = S
-value = 40
+triggerall = ctrl && StateType = S && StateNo != 20 && StateNo < 40
+triggerall = Assertion(NoWalk) = 0
+trigger1 = command = "holdfwd" && command != "holdback"
+trigger2 = command != "holdfwd" && command = "holdback"
+value = 20
+
+[State -1, air-jump]
+type = ChangeState
+trigger1 = ctrl && StateNo = 50 && command = "press up"
+trigger1 = Pos Y <= -1 * Const(movement.airjump.height)
+trigger1 = sysvar(2) < Const(movement.airjump.num)
+value = 45
+
 
 [Statedef -2]
 
-[State -2, State Landing]
+[State -2, landing]
 type = ChangeState
 trigger1 = Pos Y > 0 && StateType = A && Physics = A && StateNo != 105 && StateNo != 106
 value = 52
 
-[Statedef 0]
-ctrl = 1
+
+[Statedef 10]
+
+[State 10, stop-ducking]
+type = ChangeState
+trigger1 = !ctrl || command != "holddown"
+value = 12
+
+
+[Statedef 11]
+
+[State 11, stop-ducking]
+type = ChangeState
+trigger1 = !ctrl || command != "holddown"
+value = 12
+
 
 [Statedef 20]
 
-[State 20, internal-stop-walking]
+[State 20, stop-walking]
 type = ChangeState
-triggerall = command != "holdfwd" && command != "holdback"
+trigger1 = !ctrl || (command != "holdfwd" && command != "holdback") || (command = "holdfwd" && command = "holdback")
+value = 0
+
+
+[Statedef 40]
+
+[State 40, reset-air-jump]
+type = VarSet
+trigger1 = time = 0
+sysvar(2) = 0
+
+
+[Statedef 45]
+
+[State 45, increase-air-jump-counter]
+type = VarAdd
+trigger1 = time = 0
+sysvar(2) = 1
+
+
+[Statedef 120]
+
+[State 120, stop-sliding]
+type = VelSet
+trigger1 = time = 0
+x = 0
+y = 0
+
+
+[Statedef 140]
+
+[State 140, 1]
+type = ChangeState
+trigger1 = animtime = 0 && StateType = S
+value = 0
+
+[State 140, 2]
+type = ChangeState
+trigger1 = animtime = 0 && StateType = C
+value = 11
+
+[State 140, 3]
+type = ChangeState
+trigger1 = animtime = 0 && StateType = A
+value = 51
+
+
+[Statedef 5110]
+
+[State 5110, 1]
+type = ChangeState
+trigger1 = Time = Const(data.liedown.time)
+value = 5120
+
+
+[Statedef 5900]
+
+[State 5900, 1]
+type = ChangeState
+trigger1 = 1
 value = 0
