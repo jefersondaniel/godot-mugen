@@ -224,9 +224,9 @@ func can_hit(attacker, target) -> bool:
         return false
     if target.movetype == constants.FLAG_H and hit_def.hitflag_sign == '+':
         return false
-    if target.hit_by_1 and not target.hit_by_1.can_hit(hit_def):
+    if target.hit_by_1 and not target.hit_by_1.can_hit(hit_def.attribute):
         return false
-    if target.hit_by_2 and not target.hit_by_2.can_hit(hit_def):
+    if target.hit_by_2 and not target.hit_by_2.can_hit(hit_def.attribute):
         return false
 
     # TODO: Implement juggle points

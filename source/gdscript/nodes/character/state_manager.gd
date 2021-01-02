@@ -1,6 +1,8 @@
 extends Object
 
 var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
+var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
+var HitBy = load('res://source/gdscript/nodes/character/hit_by.gd')
 
 var character: Object
 var var_regex: RegEx
@@ -368,6 +370,30 @@ func handle_hitfalldamage(_controller):
         push_error("Invalid hitfalldamage")
 
     fight.apply_damage(attacker, character, hit_def.fall_damage, hit_def.kill)
+
+func handle_nothitby(controller):
+    var value1 = controller['value'] if controller.has('value') else null
+    var value2 = controller['value2'] if controller.has('value2') else null
+    var time: int = controller['time'].execute(character)
+
+    if value1 and value2:
+        push_error("Only one of the value parameters can be specified")
+        return
+
+    if not value1 and not value2:
+        push_error("Invalid hitattribute")
+        return
+
+    var hit_attribute = value1 if value1 else value2
+    var slot: int = 1 if value1 else 2
+    var hit_by = HitBy.new()
+
+    hit_by.setup(hit_attribute, time, true)
+
+    if slot == 1:
+        character.hit_by_1 = hit_by
+    else:
+        character.hit_by_2 = hit_by
 
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust

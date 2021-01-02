@@ -562,10 +562,10 @@ func update_hit_state():
         move_reversed += 1
 
     if hit_by_1:
-        hit_by_1.update()
+        hit_by_1.handle_tick()
     
     if hit_by_2:
-        hit_by_2.update()
+        hit_by_2.handle_tick()
 
     if hit_shake_time > 0:
         hit_shake_time = hit_shake_time - 1
