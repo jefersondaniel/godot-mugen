@@ -105,7 +105,6 @@ func setup(_consts, images, animations, sounds, _command_manager):
 
     string_variable_regex = RegEx.new()
     string_variable_regex.compile("^f[0-9]+$")
-    
 
 func setup_vars():
     int_vars = PoolIntArray()
@@ -341,6 +340,10 @@ func get_context_variable(key):
         return get_relative_position().x
     if key == "pos_y":
         return get_relative_position().y
+    if key == "p2bodydist_x":
+        return get_enemy_body_dist('x')
+    if key == "p2bodydist_y":
+        return get_enemy_body_dist('y')
     if key == "sprpriority":
         return z_index
     if key == "hitshakeover":
@@ -622,6 +625,28 @@ func get_left_position() -> float:
 
 func get_right_position() -> float:
     return position.x + (get_back_width() + get_front_width()) / 2
+
+func get_enemy_body_dist(axis: String):
+    var enemy = fight.get_nearest_enemy(self)
+
+    if not enemy:
+        return null
+
+    var p1_position = get_relative_position()
+    var p2_position = enemy.get_relative_position()
+
+    if axis == 'x':
+        var p1_front_position = get_front_location()
+        var p2_front_position = enemy.get_front_location()
+        var distance = abs(p1_front_position - p2_front_position)
+        if is_facing_right:
+            return distance if p2_position.x > p1_position.x else -distance
+        else:
+            return -distance if p2_position.x > p1_position.x else distance
+    elif axis == 'y':
+        return p2_position.y - p1_position.y
+
+    return null
 
 func update_z_index(new_index):
     z_index = base_z_index  + new_index
