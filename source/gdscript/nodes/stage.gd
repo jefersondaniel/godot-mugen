@@ -179,12 +179,13 @@ func update_camera():
         movement.x = (left_margin_distance + right_margin_distance) / 2
 
     camera_handle.position += movement
-    camera_handle.position += envshake_offset
 
     if camera_handle.position.x - constants.WINDOW_SIZE.x / 2 < get_bound_left():
         camera_handle.position.x = get_bound_left() + constants.WINDOW_SIZE.x / 2
     if camera_handle.position.x + constants.WINDOW_SIZE.x / 2 > get_bound_right():
         camera_handle.position.x = get_bound_right() - constants.WINDOW_SIZE.x / 2
+
+    camera.offset = envshake_offset
 
 func update_envshake():
     var scale: Vector2 = get_stage_scale()
