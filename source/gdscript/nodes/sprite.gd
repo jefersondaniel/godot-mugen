@@ -252,13 +252,13 @@ func get_time_from_the_end():
 
     return animation_time - animation_looptime
 
-func inverse_boxes(boxes, is_facing_right):
+func inverse_boxes(_boxes, is_facing_right):
     if is_facing_right:
-        return boxes
+        return _boxes
 
     var result: Array = []
 
-    for box in boxes:
+    for box in _boxes:
         result.push_back([
             -box[0],
             box[1],
