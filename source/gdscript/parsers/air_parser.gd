@@ -52,14 +52,18 @@ func read(path):
 
         if is_collision_1 or is_collision_2:
             var idx_start = line.find('=') + 1
-            var idx_end = line.length() - 1
+            var idx_end = line.length()
             var points = line.substr(idx_start, idx_end - idx_start)
-            var clsn_type = 1 if is_collision_1 else 2
             points = points.split_floats(',')
-            if not current_collision:
+            if not current_collision or len(points) != 4:
                 push_error("Invalid collision instruction: %s" % [line])
                 continue
-            current_collision['boxes'].append(points)
+            current_collision['boxes'].append([
+                min(points[0], points[2]),
+                min(points[1], points[3]),
+                max(points[0], points[2]),
+                max(points[1], points[3])
+            ])
             continue
 
         if is_loopstart:
