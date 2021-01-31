@@ -395,6 +395,33 @@ func handle_nothitby(controller):
     else:
         character.hit_by_2 = hit_by
 
+func handle_targetbind(controller):
+    var target_id: int = -1
+    var pos = [0, 0]
+    var time = 1
+
+    if 'time' in controller:
+        time = controller['time'].execute(character)
+    if 'id' in controller:
+        target_id = controller['id'].execute(character)
+    if 'pos' in controller:
+        pos = controller['pos'].execute(character)
+
+    for target in character.find_targets(target_id):
+        target.bind.setup(character, Vector2(pos[0], pos[1]), time, 0, true)
+
+func handle_changeanim2(controller):
+    var value: int = controller['value'].execute(character)
+    var elem: int = 0
+
+    if 'elem' in controller:
+        elem = controller['elem'].execute(character)
+
+    if foreign_manager == null:
+        return
+
+    character.set_foreign_animation(foreign_manager.character, value, elem)
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass

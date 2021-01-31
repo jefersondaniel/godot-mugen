@@ -5,6 +5,7 @@ var MugenSprite = load('res://source/gdscript/nodes/sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
+var Bind = load('res://source/gdscript/nodes/character/bind.gd')
 
 # Nodes and managers
 var character_sprite = null
@@ -29,7 +30,8 @@ var int_vars: PoolIntArray
 var float_vars: PoolRealArray
 var sys_int_vars: PoolIntArray
 var sys_float_vars: PoolRealArray
-var velocity: Vector2
+var velocity: Vector2 = Vector2(0, 0)
+var acceleration: Vector2 = Vector2(0, 0)
 var special_flags = {}
 var push_flag: bool = true
 var in_hit_pause: bool = false
@@ -38,6 +40,7 @@ var hit_def = null
 var received_hit_def = null
 var hit_by_1 = null
 var hit_by_2 = null
+var bind = null
 var is_falling: bool = false
 var is_hit_def_active: bool = false
 var hit_count: int = 0
@@ -84,11 +87,13 @@ func setup(_consts, images, animations, sounds, _command_manager):
     command_manager = _command_manager
     state_manager = StateManager.new(self)
     sound_manager = SoundManager.new(sounds)
+    bind = Bind.new(self)
 
     alive = 1
     life = consts['data']['life']
     power = consts['data'].get('power', 1000)
     velocity = Vector2(0, 0)
+    acceleration = Vector2(0, 0)
     setup_vars()
 
     var skip = true
@@ -129,6 +134,7 @@ func reset_state_variables():
     self.hit_by_1 = null
     self.hit_by_2 = null
     self.is_hit_def_active = false
+    self.bind.reset()
 
 func _ready():
     self.add_child(character_sprite)
@@ -344,6 +350,12 @@ func get_context_variable(key):
         return get_enemy_body_dist('x')
     if key == "p2bodydist_y":
         return get_enemy_body_dist('y')
+    if key == "p2statetype":
+        return get_enemy_statetype()
+    if key == "p2stateno":
+        return get_enemy_stateno()
+    if key == "p2movetype":
+        return get_enemy_movetype()
     if key == "sprpriority":
         return z_index
     if key == "hitshakeover":
@@ -432,6 +444,9 @@ func check_assert_special(key):
 
 func set_facing_right(value: bool):
     character_sprite.set_flip_h(!value)
+    if is_facing_right != value:
+        velocity *= Vector2(-1, 1)
+        acceleration *= Vector2(-1, 1)
     is_facing_right = value
     command_manager.is_facing_right = is_facing_right
 
@@ -546,6 +561,8 @@ func update_input():
     command_manager.update(in_hit_pause)
 
 func update_state():
+    bind.update()
+
     state_manager.update()
 
     if not in_hit_pause:
@@ -596,11 +613,11 @@ func update_physics():
     handle_pushing()
 
 func handle_movement():
-    if not velocity:
-        return
-
-    position += velocity * global_scale
-    handle_movement_restriction()
+    if velocity:
+        position += velocity * global_scale
+        handle_movement_restriction()
+    
+    velocity += acceleration
 
 func handle_movement_restriction():
     var stage = fight.stage
@@ -647,6 +664,30 @@ func get_enemy_body_dist(axis: String):
         return p2_position.y - p1_position.y
 
     return null
+
+func get_enemy_statetype():
+    var enemy = fight.get_nearest_enemy(self)
+
+    if not enemy:
+        return null
+
+    return enemy.statetype
+
+func get_enemy_stateno():
+    var enemy = fight.get_nearest_enemy(self)
+
+    if not enemy:
+        return null
+
+    return enemy.stateno
+
+func get_enemy_movetype():
+    var enemy = fight.get_nearest_enemy(self)
+
+    if not enemy:
+        return null
+
+    return enemy.movetype
 
 func update_z_index(new_index):
     z_index = base_z_index  + new_index
@@ -783,3 +824,21 @@ func handle_hit_attacker(hit_def, target, blocked):
         move_guarded = 0
         move_hit = 1
         move_reversed = 0
+
+func find_targets(target_id: int):
+    var results = []
+    for target in targets:
+        if target_id == -1 or target_id == target.received_hit_def.id:
+            results.append(target)
+    return results
+
+func set_foreign_animation(foreign_character, value, elem):
+    # TODO: Implement set foreign animation
+    pass
+
+func is_helper():
+    return false
+
+func remove_check():
+    # TODO: Implement helper remove check
+    pass
