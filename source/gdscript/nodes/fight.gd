@@ -286,6 +286,8 @@ func on_character_attack(attacker, target, hit_def, blocked):
         on_attack_block(attacker, target, received_hit_def)
 
 func on_attack_hit(attacker, target, hit_def):
+    print("On Attack, attackerstate: %s" % [attacker.stateno])
+
     apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
 
     if target.life == 0:

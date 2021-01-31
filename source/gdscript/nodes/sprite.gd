@@ -208,10 +208,10 @@ func check_collision(other, type: int) -> bool:
         return false
 
     if type == 1:
-        return self.attacking_area_2d.overlaps_area(other.collision_area_2d) or self.attacking_area_2d.overlaps_area(other.attacking_area_2d)
+        return self.overlaps_area(attacking_area_2d, other.collision_area_2d) or self.overlaps_area(attacking_area_2d, other.attacking_area_2d)
 
     if type == 2:
-        return self.collision_area_2d.overlaps_area(other.collision_area_2d) or self.collision_area_2d.overlaps_area(other.attacking_area_2d)
+        return self.overlaps_area(collision_area_2d, other.collision_area_2d) or self.overlaps_area(collision_area_2d, other.attacking_area_2d)
 
     return false
 
@@ -219,7 +219,23 @@ func check_attack_collision(other) -> bool:
     if not other.collision_area_2d or not self.attacking_area_2d:
         return false
 
-    return self.attacking_area_2d.overlaps_area(other.collision_area_2d)
+    return self.overlaps_area(attacking_area_2d, other.collision_area_2d)
+
+func overlaps_area(area1, area2) -> bool:
+    var space_state = get_world_2d().direct_space_state
+
+    for shape in area1.get_children():
+        var query = Physics2DShapeQueryParameters.new()
+        query.set_shape(shape.shape)
+        query.set_exclude([self.collision_area_2d, self.attacking_area_2d])
+        query.set_collide_with_areas(true)
+        query.set_transform(shape.get_global_transform())
+        var results = space_state.intersect_shape(query, 64)
+        for result in results:
+           if result['collider'] == area2:
+              return true
+
+    return false
 
 func create_collision_box(type: int, points: Array):
     var rectangle_shape: RectangleShape2D = RectangleShape2D.new()

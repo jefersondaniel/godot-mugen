@@ -25,7 +25,7 @@ func _init():
 
     self.add_child(self.fight)
 
-func _process(_delta: float):
+func _physics_process(_delta: float):
     stage.update_tick()
     fight.update_tick()
 
