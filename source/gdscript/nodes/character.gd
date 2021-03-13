@@ -335,7 +335,7 @@ func set_context_variable(key, value):
 
 func get_context_variable(key):
     if key == "anim":
-        return character_sprite.current_animation
+        return character_sprite.get_current_animation()
     if key == "animtime":
         return character_sprite.get_time_from_the_end()
     if key == "vel_x":
@@ -401,8 +401,7 @@ func call_context_function(key, arguments):
     if key == 'selfanimexist':
         return character_sprite.has_anim(arguments[0])
     if key == 'animelemtime':
-        var lala = (character_sprite.animation_time - character_sprite.get_element_time(arguments[0]))
-        return lala
+        return character_sprite.get_animation_element_time(arguments[0])
     if key == 'sysvar':
         return sys_int_vars[arguments[0]]
     if key == 'sysfvar':
@@ -444,6 +443,7 @@ func check_assert_special(key):
 
 func set_facing_right(value: bool):
     character_sprite.set_flip_h(!value)
+    character_sprite.is_facing_right = value
     if is_facing_right != value:
         velocity *= Vector2(-1, 1)
         acceleration *= Vector2(-1, 1)
@@ -514,15 +514,14 @@ func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():
-    if team != 2:
+    if team != 1:
         return
 
-    var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, animframe: %s, time: %s, animtime: %s, fps: %s\n" % [
+    var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, time: %s, animtime: %s, fps: %s\n" % [
         get_context_variable('stateno'),
         get_context_variable('prevstateno'),
-        character_sprite.current_animation,
-        character_sprite.animation_element,
-        character_sprite.frame,
+        character_sprite.get_current_animation(),
+        character_sprite.get_animation_element(),
         get_context_variable('time'),
         get_context_variable('animtime'),
         Engine.get_frames_per_second()
@@ -729,17 +728,17 @@ func handle_facing():
     if is_facing_right == false and  enemy.position.x <= position.x:
         return
 
-    if stateno == constants.STATE_STANDING and character_sprite.current_animation != 5 and not check_assert_special('noautoturn'):
+    if stateno == constants.STATE_STANDING and character_sprite.get_current_animation() != 5 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(5)
         return
 
-    if stateno == constants.STATE_WALKING and character_sprite.current_animation != 5 and not check_assert_special('noautoturn'):
+    if stateno == constants.STATE_WALKING and character_sprite.get_current_animation() != 5 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(5)
         return
 
-    if stateno == constants.STATE_CROUCHING and character_sprite.current_animation != 6 and not check_assert_special('noautoturn'):
+    if stateno == constants.STATE_CROUCHING and character_sprite.get_current_animation() != 6 and not check_assert_special('noautoturn'):
         set_facing_right(not is_facing_right)
         change_anim(6)
         return
