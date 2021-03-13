@@ -192,7 +192,7 @@ func handle_changestate(controller):
     process_state(character.get_state_def(character.stateno))
 
 func handle_changeanim(controller):
-    # Todo handle element property
+    # Todo handle element property. (Starts from 1)
     character.change_anim(controller['value'].execute(character))
 
 func handle_velset(controller):
