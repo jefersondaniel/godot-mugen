@@ -10,6 +10,7 @@ var animations: Dictionary = {}
 var looptimes: Dictionary = {}
 var element_by_tick: Dictionary = {} # Map at which tick each element starts
 var boxes = {1: [], 2: []}
+var boxes_facing_right: bool = true
 var frame_mapping = {}
 var image_mapping = {}
 var is_facing_right: bool = true
@@ -77,12 +78,23 @@ func change_anim(value: int, element_index: int = 0):
 func has_anim(value: int):
     return animations.has(value)
 
-func set_collision_boxes(_boxes):
+func set_collisions(collisions):
     boxes = {}
-    for type in _boxes:
-        boxes[type] = _boxes[type]
+    if collisions[1]:
+        boxes[1] = collisions[1].boxes
+    if collisions[2]:
+        boxes[2] = collisions[2].boxes
+    boxes_facing_right = true # By default boxes are directed to right
+    fix_boxes_direction()
     update_collision_boxes()
     update()
+
+func set_facing_right(value: bool):
+    if is_facing_right == value:
+        return
+    set_flip_h(!value)
+    is_facing_right = value
+    fix_boxes_direction()
 
 func update_collision_boxes():
     if self.attacking_area_2d:
@@ -162,6 +174,21 @@ func image_to_texture(image):
     var texture = ImageTexture.new()
     texture.create_from_image(image, 0)
     return texture
+
+func fix_boxes_direction():
+    if boxes_facing_right == is_facing_right or is_facing_right:
+        return
+    var left_boxes = {1: [], 2: []}
+    for type in boxes:
+        for box in boxes[type]:
+            left_boxes[type].push_back([
+                -box[0],
+                box[1],
+                -box[2],
+                box[3],
+            ])
+    boxes = left_boxes
+    is_facing_right = false
 
 func get_animation_element_time(element_number):
     var animation = self.animation_manager.animation

@@ -29,6 +29,7 @@ func set_animation(_animation, _element):
     animation_in_loop = false
     animation_time = animation.get_element_start_time(element.id)
     element_switch_time = element.ticks
+    handle_element_update()
 
 func has_animation(animation_number) -> bool:
     return animations.has(animation_number)
@@ -58,6 +59,6 @@ func handle_tick():
     handle_element_update()
 
 func handle_element_update():
-    # collisions = animation.get_collisions_from_element(element)
+    var collisions = animation.get_collisions_from_element(element)
     sprite.set_image(element.groupno, element.imageno, element.offset)
-
+    sprite.set_collisions(collisions)
