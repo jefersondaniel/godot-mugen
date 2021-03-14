@@ -64,7 +64,7 @@ func get_element_from_time(time: int):
     printerr("Invalid get element from time")
 
 func get_collisions_from_element(element):
-    var custom_collision = {1: null, 2: null}
+    var custom_collision = {}
     var default_collision = {1: null, 2: null}
 
     for collision in collisions:

@@ -442,8 +442,9 @@ func check_assert_special(key):
     return special_flags.has(key) && special_flags[key] > 0
 
 func set_facing_right(value: bool):
-    character_sprite.set_flip_h(!value)
-    character_sprite.is_facing_right = value
+    if is_facing_right == value:
+        return
+    character_sprite.set_facing_right(value)
     if is_facing_right != value:
         velocity *= Vector2(-1, 1)
         acceleration *= Vector2(-1, 1)
