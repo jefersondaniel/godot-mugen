@@ -15,14 +15,21 @@ Mugen clone using the Godot engine
 git clone --recurse-submodules -j2 git@github.com:jefersondaniel/neo-mugen.git
 ```
 
-2. Compile the godot-cpp library
+2. Download game data
+
+```sh
+wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+```
+
+3. Compile the godot-cpp library
 
 ```sh
 cd source/native/godot-cpp
 scons generate_bindings=yes -j4
 ```
 
-3. Compile custom GDNative modules
+4. Compile custom GDNative modules
 
 ```sh
 cd source/native
