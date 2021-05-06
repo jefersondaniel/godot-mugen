@@ -33,7 +33,7 @@ Once the setup is done, only the last step needs to be executed to recompile the
 
 ## Running
 
-Execute Godot 3.2 on project folder:
+Execute Godot on project folder:
 
 ```sh
 godot
