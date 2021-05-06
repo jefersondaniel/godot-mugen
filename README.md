@@ -4,8 +4,8 @@ Mugen clone using the Godot engine
 
 ## Requirements
 
-* Godot 3.2
-* SCons and godot build dependencies [Godot Docs](https://docs.godotengine.org/en/3.2/development/compiling/compiling_for_x11.html)
+* Godot 3.3
+* SCons and godot build dependencies [Godot Docs](https://docs.godotengine.org/en/3.3/development/compiling/compiling_for_x11.html)
 
 ## Setup
 

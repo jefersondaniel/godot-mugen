@@ -34,7 +34,7 @@ godot_cpp = [
     '${BUILD_ROOT.abspath}/godot-cpp/include',
     '${BUILD_ROOT.abspath}/godot-cpp/include/core',
     '${BUILD_ROOT.abspath}/godot-cpp/include/gen',
-    '${BUILD_ROOT.abspath}/godot-cpp/godot_headers',
+    '${BUILD_ROOT.abspath}/godot-cpp/godot-headers',
 ]
 
 env = Environment(
