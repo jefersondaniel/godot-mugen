@@ -15,4 +15,4 @@ project.sublime-workspace
 .sconsign.dblite
 .vscode
 resources
-data
+/data
