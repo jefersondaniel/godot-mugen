@@ -422,6 +422,9 @@ func handle_changeanim2(controller):
 
     character.set_foreign_animation(foreign_manager.character, value, elem)
 
+func handle_turn(controller):
+    character.set_facing_right(not character.is_facing_right)
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
