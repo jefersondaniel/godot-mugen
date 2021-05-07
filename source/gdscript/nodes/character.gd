@@ -247,8 +247,7 @@ func get_hit_var(key):
         'yaccel':
             return received_hit_def.yaccel
         'isbound':
-            printerr("TODO: Implement bind")
-            return null
+            return bind.is_active and bind.is_target_bind
         _:
             printerr("Hit var not found: %s" % [key])
             return null
@@ -583,7 +582,7 @@ func update_hit_state():
 
     if hit_by_1:
         hit_by_1.handle_tick()
-    
+
     if hit_by_2:
         hit_by_2.handle_tick()
 
@@ -616,7 +615,7 @@ func handle_movement():
     if velocity:
         position += velocity * global_scale
         handle_movement_restriction()
-    
+
     velocity += acceleration
 
 func handle_movement_restriction():
