@@ -425,6 +425,22 @@ func handle_changeanim2(controller):
 func handle_turn(controller):
     character.set_facing_right(not character.is_facing_right)
 
+func handle_targetfacing(controller):
+    var target_id: int = -1 # Specifies the desired target ID to affect. Only targets with this target ID will be affected. Defaults to -1 (affects all targets.)
+    var facing = 0 # If facing_val is positive, all targets will turn to face the same direction as the player. If facing_val is negative, all targets will turn to face the opposite direction as the player.
+
+    if 'id' in controller:
+        target_id = controller['id'].execute(character)
+
+    if 'facing' in controller:
+        facing = controller['facing'].execute(character)
+
+    for target in character.find_targets(target_id):
+        if facing > 0:
+            target.set_facing_right(character.is_facing_right)
+        if facing < 0:
+            target.set_facing_right(not character.is_facing_right)
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
