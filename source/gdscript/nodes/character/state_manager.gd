@@ -72,7 +72,7 @@ func activate_state(stateno):
 
     if statedef.has('poweradd'):
         character.add_power(float(statedef['poweradd']))
-    
+
     if statedef.has('juggle'):
         character.required_juggle_points = int(statedef['juggle'])
 
