@@ -441,6 +441,36 @@ func handle_targetfacing(controller):
         if facing < 0:
             target.set_facing_right(not character.is_facing_right)
 
+func handle_targetlifeadd(controller):
+    var target_id: int = -1 # Specifies the desired target ID to affect. Only targets with this target ID will be affected. Defaults to -1 (affects all targets.)
+    var value = 0 # value is added toe ach target's life.
+    var kill = 1 # If kill is 0, then the addition will not take any player below 1 life point. Defaults to 1.
+    var absolute = 0 # If absolute is 1, then value will not be scaled (i.e. attack and defense multipliers will be ignored). Defaults to 0.
+
+    if 'id' in controller:
+        target_id = controller['id'].execute(character)
+
+    if 'value' in controller:
+        value = controller['value'].execute(character)
+
+    if 'kill' in controller:
+        kill = controller['kill'].execute(character)
+
+    if 'absolute' in controller:
+        absolute = controller['absolute'].execute(character)
+
+    if not value:
+        return
+
+    for target in character.find_targets(target_id):
+        var new_value = value
+        if not absolute and new_value < 0:
+            new_value = int(new_value * character.attack_multiplier)
+            new_value = int(new_value / target.defense_multiplier)
+        target.life += new_value
+        if target.life < 0 and not kill:
+            target.life = 1
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
