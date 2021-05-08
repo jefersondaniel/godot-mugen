@@ -64,6 +64,7 @@ var defense_multiplier: float = 1
 var attack_multiplier: float = 1
 var string_variable_regex: RegEx
 var base_z_index = 100
+var posfreeze: int = 0
 
 
 # Public variables (will be available in expressions)
@@ -620,7 +621,7 @@ func update_physics():
     handle_pushing()
 
 func handle_movement():
-    if velocity:
+    if velocity and not posfreeze:
         position += velocity * global_scale
         handle_movement_restriction()
 
