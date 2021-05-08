@@ -4,6 +4,8 @@ var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 var HitBy = load('res://source/gdscript/nodes/character/hit_by.gd')
 
+var INFINITE_LOOP_LIMIT = 1000
+
 var character: Object
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
@@ -11,34 +13,46 @@ var trigger_names: Array = [
     'movecontact'
 ]
 var foreign_manager = null # TODO: Implement foreign
+var current_state = null
 
 func _init(_character):
     character = _character
     var_regex = RegEx.new()
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
+    current_state = get_state(character.stateno, false)
 
 func update():
-    var oldstateno = character.stateno
+    # TODO: Implement helper state manager
 
-    process_state(character.get_state_def(-1))
-    process_state(character.get_state_def(-2))
-    process_state(character.get_state_def(-3))
-
-    if character.stateno == oldstateno:
-        process_current_state()
+    if not foreign_manager:
+        run_state(get_state(-3, true))
+    run_state(get_state(-2, true))
+    run_state(get_state(-1, true))
+    run_current_state()
 
     if not character.in_hit_pause:
         character.time = character.time + 1
 
-func process_current_state():
-    process_state(character.get_state_def(character.stateno))
+func get_state(stateno: int, force_self: bool):
+    if foreign_manager and not force_self:
+        return foreign_manager.character.get_state_def(stateno)
+    return character.get_state_def(stateno)
 
-func activate_state(stateno):
-    var statedef = character.get_state_def(stateno)
+func run_current_state():
+    var infinite_loop_counter = 0
+    while infinite_loop_counter < INFINITE_LOOP_LIMIT:
+        var current_state_backup = current_state
+        if character.time == -1:
+            activate_state(current_state)
+        run_state(current_state)
+        if current_state_backup == current_state:
+            break
+        infinite_loop_counter += 1
+    if infinite_loop_counter == INFINITE_LOOP_LIMIT:
+        printerr("Infinite loop detected on changestate")
 
+func activate_state(statedef):
     trigger_counter = {}
-    character.prevstateno = character.stateno
-    character.stateno = stateno
     character.reset_state_variables()
 
     if statedef.has('anim'):
@@ -105,7 +119,7 @@ func activate_state(stateno):
 
     # TODO: Implement facep2
 
-func process_state(state):
+func run_state(state):
     var oldstateno = character.stateno
 
     for controller in state['controllers']:
@@ -148,6 +162,17 @@ func process_state(state):
             # If the controller changed the state, skip the next controllers
             break
 
+func change_state(stateno: int):
+    var state = get_state(stateno, false)
+
+    if not state:
+        printerr("Invalid state: %s" % [stateno])
+
+    current_state = state
+    character.time = -1
+    character.prevstateno = character.stateno
+    character.stateno = stateno
+
 func handle_state_controller(controller):
     if controller['type'] == 'null':
         return
@@ -187,9 +212,8 @@ func handle_debug(controller):
 func handle_changestate(controller):
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
-
-    activate_state(controller['value'].execute(character))
-    process_state(character.get_state_def(character.stateno))
+    var stateno = controller['value'].execute(character)
+    change_state(stateno)
 
 func handle_changeanim(controller):
     # Todo handle element property. (Starts from 1)
@@ -470,6 +494,20 @@ func handle_targetlifeadd(controller):
         target.life += new_value
         if target.life < 0 and not kill:
             target.life = 1
+
+func handle_targetstate(controller):
+    var target_id: int = -1 # Specifies the number of the state to change the targets to.
+    var value = 0 # value is added toe ach target's life.
+
+    if 'id' in controller:
+        target_id = controller['id'].execute(character)
+
+    if 'value' in controller:
+        value = controller['value'].execute(character)
+
+    for target in character.find_targets(target_id):
+        target.state_manager.foreign_manager = self
+        target.change_state(value)
 
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
