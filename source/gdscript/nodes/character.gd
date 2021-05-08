@@ -424,7 +424,7 @@ func change_anim(anim: int):
     character_sprite.change_anim(anim)
 
 func change_state(value: int):
-    state_manager.activate_state(value)
+    state_manager.change_state(value)
 
 func play_sound(parameters: Dictionary):
     sound_manager.play_sound(parameters)
@@ -833,6 +833,7 @@ func find_targets(target_id: int):
 
 func set_foreign_animation(foreign_character, value, elem):
     # TODO: Implement set foreign animation
+    print("TODO: set_foreign_animation")
     pass
 
 func is_helper():
