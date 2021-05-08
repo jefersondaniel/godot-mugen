@@ -349,6 +349,15 @@ func handle_posadd(controller):
 
     character.add_relative_position(newpos)
 
+func handle_posfreeze(controller):
+    var character = get_character()
+    var value: int = 1
+
+    if controller.has('value'):
+        value = controller['value'].execute(character)
+
+    character.posfreeze = value
+
 func handle_assertspecial(controller):
     var character = get_character()
     if controller.has('flag'):
