@@ -311,6 +311,10 @@ Value Value::lessOrEqual(const Value &value) const
 
 Value Value::add(const Value &other) const
 {
+    if (isString() || other.isString()) {
+        return stringValue() + other.stringValue();
+    }
+
     if (!isArithmetic() || !other.isArithmetic()) {
         return Value();
     }
