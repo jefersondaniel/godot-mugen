@@ -225,8 +225,14 @@ func handle_changestate(controller):
     var character = get_character()
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
+    if controller.has('anim'):
+        character.change_anim(controller['anim'].execute(character))
     var stateno = controller['value'].execute(character)
     change_state(stateno)
+
+func handle_selfstate(controller):
+    foreign_manager = null
+    handle_changestate(controller)
 
 func handle_changeanim(controller):
     var character = get_character()
