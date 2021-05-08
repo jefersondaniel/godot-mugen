@@ -363,6 +363,8 @@ func get_context_variable(key):
         return is_falling
     if key == "hitover":
         return hit_time <= 0
+    if key == "canrecover":
+        return is_falling and received_hit_def and received_hit_def.fall_recover
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
