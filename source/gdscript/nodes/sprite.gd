@@ -22,7 +22,8 @@ func _init(_images, _animations):
     var frame_index = 1
 
     images = _images
-    animation_manager = AnimationManager.new(self, _animations)
+    animation_manager = AnimationManager.new(_animations)
+    animation_manager.connect("element_update", self, "handle_element_update")
 
     # Prepare an empty texture
     empty_image.create_from_data(1, 1, false, Image.FORMAT_RGBA8, PoolByteArray([0,0,0,0]))
@@ -74,6 +75,9 @@ func set_image(groupno, imageno, offset):
 
 func change_anim(value: int, element_index: int = 0):
     animation_manager.set_local_animation(value, element_index)
+
+func change_foreign_anim(foreign_animation_manager, value: int, element_index: int = 0):
+    animation_manager.set_foreign_animation(foreign_animation_manager, value, element_index)
 
 func has_anim(value: int):
     return animations.has(value)
@@ -216,6 +220,10 @@ func get_animation_element():
 
 func handle_tick():
     animation_manager.handle_tick()
+
+func handle_element_update(element, collisions):
+    set_image(element.groupno, element.imageno, element.offset)
+    set_collisions(collisions)
 
 func _draw():
     for type in boxes:
