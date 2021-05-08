@@ -41,7 +41,6 @@ var received_hit_def = null
 var hit_by_1 = null
 var hit_by_2 = null
 var bind = null
-var is_falling: bool = false
 var is_hit_def_active: bool = false
 var hit_count: int = 0
 var unique_hit_count: int = 0
@@ -173,6 +172,9 @@ func get_const(fullname):
 
     return result
 
+func is_falling():
+    return movetype == constants.FLAG_H and received_hit_def and received_hit_def.fall
+
 func get_hit_var(key):
     if not received_hit_def:
         return -1
@@ -191,7 +193,7 @@ func get_hit_var(key):
         'chainid':
             return received_hit_def.chainid
         'fall':
-            return is_falling
+            return is_falling()
         'fall.damage':
             return received_hit_def.fall_damage
         'fall.recover':
@@ -224,7 +226,7 @@ func get_hit_var(key):
             return constants.HIT_TYPE_ID[groundtype] if constants.HIT_TYPE_ID.has(groundtype) else 0
         'animtype':
             var animtype: String = ''
-            if is_falling:
+            if is_falling():
                 animtype = received_hit_def.fall_animtype
             elif hit_state_type == constants.FLAG_A:
                 animtype = received_hit_def.air_animtype
@@ -361,11 +363,11 @@ func get_context_variable(key):
     if key == "hitshakeover":
         return hit_shake_time <= 0
     if key == "hitfall":
-        return is_falling
+        return is_falling()
     if key == "hitover":
         return hit_time <= 0
     if key == "canrecover":
-        return is_falling and received_hit_def and received_hit_def.fall_recover
+        return is_falling() and received_hit_def and received_hit_def.fall_recover
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
@@ -788,7 +790,7 @@ func handle_hit_target(hit_def, attacker, blocked):
     self.attacker = attacker
     self.blocked = blocked
 
-    if self.is_falling:
+    if self.is_falling():
         self.received_hit_def.fall = 1
     else:
         self.remaining_juggle_points = int(self.get_const('data.airjuggle'))
@@ -809,7 +811,7 @@ func handle_hit_target(hit_def, attacker, blocked):
 
         # TODO: Apply pallete fx
 
-        if is_falling:
+        if is_falling():
             self.remaining_juggle_points -= attacker.required_juggle_points
 
 func handle_hit_attacker(hit_def, target, blocked):
