@@ -412,7 +412,7 @@ func handle_hitvelset(controller):
 func handle_hitfallvel(controller):
     var character = get_character()
 
-    if not character.received_hit_def or not character.is_falling:
+    if not character.received_hit_def or not character.is_falling():
         return
 
     var hitdef = character.received_hit_def
@@ -421,6 +421,34 @@ func handle_hitfallvel(controller):
         character.set_velocity_x(hitdef.fall_xvelocity)
 
     character.set_velocity_y(hitdef.fall_yvelocity)
+
+func handle_hitfallset(controller):
+    var character = get_character()
+
+    if not character.received_hit_def:
+        return
+
+    var value = -1
+    var yvel = null
+    var xvel = null
+
+    if controller.has('value'):
+        value = controller['value'].execute(character)
+
+    if controller.has('yvel'):
+        yvel = controller['yvel'].execute(character)
+
+    if controller.has('xvel'):
+        xvel = controller['xvel'].execute(character)
+
+    if value == 1 or value == 0:
+        character.received_hit_def.fall = value
+
+    if xvel != null:
+        character.received_hit_def.fall_xvelocity = xvel
+
+    if yvel != null:
+        character.received_hit_def.fall_yvelocity = yvel
 
 func handle_movecontact(controller):
     var character = get_character()
