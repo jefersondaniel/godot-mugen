@@ -420,8 +420,14 @@ func call_context_function(key, arguments):
 func redirect_context(key):
     push_warning("TODO: Trigger redirection")
 
-func change_anim(anim: int):
-    character_sprite.change_anim(anim)
+func change_anim(anim: int, elem_index: int = 0):
+    character_sprite.change_anim(anim, elem_index)
+
+func change_foreign_anim(foreign_animation_manager, value: int, elem_index: int = 0):
+    character_sprite.change_foreign_anim(foreign_animation_manager, value, elem_index)
+
+func get_animation_manager():
+    return character_sprite.animation_manager
 
 func change_state(value: int):
     state_manager.change_state(value)
@@ -830,11 +836,6 @@ func find_targets(target_id: int):
         if target_id == -1 or target_id == target.received_hit_def.id:
             results.append(target)
     return results
-
-func set_foreign_animation(foreign_character, value, elem):
-    # TODO: Implement set foreign animation
-    print("TODO: set_foreign_animation")
-    pass
 
 func is_helper():
     return false

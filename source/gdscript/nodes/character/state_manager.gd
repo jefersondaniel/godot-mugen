@@ -6,7 +6,7 @@ var HitBy = load('res://source/gdscript/nodes/character/hit_by.gd')
 
 var INFINITE_LOOP_LIMIT = 1000
 
-var character: Object
+var character_ref: WeakRef
 var var_regex: RegEx
 var trigger_counter: Dictionary = {}
 var trigger_names: Array = [
@@ -16,13 +16,17 @@ var foreign_manager = null # TODO: Implement foreign
 var current_state = null
 
 func _init(_character):
-    character = _character
+    character_ref = weakref(_character)
     var_regex = RegEx.new()
     var_regex.compile("(?<type>(fvar|var|sysvar|sysfvar)).(?<number>[0-9]+).")
-    current_state = get_state(character.stateno, false)
+    current_state = get_state(get_character().stateno, false)
+
+func get_character():
+    return character_ref.get_ref()
 
 func update():
     # TODO: Implement helper state manager
+    var character = get_character()
 
     if not foreign_manager:
         run_state(get_state(-3, true))
@@ -34,11 +38,13 @@ func update():
         character.time = character.time + 1
 
 func get_state(stateno: int, force_self: bool):
+    var character = get_character()
     if foreign_manager and not force_self:
-        return foreign_manager.character.get_state_def(stateno)
+        return foreign_manager.get_character().get_state_def(stateno)
     return character.get_state_def(stateno)
 
 func run_current_state():
+    var character = get_character()
     var infinite_loop_counter = 0
     while infinite_loop_counter < INFINITE_LOOP_LIMIT:
         var current_state_backup = current_state
@@ -52,6 +58,7 @@ func run_current_state():
         printerr("Infinite loop detected on changestate")
 
 func activate_state(statedef):
+    var character = get_character()
     trigger_counter = {}
     character.reset_state_variables()
 
@@ -120,6 +127,7 @@ func activate_state(statedef):
     # TODO: Implement facep2
 
 func run_state(state):
+    var character = get_character()
     var oldstateno = character.stateno
 
     for controller in state['controllers']:
@@ -163,6 +171,7 @@ func run_state(state):
             break
 
 func change_state(stateno: int):
+    var character = get_character()
     var state = get_state(stateno, false)
 
     if not state:
@@ -174,6 +183,8 @@ func change_state(stateno: int):
     character.stateno = stateno
 
 func handle_state_controller(controller):
+    var character = get_character()
+
     if controller['type'] == 'null':
         return
 
@@ -207,19 +218,44 @@ func handle_trigger(name):
     })
 
 func handle_debug(controller):
+    var character = get_character()
     print('DEBUG: %s' % [controller['value'].execute(character)])
 
 func handle_changestate(controller):
+    var character = get_character()
     if controller.has('ctrl'):
         character.ctrl = controller['ctrl'].execute(character)
     var stateno = controller['value'].execute(character)
     change_state(stateno)
 
 func handle_changeanim(controller):
-    # Todo handle element property. (Starts from 1)
-    character.change_anim(controller['value'].execute(character))
+    var character = get_character()
+    var value: int = controller['value'].execute(character)
+    var elem: int = 0
+
+    if 'elem' in controller:
+        elem = controller['elem'].execute(character)
+        elem = int(max(elem - 1, 0)) # Convert ordinal to index
+
+    character.change_anim(value, elem)
+
+func handle_changeanim2(controller):
+    var character = get_character()
+    var value: int = controller['value'].execute(character)
+    var elem: int = 0
+
+    if 'elem' in controller:
+        elem = controller['elem'].execute(character)
+        elem = int(max(elem - 1, 0)) # Convert ordinal to index
+
+    if foreign_manager == null:
+        return
+
+    var animation_manager = foreign_manager.get_character().get_animation_manager()
+    character.change_foreign_anim(animation_manager, value, elem)
 
 func handle_velset(controller):
+    var character = get_character()
     if 'x' in controller:
         character.set_velocity_x(controller['x'].execute(character))
 
@@ -227,6 +263,7 @@ func handle_velset(controller):
         character.set_velocity_y(controller['y'].execute(character))
 
 func handle_veladd(controller):
+    var character = get_character()
     if 'x' in controller:
         character.add_velocity(Vector2(controller['x'].execute(character), 0))
 
@@ -234,6 +271,7 @@ func handle_veladd(controller):
         character.add_velocity(Vector2(0, controller['y'].execute(character)))
 
 func handle_velmul(controller):
+    var character = get_character()
     if 'x' in controller:
         character.mul_velocity(Vector2(controller['x'].execute(character), 1))
 
@@ -241,6 +279,7 @@ func handle_velmul(controller):
         character.mul_velocity(Vector2(1, controller['y'].execute(character)))
 
 func handle_varset(controller):
+    var character = get_character()
     var type: String
     var number: int
     var value
@@ -277,9 +316,11 @@ func handle_varset(controller):
         character.sys_float_vars[number] = value
 
 func handle_ctrlset(controller):
+    var character = get_character()
     character.ctrl = controller['value'].execute(character)
 
 func handle_posset(controller):
+    var character = get_character()
     var newpos = character.get_relative_position()
 
     if controller.has('x'):
@@ -291,6 +332,7 @@ func handle_posset(controller):
     character.set_relative_position(newpos)
 
 func handle_posadd(controller):
+    var character = get_character()
     var newpos = Vector2(0, 0)
 
     if controller.has('x'):
@@ -302,6 +344,7 @@ func handle_posadd(controller):
     character.add_relative_position(newpos)
 
 func handle_assertspecial(controller):
+    var character = get_character()
     if controller.has('flag'):
         character.assert_special(controller['flag'].execute(character))
     if controller.has('flag2'):
@@ -310,20 +353,24 @@ func handle_assertspecial(controller):
         character.assert_special(controller['flag3'].execute(character))
 
 func handle_defencemulset(controller):
+    var character = get_character()
     var value = controller['value'].execute(character)
     character.defense_multiplier = float(value)
 
 func handle_attackmulset(controller):
+    var character = get_character()
     var value = controller['value'].execute(character)
     character.attack_multiplier = float(value)
 
 func handle_hitdef(controller):
+    var character = get_character()
     var hit_def = HitDef.new()
     hit_def.parse(controller, character)
     character.hit_def = hit_def
     character.is_hit_def_active = true
 
 func handle_hitvelset(controller):
+    var character = get_character()
     var xflag = 1
     var yflag = 1
 
@@ -348,13 +395,16 @@ func handle_hitvelset(controller):
     character.set_velocity_y(new_velocity.y)
 
 func handle_movecontact(controller):
+    var character = get_character()
     return character.move_contact if character.movetype == constants.FLAG_A else 0
 
 func handle_sprpriority(controller):
+    var character = get_character()
     var value = controller['value'].execute(character)
     character.z_index = value
 
 func handle_statetypeset(controller):
+    var character = get_character()
     if controller.has('statetype'):
         character.statetype = controller['statetype'].execute(character)
 
@@ -365,6 +415,7 @@ func handle_statetypeset(controller):
         character.physics = controller['physics'].execute(character)
 
 func handle_playsnd(controller):
+    var character = get_character()
     var parameters: Dictionary = {
         'value': controller['value'].execute(character),
     }
@@ -372,6 +423,7 @@ func handle_playsnd(controller):
     character.play_sound(parameters)
 
 func handle_fallenvshake(_controller):
+    var character = get_character()
     var hit_def = character.received_hit_def
     var stage = character.get_stage()
 
@@ -386,6 +438,7 @@ func handle_fallenvshake(_controller):
     )
 
 func handle_hitfalldamage(_controller):
+    var character = get_character()
     var hit_def = character.received_hit_def
     var attacker = character.attacker
     var fight = character.get_fight()
@@ -396,6 +449,7 @@ func handle_hitfalldamage(_controller):
     fight.apply_damage(attacker, character, hit_def.fall_damage, hit_def.kill)
 
 func handle_nothitby(controller):
+    var character = get_character()
     var value1 = controller['value'] if controller.has('value') else null
     var value2 = controller['value2'] if controller.has('value2') else null
     var time: int = controller['time'].execute(character)
@@ -420,6 +474,7 @@ func handle_nothitby(controller):
         character.hit_by_2 = hit_by
 
 func handle_targetbind(controller):
+    var character = get_character()
     var target_id: int = -1
     var pos = [0, 0]
     var time = 1
@@ -434,22 +489,12 @@ func handle_targetbind(controller):
     for target in character.find_targets(target_id):
         target.bind.setup(character, Vector2(pos[0], pos[1]), time, 0, true)
 
-func handle_changeanim2(controller):
-    var value: int = controller['value'].execute(character)
-    var elem: int = 0
-
-    if 'elem' in controller:
-        elem = controller['elem'].execute(character)
-
-    if foreign_manager == null:
-        return
-
-    character.set_foreign_animation(foreign_manager.character, value, elem)
-
 func handle_turn(controller):
+    var character = get_character()
     character.set_facing_right(not character.is_facing_right)
 
 func handle_targetfacing(controller):
+    var character = get_character()
     var target_id: int = -1 # Specifies the desired target ID to affect. Only targets with this target ID will be affected. Defaults to -1 (affects all targets.)
     var facing = 0 # If facing_val is positive, all targets will turn to face the same direction as the player. If facing_val is negative, all targets will turn to face the opposite direction as the player.
 
@@ -466,6 +511,7 @@ func handle_targetfacing(controller):
             target.set_facing_right(not character.is_facing_right)
 
 func handle_targetlifeadd(controller):
+    var character = get_character()
     var target_id: int = -1 # Specifies the desired target ID to affect. Only targets with this target ID will be affected. Defaults to -1 (affects all targets.)
     var value = 0 # value is added toe ach target's life.
     var kill = 1 # If kill is 0, then the addition will not take any player below 1 life point. Defaults to 1.
@@ -496,6 +542,7 @@ func handle_targetlifeadd(controller):
             target.life = 1
 
 func handle_targetstate(controller):
+    var character = get_character()
     var target_id: int = -1 # Specifies the number of the state to change the targets to.
     var value = 0 # value is added toe ach target's life.
 

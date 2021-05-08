@@ -1,6 +1,7 @@
 extends Object
 
-var sprite = null
+signal element_update(element, collisions)
+
 var animations = null
 var animation = null
 var animation_finished = false
@@ -9,8 +10,7 @@ var animation_time = 0
 var element_switch_time = 0
 var element = null # Element object
 
-func _init(_sprite, _animations):
-    sprite = _sprite
+func _init(_animations):
     animations = _animations
 
 func set_local_animation(animation_number, element_index):
@@ -19,6 +19,13 @@ func set_local_animation(animation_number, element_index):
         element_index = 0
     if element_index < 0 or element_index > animation.total_elements:
         printerr("Invalid element: %s" % [element_index])
+        return
+    set_animation(animation, animation.elements[element_index])
+
+func set_foreign_animation(animation_manager, animation_number: int, element_index: int):
+    var animation = animation_manager.animations[animation_number];
+    if element_index < 0 or element_index > animation.total_elements:
+        printerr("Invalid element on foreign animation: %s" % [element_index])
         return
     set_animation(animation, animation.elements[element_index])
 
@@ -60,5 +67,4 @@ func handle_tick():
 
 func handle_element_update():
     var collisions = animation.get_collisions_from_element(element)
-    sprite.set_image(element.groupno, element.imageno, element.offset)
-    sprite.set_collisions(collisions)
+    emit_signal("element_update", element, collisions)
