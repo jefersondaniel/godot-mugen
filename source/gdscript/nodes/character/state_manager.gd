@@ -59,8 +59,9 @@ func run_current_state():
 
 func activate_state(statedef):
     var character = get_character()
+    character.time = 0
+
     trigger_counter = {}
-    character.reset_state_variables()
 
     if statedef.has('anim'):
         character.change_anim(int(statedef['anim']))
@@ -552,18 +553,18 @@ func handle_turn(controller):
 func handle_targetfacing(controller):
     var character = get_character()
     var target_id: int = -1 # Specifies the desired target ID to affect. Only targets with this target ID will be affected. Defaults to -1 (affects all targets.)
-    var facing = 0 # If facing_val is positive, all targets will turn to face the same direction as the player. If facing_val is negative, all targets will turn to face the opposite direction as the player.
+    var value = 0 # If facing_val is positive, all targets will turn to face the same direction as the player. If facing_val is negative, all targets will turn to face the opposite direction as the player.
 
     if 'id' in controller:
         target_id = controller['id'].execute(character)
 
-    if 'facing' in controller:
-        facing = controller['facing'].execute(character)
+    if 'value' in controller:
+        value = controller['value'].execute(character)
 
     for target in character.find_targets(target_id):
-        if facing > 0:
+        if value > 0:
             target.set_facing_right(character.is_facing_right)
-        if facing < 0:
+        if value < 0:
             target.set_facing_right(not character.is_facing_right)
 
 func handle_targetlifeadd(controller):
@@ -612,6 +613,7 @@ func handle_targetstate(controller):
         target.state_manager.foreign_manager = self
         target.change_state(value)
 
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
@@ -620,10 +622,12 @@ func handle_explod(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#explod
     pass
 
-func handle_width(controller):
-    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#width
-    pass
-
 func handle_forcefeedback(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
-    return 0
+    pass
+
+func handle_displaytoclipboard(controller):
+    pass
+
+func handle_appendtoclipboard(controller):
+    pass
