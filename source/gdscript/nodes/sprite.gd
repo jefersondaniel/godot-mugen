@@ -14,6 +14,8 @@ var boxes_facing_right: bool = true
 var frame_mapping = {}
 var image_mapping = {}
 var is_facing_right: bool = true
+var flip_v_override: bool = false
+var flip_h_override: bool = false
 
 func _init(_images, _animations):
     var empty_image = Image.new()
@@ -72,6 +74,7 @@ func set_image(groupno, imageno, offset):
 
     self.frame = frame_value
     self.offset = frame_offset
+    update_image_flip()
 
 func change_anim(value: int, element_index: int = 0):
     animation_manager.set_local_animation(value, element_index)
@@ -96,9 +99,13 @@ func set_collisions(collisions):
 func set_facing_right(value: bool):
     if is_facing_right == value:
         return
-    set_flip_h(!value)
     is_facing_right = value
+    update_image_flip()
     fix_boxes_direction()
+
+func update_image_flip():
+    set_flip_h(!is_facing_right != flip_h_override)
+    set_flip_v(flip_v_override)
 
 func update_collision_boxes():
     if self.attacking_area_2d:
@@ -222,6 +229,16 @@ func handle_tick():
     animation_manager.handle_tick()
 
 func handle_element_update(element, collisions):
+    var flip_flags = element.flags[0] if len(element.flags) > 0 else null
+    flip_h_override = false
+    flip_v_override = false
+
+    if flip_flags:
+        if 'h' in flip_flags:
+            flip_h_override = true
+        if 'v' in flip_flags:
+            flip_v_override = true
+
     set_image(element.groupno, element.imageno, element.offset)
     set_collisions(collisions)
 
