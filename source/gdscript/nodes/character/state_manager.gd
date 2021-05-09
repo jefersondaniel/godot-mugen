@@ -613,6 +613,32 @@ func handle_targetstate(controller):
         target.state_manager.foreign_manager = self
         target.change_state(value)
 
+func handle_width(controller):
+    var character = get_character()
+    var player = null
+    var edge = null
+    var value = null
+
+    if controller.has('player'):
+        player = controller['player'].execute(character)
+
+    if controller.has('edge'):
+        edge = controller['edge'].execute(character)
+
+    if controller.has('value'):
+        value = controller['value'].execute(character)
+
+    if value != null:
+        player = value
+        edge = value
+
+    if player:
+        character.front_width_override = player[0]
+        character.back_width_override = player[1]
+
+    if edge:
+        character.frontedge_width_override = edge[0]
+        character.backedge_width_override = edge[1]
 
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
