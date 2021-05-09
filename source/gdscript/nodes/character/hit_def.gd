@@ -37,7 +37,7 @@ var air_hittime: int = 20 # This parameter has no effect if the "fall" parameter
 var guard_slidetime: int = 0 # Defaults to same value as "guard.hittime"
 var guard_ctrltime: int = 0 # Defaults to guard_slidetime
 var guard_dist: int = 0 # Defaults to value in player variables
-var yaccel: float = 1.4 # Defaults to .35 in 240p, .7 in 480p, 1.4 in 720p
+var yaccel: float = 0.35 # Defaults to .35 in 240p, .7 in 480p, 1.4 in 720p
 var ground_velocity: Vector2 = Vector2(0, 0)
 var guard_velocity: float = 0
 var air_velocity: Vector2 = Vector2(0, 0)
@@ -63,7 +63,7 @@ var p2getp1state: int = 1
 var forcestand: int = 0 # Normally defaults to 0, but if the y_velocity of the "ground.velocity" parameter is non-zero, it defaults to 1.
 var fall: int = 0
 var fall_xvelocity: int = 0
-var fall_yvelocity: int = -18
+var fall_yvelocity: int = -4.5 # Considering 240p default
 var fall_recover: int = 1
 var fall_recovertime: int = 4
 var fall_damage: int = 0
@@ -97,6 +97,7 @@ var fall_envshake_ampl: int = 0
 var fall_envshake_phase: float = 0
 
 func _init():
+    # TODO: Adjust default values based on global_scale (considering that a hitdef affect a character with a distinct scale)
     attribute = HitAttribute.new()
 
 func parse(data: Dictionary, context):
@@ -149,7 +150,7 @@ func parse(data: Dictionary, context):
         guard_pausetime = int(evaluate_expression(aux_array[0], context))
         if len(aux_array) > 1:
             guard_shaketime = int(evaluate_expression(aux_array[1], context))
-    
+
     if data.has('sparkno'):
         if data['sparkno'].begins_with('s'):
             sparkno_source = 'player'
@@ -439,7 +440,7 @@ func parse_attack_flags(value: String):
 
         if constants.FLAGS.has(character):
             result += constants.FLAGS[character]
-    
+
     return result
 
 func parse_attack_sign(value: String):
