@@ -64,8 +64,8 @@ func set_image(groupno, imageno, offset):
         printerr("Image not found: %s,%s" % [groupno, imageno])
 
     var frame_offset = Vector2(
-        image_offset.x - offset.x,
-        image_offset.y - offset.y
+        image_offset.x + offset.x,
+        image_offset.y + offset.y
     )
     if not is_facing_right:
         frame_offset.x = -frame_width - frame_offset.x
