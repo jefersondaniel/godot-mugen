@@ -80,6 +80,10 @@ var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
 var ctrl: int = 1
 var team: int = 0
+var front_width_override: float = 0.0
+var back_width_override: float = 0.0
+var frontedge_width_override: float = 0.0
+var backedge_width_override: float = 0.0
 
 func setup(_consts, images, animations, sounds, _command_manager):
     consts = _consts
@@ -127,14 +131,6 @@ func setup_vars():
         float_vars[i] = 0
         sys_int_vars[i] = 0
         sys_float_vars[i] = 0
-
-func reset_state_variables():
-    self.time = 0
-    self.hit_def = null
-    self.hit_by_1 = null
-    self.hit_by_2 = null
-    self.is_hit_def_active = false
-    self.bind.reset()
 
 func _ready():
     self.add_child(character_sprite)
@@ -261,18 +257,14 @@ func get_relative_position():
 func set_relative_position(newpos):
     newpos *= global_scale
 
-    position.x = newpos.x
+    position.x = newpos.x if is_facing_right else newpos.x
     position.y = newpos.y + fight.stage.get_position_offset().y
 
 func add_relative_position(vector):
     var newpos = get_relative_position()
 
     newpos.y += vector.y
-
-    if is_facing_right:
-        newpos.x += vector.x
-    else:
-        newpos.x -= vector.x
+    newpos.x += vector.x if is_facing_right else -vector.x
 
     set_relative_position(newpos)
 
@@ -301,22 +293,26 @@ func get_back_location() -> float:
     return position.x + get_back_width()
 
 func get_front_width() -> float:
+    var width = front_width_override * global_scale.x
+
     if is_ground_state():
-        return float(consts['size']['ground.front']) * global_scale.x
+        width += float(consts['size']['ground.front']) * global_scale.x
 
     if is_air_state():
-        return float(consts['size']['air.front']) * global_scale.x
+        width += float(consts['size']['air.front']) * global_scale.x
 
-    return 0.0
+    return width
 
 func get_back_width() -> float:
+    var width = back_width_override * global_scale.x
+
     if is_ground_state():
-        return float(consts['size']['ground.back']) * global_scale.x
+        width += float(consts['size']['ground.back']) * global_scale.x
 
     if is_air_state():
-        return float(consts['size']['air.back']) * global_scale.x
+        width += float(consts['size']['air.back']) * global_scale.x
 
-    return 0.0
+    return width
 
 func is_ground_state() -> bool:
     return statetype == constants.FLAG_S or statetype == constants.FLAG_C or statetype == constants.FLAG_L
@@ -329,7 +325,7 @@ func get_state_def(number: int):
 
 func set_context_variable(key, value):
     if key == "vel_x":
-        velocity.x = value if is_facing_right else -value
+        velocity.x = value
     elif key == "vel_y":
         velocity.y = value
     else:
@@ -341,7 +337,7 @@ func get_context_variable(key):
     if key == "animtime":
         return character_sprite.get_time_from_the_end()
     if key == "vel_x":
-        return velocity.x if is_facing_right else -velocity.x
+        return velocity.x
     if key == "vel_y":
         return velocity.y
     if key == "pos_x":
@@ -455,29 +451,20 @@ func set_facing_right(value: bool):
     if is_facing_right == value:
         return
     character_sprite.set_facing_right(value)
-    if is_facing_right != value:
-        velocity *= Vector2(-1, 1)
-        acceleration *= Vector2(-1, 1)
     is_facing_right = value
     command_manager.is_facing_right = is_facing_right
 
 func set_velocity_x(x):
-    if not is_facing_right:
-       x = -x
     velocity.x = x
 
 func set_velocity_y(y):
     velocity.y = y
 
 func add_velocity(_velocity):
-    if not is_facing_right:
-       _velocity.x = -_velocity.x
     velocity.x += _velocity.x
     velocity.y += _velocity.y
 
 func mul_velocity(_velocity):
-    if not is_facing_right:
-       _velocity.x = -_velocity.x
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
@@ -549,7 +536,7 @@ func draw_debug_text():
         get_context_variable('vel_y')
     ]
 
-    text += "commands: %s\n" % [command_manager.active_commands]
+    text += "commands: %s, facing_right: %s\n" % [command_manager.active_commands, is_facing_right]
 
     get_node('/root/Node2D/hud/text').text = text
 
@@ -561,7 +548,16 @@ func cleanup():
         in_hit_pause = false
         hit_pause_time = 0
 
-    reset_assert_special()
+    if not in_hit_pause:
+        posfreeze = false
+        push_flag = true
+        front_width_override = 0.0
+        back_width_override = 0.0
+        frontedge_width_override = 0.0
+        backedge_width_override = 0.0
+        # TODO: apply friction
+        # TODO: reset scale
+        reset_assert_special()
 
 func update_animation():
     if not in_hit_pause:
@@ -619,15 +615,19 @@ func update_physics():
         return
 
     handle_physics()
+    handle_facing()
     handle_movement()
     handle_pushing()
 
 func handle_movement():
+    var absolute_velocity = velocity if is_facing_right else Vector2(-velocity.x, velocity.y)
+    var absolute_acceleration = acceleration if is_facing_right else Vector2(-acceleration.x, acceleration.y)
+
     if velocity and not posfreeze:
-        position += velocity * global_scale
+        position += absolute_velocity * global_scale
         handle_movement_restriction()
 
-    velocity += acceleration
+    velocity += absolute_acceleration
 
 func handle_movement_restriction():
     var stage = fight.stage
@@ -725,9 +725,10 @@ func handle_physics():
         if relative_position.y < 0:
             velocity += fight.stage.gravity
 
-    self.handle_facing()
-
 func handle_facing():
+    if not ctrl:
+        return
+
     var enemy = fight.get_nearest_enemy(self)
 
     if not enemy:
