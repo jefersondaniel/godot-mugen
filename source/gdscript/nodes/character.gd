@@ -65,6 +65,7 @@ var attack_multiplier: float = 1
 var string_variable_regex: RegEx
 var base_z_index = 100
 var posfreeze: int = 0
+var clipboard: Array = []
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']

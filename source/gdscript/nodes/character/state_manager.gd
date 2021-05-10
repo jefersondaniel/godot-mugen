@@ -791,6 +791,24 @@ func handle_gravity(controller):
 
     character.add_velocity(Vector2(0, yaccel))
 
+func handle_displaytoclipboard(controller):
+    var character = get_character()
+    var text = evaluate_parameter(controller, 'text', '')
+    var params = evaluate_parameter(controller, 'params', [])
+    var formatted_text = text % params
+    character.clipboard = [formatted_text]
+
+func handle_appendtoclipboard(controller):
+    var character = get_character()
+    var text = evaluate_parameter(controller, 'text', '')
+    var params = evaluate_parameter(controller, 'params', [])
+    var formatted_text = text % params
+    character.clipboard.append(formatted_text)
+
+func handle_clearclipboard(controller):
+    var character = get_character()
+    character.clipboard.clear()
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
@@ -801,10 +819,4 @@ func handle_explod(controller):
 
 func handle_forcefeedback(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
-    pass
-
-func handle_displaytoclipboard(controller):
-    pass
-
-func handle_appendtoclipboard(controller):
     pass
