@@ -400,6 +400,8 @@ func call_context_function(key, arguments):
         return acos(arguments[0] if arguments[0] != null else 0)
     if key == 'asin':
         return asin(arguments[0] if arguments[0] != null else 0)
+    if key == 'atan':
+        return atan(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
         return get_const(arguments[0])
     if key == 'gethitvar':
