@@ -259,6 +259,7 @@ func on_character_attack(attacker, target, hit_def, blocked):
 
     var received_hit_def = target.received_hit_def
 
+    # TODO: implement hit sound and sparks using global data
     # if not blocked:
     #     do_env_shake(received_hit_def)
     #     play_sound(attacker, target, received_hit_def.hitsound, received_hit_def.hitsound_source)
@@ -267,23 +268,18 @@ func on_character_attack(attacker, target, hit_def, blocked):
     #     play_sound(attacker, target, received_hit_def.guardsound, received_hit_def.guardsound_source);
     #     make_spark(attacker, target, received_hit_def.guard_sparkno, received_hit_def.sparkxy, received_hit_def.guard_sparkno_source)
 
-    # var hitoverride = target.get_hit_override(received_hit_def)
+    var hitoverride = target.find_hit_override(received_hit_def)
 
-    # if hitoverride:
-    #     if hitoverride.force_air:
-    #         received_hit_def.fall = 1
-    #     target.state_manager.foreign_manager = null
-    #     target.change_state(hitoverride.state_number)
-    # else:
-    #     if not blocked:
-    #         on_attack_hit(attacker, target, received_hit_def)
-    #     else
-    #         on_attack_block(attacker, target, received_hit_def)
-
-    if not blocked: # TODO: Remove and implement hit override
-        on_attack_hit(attacker, target, received_hit_def)
+    if hitoverride:
+        if hitoverride.force_air:
+            received_hit_def.fall = 1
+        target.state_manager.foreign_manager = null
+        target.change_state(hitoverride.stateno)
     else:
-        on_attack_block(attacker, target, received_hit_def)
+        if not blocked:
+            on_attack_hit(attacker, target, received_hit_def)
+        else:
+            on_attack_block(attacker, target, received_hit_def)
 
 func on_attack_hit(attacker, target, hit_def):
     print("On Attack, attackerstate: %s" % [attacker.stateno])

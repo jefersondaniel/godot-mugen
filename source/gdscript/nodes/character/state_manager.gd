@@ -24,6 +24,12 @@ func _init(_character):
 func get_character():
     return character_ref.get_ref()
 
+func evaluate_parameter(controller, key, default_value):
+    if not controller.has(key):
+        return default_value
+
+    return controller[key].execute(get_character())
+
 func update():
     # TODO: Implement helper state manager
     var character = get_character()
@@ -535,6 +541,25 @@ func handle_nothitby(controller):
 
 func handle_hitby(controller):
     self.apply_hit_by(controller, false)
+
+func handle_hitoverride(controller):
+    var character = get_character()
+    var attr = controller['attr'] if controller.has('attr') else null
+    var stateno = controller['stateno'].execute(character)
+    var slot = evaluate_parameter(controller, 'slot', 0)
+    var time = evaluate_parameter(controller, 'time', 1)
+    var forceair = evaluate_parameter(controller, 'forceair', 0)
+
+    if not attr:
+        printerr("hitoverride: invalid attr: %s" + attr)
+        return
+
+    character.hit_overrides[slot].setup(
+        attr,
+        stateno,
+        time,
+        forceair
+    )
 
 func handle_targetbind(controller):
     var character = get_character()

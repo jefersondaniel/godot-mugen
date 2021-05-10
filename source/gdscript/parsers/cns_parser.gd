@@ -85,6 +85,10 @@ func parse_controller(data: Dictionary, key: String):
                 var hitattr = HitAttribute.new()
                 hitattr.parse(value)
                 controller[key] = hitattr
+            elif type == 'hitoverride' and key == 'attr':
+                var hitattr = HitAttribute.new()
+                hitattr.parse(value)
+                controller[key] = hitattr
             elif type == 'hitdef':
                 # This will be parsed at state manager
                 controller[key] = value.to_lower()
