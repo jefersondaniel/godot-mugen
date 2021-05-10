@@ -748,6 +748,13 @@ func handle_poweradd(controller):
     var value = evaluate_parameter(controller, 'value', 0) # Specifies amount of life that the player will have after execution.
     character.power += value
 
+func handle_movehitreset(controller):
+    var character = get_character()
+    character.move_contact = 0
+    character.move_guarded = 0
+    character.move_hit = 0
+    character.move_reversed = 0
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
