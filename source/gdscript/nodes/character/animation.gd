@@ -50,7 +50,7 @@ func get_element_from_time(time: int):
     if time < 0:
         printerr("Invalid time: %s" % [time])
         return
-    
+
     var element = elements[0]
 
     while element != null:
@@ -59,7 +59,7 @@ func get_element_from_time(time: int):
         time -= element.ticks
         if time < 0:
             return element
-        element = get_next_element(element)
+        element = get_next_element(element.id)
 
     printerr("Invalid get element from time")
 

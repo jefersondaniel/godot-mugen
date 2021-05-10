@@ -410,6 +410,16 @@ func call_context_function(key, arguments):
         return character_sprite.has_anim(arguments[0])
     if key == 'animelemtime':
         return character_sprite.get_animation_element_time(arguments[0])
+    if key == 'animelemno':
+        var time_offset = arguments[0]
+        if time_offset == null:
+            return null
+        var animation = character_sprite.animation_manager.animation
+        var check_time = character_sprite.animation_manager.animation_time + time_offset
+        if check_time < 0:
+            return null
+        var element_index = animation.get_element_from_time(check_time).id
+        return element_index + 1
     if key == 'sysvar':
         return sys_int_vars[arguments[0]]
     if key == 'sysfvar':
