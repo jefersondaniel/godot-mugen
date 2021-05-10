@@ -715,6 +715,11 @@ func handle_lifeadd(controller):
     if character.life <= 0 and not kill:
         character.life = 1
 
+func handle_lifeset(controller):
+    var character = get_character()
+    var value = evaluate_parameter(controller, 'value', 0) # Specifies amount of life that the player will have after execution.
+    character.life = value
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
