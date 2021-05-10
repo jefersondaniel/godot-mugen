@@ -82,9 +82,6 @@ func change_anim(value: int, element_index: int = 0):
 func change_foreign_anim(foreign_animation_manager, value: int, element_index: int = 0):
     animation_manager.set_foreign_animation(foreign_animation_manager, value, element_index)
 
-func has_anim(value: int):
-    return animations.has(value)
-
 func set_collisions(collisions):
     boxes = {}
     if collisions[1]:

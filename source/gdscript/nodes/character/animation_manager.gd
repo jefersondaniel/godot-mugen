@@ -9,6 +9,7 @@ var animation_in_loop = false
 var animation_time = 0
 var element_switch_time = 0
 var element = null # Element object
+var is_foreign_animation: bool = false
 
 func _init(_animations):
     animations = _animations
@@ -20,6 +21,7 @@ func set_local_animation(animation_number, element_index):
     if element_index < 0 or element_index > animation.total_elements:
         printerr("Invalid element: %s" % [element_index])
         return
+    is_foreign_animation = false
     set_animation(animation, animation.elements[element_index])
 
 func set_foreign_animation(animation_manager, animation_number: int, element_index: int):
@@ -27,6 +29,7 @@ func set_foreign_animation(animation_manager, animation_number: int, element_ind
     if element_index < 0 or element_index > animation.total_elements:
         printerr("Invalid element on foreign animation: %s" % [element_index])
         return
+    is_foreign_animation = true
     set_animation(animation, animation.elements[element_index])
 
 func set_animation(_animation, _element):
