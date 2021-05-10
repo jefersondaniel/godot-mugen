@@ -377,6 +377,9 @@ func handle_assertspecial(controller):
 func handle_defencemulset(controller):
     var character = get_character()
     var value = controller['value'].execute(character)
+    if value == null:
+        printerr("defencemulset: invalid value")
+        return
     character.defense_multiplier = float(value)
 
 func handle_attackmulset(controller):
