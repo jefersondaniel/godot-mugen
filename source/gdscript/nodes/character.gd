@@ -416,6 +416,8 @@ func call_context_function(key, arguments):
         return int(floor(arguments[0]))
     if key == 'exp':
         return exp(arguments[0])
+    if key == 'ln':
+        return log(arguments[0])
     if key == 'gethitvar':
         return get_hit_var(arguments[0])
     if key == 'const720p':
