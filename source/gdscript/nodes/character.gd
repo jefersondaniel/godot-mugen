@@ -380,7 +380,7 @@ func get_context_variable(key):
     if key == "statetime":
         return get("time")
     if key in state_manager.trigger_names:
-        return state_manager.handle_trigger(key)
+        return state_manager.evaluate_trigger(key)
     if string_variable_regex.search(key):
         return key
     push_warning("variable not found: %s" % [key])
