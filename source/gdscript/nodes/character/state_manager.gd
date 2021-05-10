@@ -224,6 +224,9 @@ func evaluate_trigger(name):
         'type': name
     })
 
+func handle_null(_controller):
+    pass
+
 func handle_debug(controller):
     var character = get_character()
     print('DEBUG: %s' % [controller['value'].execute(character)])
