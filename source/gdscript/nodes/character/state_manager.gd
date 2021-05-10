@@ -697,6 +697,24 @@ func handle_attackdist(controller):
 
     character.hit_def.guard_dist = value
 
+func handle_lifeadd(controller):
+    var character = get_character()
+    var value = evaluate_parameter(controller, 'value', 0) # Specifies amount of life to add to the player's life bar.
+    var kill = evaluate_parameter(controller, 'kill', 1) # If kill_flag is 0, then the addition will not take the player below 1 life point. Defaults to 1
+    var absolute = evaluate_parameter(controller, 'absolute', 0) # If abs_flag is 1, then exactly add_amt is added to the player's life (the defense multiplier is ignored). Defaults to 0.
+
+    if value == null:
+        printerr("lifeadd: invalid value")
+        return
+
+    if not absolute:
+        value = int(value / character.defense_multiplier)
+
+    character.life += value
+
+    if character.life <= 0 and not kill:
+        character.life = 1
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
