@@ -171,7 +171,7 @@ func run_state(state):
         if not will_activate:
             continue
 
-        handle_state_controller(controller)
+        evaluate_state_controller(controller)
 
         if oldstateno != character.stateno:
             # If the controller changed the state, skip the next controllers
@@ -189,7 +189,7 @@ func change_state(stateno: int):
     character.prevstateno = character.stateno
     character.stateno = stateno
 
-func handle_state_controller(controller):
+func evaluate_state_controller(controller):
     var character = get_character()
 
     if controller['type'] == 'null':
@@ -219,8 +219,8 @@ func handle_state_controller(controller):
 
     return self.call(method_name, controller)
 
-func handle_trigger(name):
-    return self.handle_state_controller({
+func evaluate_trigger(name):
+    return self.evaluate_state_controller({
         'type': name
     })
 
