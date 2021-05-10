@@ -396,6 +396,8 @@ func call_context_function(key, arguments):
         return has_command if op == "=" else !has_command
     if key == 'abs':
         return abs(arguments[0] if arguments[0] != null else 0)
+    if key == 'acos':
+        return acos(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
         return get_const(arguments[0])
     if key == 'gethitvar':
