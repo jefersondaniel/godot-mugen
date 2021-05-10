@@ -374,6 +374,9 @@ func get_context_variable(key):
         return 2.718281828
     if key == "pi":
         return PI
+    if key == "random":
+        randomize()
+        return int(ceil(rand_range(0, 999)))
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
