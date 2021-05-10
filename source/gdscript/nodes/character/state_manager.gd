@@ -642,6 +642,14 @@ func handle_targetlifeadd(controller):
         if target.life < 0 and not kill:
             target.life = 1
 
+func handle_targetpoweradd(controller):
+    var character = get_character()
+    var target_id = evaluate_parameter(controller, 'id', -1)
+    var value = evaluate_parameter(controller, 'value', 0)
+
+    for target in character.find_targets(target_id):
+        target.power += value
+
 func handle_targetstate(controller):
     var character = get_character()
     var target_id: int = -1 # Specifies the number of the state to change the targets to.
