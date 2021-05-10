@@ -404,6 +404,8 @@ func call_context_function(key, arguments):
         return atan(arguments[0] if arguments[0] != null else 0)
     if key == 'const':
         return get_const(arguments[0])
+    if key == 'ceil':
+        return int(ceil(arguments[0]))
     if key == 'gethitvar':
         return get_hit_var(arguments[0])
     if key == 'const720p':
