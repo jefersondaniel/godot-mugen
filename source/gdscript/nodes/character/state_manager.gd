@@ -781,6 +781,16 @@ func handle_playerpush(controller):
     var value = evaluate_parameter(controller, 'value', 1)
     character.push_flag = true if value else false
 
+func handle_gravity(controller):
+    var character = get_character()
+    var yaccel = character.get_const('movement.yaccel')
+
+    if yaccel == null:
+        printerr("gravity: invalid const movement.yaccel")
+        return
+
+    character.add_velocity(Vector2(0, yaccel))
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
