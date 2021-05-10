@@ -372,6 +372,8 @@ func get_context_variable(key):
         return is_falling() and received_hit_def and received_hit_def.fall_recover
     if key == "e":
         return 2.718281828
+    if key == "pi":
+        return PI
     if key.begins_with("var."):
         return int_vars[int(key.substr(4, key.length() - 1))]
     if key in state_variables:
