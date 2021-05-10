@@ -5,6 +5,7 @@ var MugenSprite = load('res://source/gdscript/nodes/sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
+var HitOverride = load('res://source/gdscript/nodes/character/hit_override.gd')
 var Bind = load('res://source/gdscript/nodes/character/bind.gd')
 
 # Nodes and managers
@@ -64,7 +65,6 @@ var attack_multiplier: float = 1
 var string_variable_regex: RegEx
 var base_z_index = 100
 var posfreeze: int = 0
-
 
 # Public variables (will be available in expressions)
 var fight_variables: Array = ['roundstate']
@@ -131,6 +131,11 @@ func setup_vars():
         float_vars[i] = 0
         sys_int_vars[i] = 0
         sys_float_vars[i] = 0
+
+    self.hit_overrides = []
+
+    for i in range(0, 8):
+        self.hit_overrides.append(HitOverride.new())
 
 func _ready():
     self.add_child(character_sprite)
@@ -608,7 +613,7 @@ func update_hit_state():
         received_hit_def.fall = 0
 
     for hit_override in hit_overrides:
-        hit_override.update()
+        hit_override.handle_tick()
 
 func update_physics():
     if in_hit_pause or hit_shake_time > 0:
@@ -849,3 +854,12 @@ func is_helper():
 func remove_check():
     # TODO: Implement helper remove check
     pass
+
+func find_hit_override(hit_def):
+    for hit_override in hit_overrides:
+        if not hit_override.is_active:
+            continue
+        if not hit_override.attribute.satisfy(hit_def.attribute):
+            continue
+        return hit_override
+    return null
