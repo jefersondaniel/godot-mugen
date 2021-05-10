@@ -467,7 +467,7 @@ func handle_movecontact(controller):
 func handle_sprpriority(controller):
     var character = get_character()
     var value = controller['value'].execute(character)
-    character.z_index = value
+    character.update_z_index(value)
 
 func handle_statetypeset(controller):
     var character = get_character()
