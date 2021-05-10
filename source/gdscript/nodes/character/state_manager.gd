@@ -755,6 +755,11 @@ func handle_movehitreset(controller):
     character.move_hit = 0
     character.move_reversed = 0
 
+func handle_playerpush(controller):
+    var character = get_character()
+    var value = evaluate_parameter(controller, 'value', 1)
+    character.push_flag = true if value else false
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
