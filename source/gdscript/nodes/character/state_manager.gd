@@ -671,6 +671,19 @@ func handle_width(controller):
         character.frontedge_width_override = edge[0]
         character.backedge_width_override = edge[1]
 
+func handle_attackdist(controller):
+    # Changes the value of the guard.dist parameter for the player's current HitDef.
+    # The guard.dist is the x-distance from P1 in which P2 will go into a guard state if P2 is holding the
+    # direction away from P1. The effect of guard.dist only takes effect when P1 has movetype = A.
+    var character = get_character()
+    var value = controller['value'].execute(character)
+
+    if not value or not character.hit_def:
+        printerr("attackdist: invalid value or missing hitdef")
+        return
+
+    character.hit_def.guard_dist = value
+
 func handle_makedust(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#makedust
     pass
