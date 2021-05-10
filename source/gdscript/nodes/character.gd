@@ -412,6 +412,8 @@ func call_context_function(key, arguments):
         return cos(arguments[0])
     if key == 'ceil':
         return int(ceil(arguments[0]))
+    if key == 'floor':
+        return int(floor(arguments[0]))
     if key == 'exp':
         return exp(arguments[0])
     if key == 'gethitvar':
