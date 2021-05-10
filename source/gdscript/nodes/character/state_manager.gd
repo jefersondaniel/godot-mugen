@@ -650,6 +650,16 @@ func handle_targetpoweradd(controller):
     for target in character.find_targets(target_id):
         target.power += value
 
+func handle_targetveladd(controller):
+    var character = get_character()
+    var target_id = evaluate_parameter(controller, 'id', -1)
+    var x = evaluate_parameter(controller, 'x', 0)
+    var y = evaluate_parameter(controller, 'y', 0)
+    var velocity = Vector2(float(x), float(y))
+
+    for target in character.find_targets(target_id):
+        target.add_velocity(velocity)
+
 func handle_targetstate(controller):
     var character = get_character()
     var target_id: int = -1 # Specifies the number of the state to change the targets to.
