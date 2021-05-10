@@ -3,6 +3,14 @@ extends Object
 var state_type: int = 0
 var attack_types: Array = []
 
+# This is the attribute of the attack. It is used to determine if the attack can hit P2. It has the format:
+# attr = arg1, arg2
+# Where: arg1 is either "S", "C" or "A". Similar to "statetype" for the StateDef, this says whether the attack is a standing,
+# crouching, or aerial attack.
+# arg2 is a 2-character string. The first character is either "A" for All, "N" for "normal", "S" for "special",
+# or "H" for "hyper" (or "super", as it is commonly known). The second character must be either "A" for "attack"
+# (a normal hit attack), "T" for "throw", or "P" for projectile.
+
 func parse(value):
     var pieces: Array = []
 
@@ -41,13 +49,13 @@ func parse(value):
 
         self.attack_types.push_back({
             'intensity': attack_intensity,
-            'category': attack_category 
+            'category': attack_category
         })
 
 func satisfy(condition) -> bool:
     if condition.state_type & self.state_type == 0:
         return false
-    
+
     var match_attack_type: bool = false
 
     for condition_attack_type in condition.attack_types:

@@ -505,7 +505,7 @@ func handle_hitfalldamage(_controller):
 
     fight.apply_damage(attacker, character, hit_def.fall_damage, hit_def.kill)
 
-func handle_nothitby(controller):
+func apply_hit_by(controller, is_negation: bool):
     var character = get_character()
     var value1 = controller['value'] if controller.has('value') else null
     var value2 = controller['value2'] if controller.has('value2') else null
@@ -523,12 +523,18 @@ func handle_nothitby(controller):
     var slot: int = 1 if value1 else 2
     var hit_by = HitBy.new()
 
-    hit_by.setup(hit_attribute, time, true)
+    hit_by.setup(hit_attribute, time, is_negation)
 
     if slot == 1:
         character.hit_by_1 = hit_by
     else:
         character.hit_by_2 = hit_by
+
+func handle_nothitby(controller):
+    self.apply_hit_by(controller, true)
+
+func handle_hitby(controller):
+    self.apply_hit_by(controller, false)
 
 func handle_targetbind(controller):
     var character = get_character()
