@@ -407,7 +407,13 @@ func call_context_function(key, arguments):
     if key == 'const240p':
         return arguments[0] # todo, multiply by resolution
     if key == 'selfanimexist':
-        return character_sprite.has_anim(arguments[0])
+        var animation_manager = character_sprite.animation_manager
+        return animation_manager.has_animation(arguments[0])
+    if key == 'animexist':
+        var animation_manager = character_sprite.animation_manager
+        if animation_manager.is_foreign_animation:
+            return false
+        return animation_manager.has_animation(arguments[0])
     if key == 'animelemtime':
         return character_sprite.get_animation_element_time(arguments[0])
     if key == 'animelemno':
