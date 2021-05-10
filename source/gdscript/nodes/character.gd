@@ -422,6 +422,8 @@ func call_context_function(key, arguments):
         return log(arguments[1]) / log(arguments[0])
     if key == 'gethitvar':
         return get_hit_var(arguments[0])
+    if key == 'sin':
+        return sin(arguments[0])
     if key == 'const720p':
         return arguments[0] # todo, multiply by resolution
     if key == 'const240p':
