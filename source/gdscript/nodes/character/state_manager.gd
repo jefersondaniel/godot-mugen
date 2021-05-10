@@ -503,6 +503,16 @@ func handle_fallenvshake(_controller):
         float(hit_def.fall_envshake_phase)
     )
 
+func handle_envshake(controller):
+    var character = get_character()
+    var stage = character.get_stage()
+    var time = evaluate_parameter(controller, 'time', 1)
+    var freq = evaluate_parameter(controller, 'freq', 60)
+    var ampl = evaluate_parameter(controller, 'ampl', -4) # TODO: Defaults to -4 in 240p, -8 in 480p, -16 in 720p.
+    var phase = evaluate_parameter(controller, 'phase', 90)
+
+    stage.setup_envshake(time, freq, ampl, phase)
+
 func handle_hitfalldamage(_controller):
     var character = get_character()
     var hit_def = character.received_hit_def
