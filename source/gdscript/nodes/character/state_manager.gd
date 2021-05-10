@@ -593,6 +593,24 @@ func handle_targetbind(controller):
     for target in character.find_targets(target_id):
         target.bind.setup(character, Vector2(pos[0], pos[1]), time, 0, true)
 
+func handle_targetdrop(controller):
+    var character = get_character()
+    var id = evaluate_parameter(controller, 'excludeid', -1)
+    var keepone = evaluate_parameter(controller, 'keepone', 1)
+
+    var excluded = []
+
+    for target in character.targets:
+        if id != -1 and target.received_hit_def.id == id:
+            continue
+        excluded.append(target)
+
+    if excluded.size() and keepone:
+        excluded.pop_front()
+
+    for target in excluded:
+        character.targets.erase(target)
+
 func handle_turn(controller):
     var character = get_character()
     character.set_facing_right(not character.is_facing_right)
