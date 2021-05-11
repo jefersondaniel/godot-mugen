@@ -1,6 +1,7 @@
 #include <Godot.hpp>
 #include "SffParser.hpp"
 #include "SndParser.hpp"
+#include "FntParser.hpp"
 #include "MugenExpression.hpp"
 
 using namespace godot;
@@ -19,6 +20,7 @@ extern "C" void GDN_EXPORT godot_gdnative_terminate(godot_gdnative_terminate_opt
 extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
     godot::Godot::nativescript_init(handle);
 
+    godot::register_class<FntParser>();
     godot::register_class<SffParser>();
     godot::register_class<SndParser>();
     godot::register_class<MugenExpression>();

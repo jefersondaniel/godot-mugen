@@ -1,11 +1,14 @@
 extends Object
 
-func read(path):
+func read(path, allow_lines=false):
     var file = File.new()
     file.open(path, File.READ)
-    var lines = file.get_as_text().split("\n", false)
+    var text = file.get_as_text()
     file.close()
+    return read_string(text, allow_lines)
 
+func read_string(text: String, allow_lines=false):
+    var lines = text.split("\n", false)
     var sections = []
 
     var current_section = null
@@ -30,6 +33,8 @@ func read(path):
             var idx_end = line.find(']')
             current_section_key = line.substr(idx_start, idx_end - idx_start).to_lower()
             current_section = {}
+            if allow_lines:
+                current_section['lines'] = []
             continue
 
         if current_section == null:
@@ -38,7 +43,9 @@ func read(path):
         var equal_idx = line.find('=')
         var line_size = line.length()
 
-        if equal_idx == -1:
+        if equal_idx <= 0:
+            if allow_lines:
+                current_section['lines'].append(line)
             continue
 
         var key = line.substr(0, equal_idx).to_lower().strip_edges()

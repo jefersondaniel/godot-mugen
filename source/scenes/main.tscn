@@ -13,3 +13,6 @@ margin_top = 10.0
 margin_right = 630.0
 margin_bottom = 160.0
 text = "Error"
+__meta__ = {
+"_edit_use_anchors_": false
+}
