@@ -1,3 +1,5 @@
+debug/
+target/
 .import/*
 *.import
 bin/*
@@ -16,3 +18,5 @@ project.sublime-workspace
 .vscode
 resources
 /data
+**/*.rs.bk
+*.pdb
