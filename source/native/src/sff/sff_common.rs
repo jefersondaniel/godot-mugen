@@ -1,3 +1,5 @@
+use std::rc::{ Rc };
+use std::cell::RefCell;
 use gdnative::prelude::*;
 use gdnative::api::file::File;
 use crate::sff::data::{ FileReader, DataReader, DataError };
@@ -5,7 +7,7 @@ use crate::sff::image::{ RawImage, Palette, RawColor };
 
 #[derive(Clone)]
 pub struct SffPal {
-    pub pal: Palette,
+    pub pal: Rc<Palette>,
     pub itemno: i32,
     pub groupno: i32,
     pub is_used: bool,
@@ -15,7 +17,7 @@ pub struct SffPal {
 
 #[derive(Clone)]
 pub struct SffData {
-    pub image: RawImage,
+    pub image: Rc<RefCell<RawImage>>,
     pub groupno: i32,
     pub imageno: i32,
     pub x: i32,
@@ -24,7 +26,7 @@ pub struct SffData {
     pub linked: i32,
 }
 
-pub fn load_pal_format_pal(filename: String) -> Result<Palette, DataError> {
+pub fn load_pal_format_pal(filename: String) -> Result<Rc<Palette>, DataError> {
     let mut pal: Palette = Palette::new(0);
     let file = File::new();
     let result = file.open(filename, File::READ);
@@ -70,10 +72,10 @@ pub fn load_pal_format_pal(filename: String) -> Result<Palette, DataError> {
 
     file.close();
 
-    return Result::Ok(pal);
+    return Result::Ok(Rc::new(pal));
 }
 
-pub fn load_pal_format_act(filename: String) -> Result<Palette, DataError> {
+pub fn load_pal_format_act(filename: String) -> Result<Rc<Palette>, DataError> {
     let mut pal: Palette = Palette::new(0);
     let file = File::new();
     let result = file.open(filename, File::READ);
@@ -104,5 +106,5 @@ pub fn load_pal_format_act(filename: String) -> Result<Palette, DataError> {
 
     file.close();
 
-    return Result::Ok(pal);
+    return Result::Ok(Rc::new(pal));
 }

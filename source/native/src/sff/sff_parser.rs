@@ -1,3 +1,4 @@
+use std::rc::{ Rc };
 use gdnative::prelude::*;
 use crate::sff::data::{ DataError };
 use crate::sff::sffv1::read_v1;
@@ -32,10 +33,10 @@ impl SffParser {
             return Variant::new();
         }
 
-        let palette: Palette;
+        let palette: Rc<Palette>;
 
         match self.get_pallete(selected_pallete) {
-            Ok(newpalette) => palette = newpalette.clone(),
+            Ok(newpalette) => palette = newpalette,
             Err(message) => {
                 godot_print!("error: {}", message);
                 return Variant::new();
@@ -45,7 +46,7 @@ impl SffParser {
         if palette.colors.len() > 0 {
             for i in 0..self.sffdata.len() {
                 if self.sffdata[i].palindex == 0 {
-                    self.sffdata[i].image.color_table = palette.clone();
+                    self.sffdata[i].image.borrow_mut().color_table = Rc::clone(&palette);
                 }
             }
         }
@@ -62,7 +63,7 @@ impl SffParser {
             dict.insert("imageno", item.imageno);
             dict.insert("x", item.x);
             dict.insert("y", item.y);
-            dict.insert("image", item.image.create_image());
+            dict.insert("image", item.image.borrow().create_image());
 
             let key = format!("{}-{}", item.groupno, item.imageno);
             result.insert(key, dict);
@@ -71,12 +72,12 @@ impl SffParser {
         result
     }
 
-    fn get_pallete(&mut self, selected_pallete: Variant) -> Result<Palette, DataError> {
+    fn get_pallete(&mut self, selected_pallete: Variant) -> Result<Rc<Palette>, DataError> {
         match selected_pallete.get_type() {
             VariantType::I64 => {
                 let selected_palette_index = i64::from_variant(&selected_pallete).unwrap();
                 if selected_palette_index > 0 && selected_palette_index <= self.paldata.len() as i64 {
-                    return Result::Ok(self.paldata[selected_palette_index as usize - 1].pal.clone());
+                    return Result::Ok(Rc::clone(&self.paldata[selected_palette_index as usize - 1].pal));
                 } else {
                     return Result::Err(DataError::new(format!("invalid palette index: {}", selected_palette_index)));
                 }

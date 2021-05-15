@@ -1,3 +1,5 @@
+use std::rc::{ Rc };
+use std::cell::RefCell;
 use gdnative::api::file::File;
 use crate::sff::data::{ DataError, BufferAccess, BufferReader, FileReader, DataReader };
 use crate::sff::image::{ RawImage, RawColor, Palette };
@@ -64,15 +66,15 @@ fn read_sprite_header(reader: &mut dyn DataReader) -> SpriteHeader {
     SpriteHeader { offset_next_sprite, subfile_len, x, y, groupno, imageno, linked, is_shared, blank }
 }
 
-fn matrix_to_pal(reader: &mut dyn DataReader) -> Palette {
-    let mut palette = Palette::new(0);
+fn matrix_to_pal(reader: &mut dyn DataReader) -> Rc<Palette> {
+    let mut colors: Vec<RawColor> = Vec::new();
     for a in 0..256 {
         let r = reader.get_u8();
         let g = reader.get_u8();
         let b = reader.get_u8();
-        palette.colors.push(RawColor::new(r, g, b, if a == 0 { 0 } else { 255 }));
+        colors.push(RawColor::new(r, g, b, if a == 0 { 0 } else { 255 }));
     }
-    palette
+    Rc::new(Palette::from_colors(colors))
 }
 
 pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<SffData>) -> Result<(), DataError> {
@@ -106,7 +108,7 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
     while !file.eof_reached() {
         counter += 1;
         let mut sffitem = SffData {
-            image: RawImage::empty(),
+            image: Rc::new(RefCell::new(RawImage::empty())),
             groupno: 0,
             imageno: 0,
             x: 0,
@@ -178,7 +180,7 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
             tmp_arr.clear();
         } else {
             // linked image
-            sffitem.image = sffdata[spr.linked as usize].image.clone();
+            sffitem.image = Rc::clone(&sffdata[spr.linked as usize].image);
             sffitem.palindex = sffdata[spr.linked as usize].palindex;
             if head.is_shared && spr.is_shared {
                 shared_image.push(counter as usize);
@@ -200,12 +202,12 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
     }
 
     if head.is_shared {
-        let mut force_pal = Palette::new(0);
+        let mut force_pal = Rc::new(Palette::new(0));
         let mut have0 = false;
         for k in 0..ind_image.len() {
             if sffdata[ind_image[k]].groupno == 0 {
                 have0 = true;
-                force_pal = sffdata[ind_image[k]].image.color_table.clone();
+                force_pal = Rc::clone(&sffdata[ind_image[k]].image.borrow().color_table);
                 break;
             }
         }
@@ -215,12 +217,12 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                 let alfa = ind_image[k];
                 if sffdata[alfa].groupno == 9000 && sffdata[alfa].imageno == 0 {
                     have90 = true;
-                    force_pal = sffdata[ind_image[k]].image.color_table.clone();
+                    force_pal = Rc::clone(&sffdata[ind_image[k]].image.borrow().color_table);
                     break;
                 }
             }
             if have90 == false {
-                force_pal = sffdata[ind_image[0]].image.color_table.clone();
+                force_pal = Rc::clone(&sffdata[ind_image[0]].image.borrow().color_table);
             }
         }
 
@@ -259,7 +261,7 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
         }
 
         for k in 0..shared_image.len() {
-            sffdata[shared_image[k]].image.color_table = force_pal.clone();
+            sffdata[shared_image[k]].image.borrow_mut().color_table = Rc::clone(&force_pal);
             sffdata[shared_image[k]].palindex = 0;
         }
     }

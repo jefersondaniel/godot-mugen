@@ -101,14 +101,8 @@ impl<'a> DataReader for FileReader<'a> {
     fn get_buffer(&mut self, size: usize) -> Vec<u8> {
         self.pos += size;
         let buffer = self.file.get_buffer(size as i64);
-        // TODO: Improve performance here
-        let mut vec: Vec<u8> = Vec::new();
-        let size = buffer.len() as usize;
-        vec.resize(size, 0);
-        for i in 0..size {
-            vec[i as usize] = buffer.get(i as i32);
-        }
-        vec
+        let reader = buffer.read();
+        reader.to_vec()
     }
 
     fn eof(&mut self) -> bool {

@@ -1,5 +1,6 @@
 use gdnative::prelude::*;
 use gdnative::api::image::Image;
+use std::rc::{ Rc };
 
 #[derive(Copy, Clone)]
 pub struct RawColor {
@@ -49,10 +50,11 @@ pub struct Palette {
 
 impl Palette {
     pub fn new(num_colors: usize) -> Palette {
-        let mut colors: Vec<RawColor> = Vec::new();
-        if num_colors > 0 {
-            colors.resize(num_colors, RawColor::empty());
-        }
+        let colors = vec![RawColor::empty(); num_colors];
+        Palette { colors }
+    }
+
+    pub fn from_colors(colors: Vec<RawColor>) -> Palette {
         Palette { colors }
     }
 
@@ -75,36 +77,21 @@ impl Palette {
 pub struct RawImage {
     pub w: usize,
     pub h: usize,
-    pub pixels: Vec<u8>,
-    pub color_table: Palette,
+    pub pixels: Rc<Vec<u8>>,
+    pub color_table: Rc<Palette>,
 }
 
 impl RawImage {
     pub fn empty() -> RawImage {
-        let pixels = Vec::new();
-        let color_table = Palette::new(0);
+        let pixels = Rc::new(Vec::new());
+        let color_table = Rc::new(Palette::new(0));
+
         RawImage {
             w: 0,
             h: 0,
             pixels,
             color_table,
         }
-    }
-
-    pub fn sized(w: usize, h: usize, num_colors: usize) -> RawImage {
-        let mut pixels = Vec::new();
-        pixels.resize(w * h, 0);
-        let color_table = Palette::new(num_colors);
-        RawImage {
-            w,
-            h,
-            pixels,
-            color_table,
-        }
-    }
-
-    pub fn set_color(&mut self, index: usize, color: RawColor) {
-        self.color_table.colors[index] = color;
     }
 
     pub fn create_image(&self) -> Ref<Image, Unique> {

@@ -1,6 +1,8 @@
 use gdnative::prelude::*;
+use std::cell::RefCell;
 use std::cmp;
 use std::result::Result;
+use std::rc::{ Rc };
 use crate::sff::image::{ Palette, RawColor, RawImage };
 use crate::sff::data::{ DataReader, DataError };
 
@@ -16,7 +18,7 @@ pub struct PcxHeader {
     y_max: u16,
     h_dpi: u16,
     y_dpi: u16,
-    color_map: Palette,
+    color_map: Rc<Palette>,
     reserved: u8,
     n_planes: u8,
     bytes_per_line: u16,
@@ -25,22 +27,18 @@ pub struct PcxHeader {
     v_screen_size: u16,
 }
 
-fn read_color(reader: &mut dyn DataReader) -> RawColor {
-    let r = reader.get_u8();
-    let g = reader.get_u8();
-    let b = reader.get_u8();
-
-    RawColor::new(r, g, b, 255)
-}
-
-fn read_palette(reader: &mut dyn DataReader) -> Palette {
+fn read_palette(reader: &mut dyn DataReader) -> Rc<Palette> {
     let mut palette = Palette::new(16);
 
     for i in 0..16 {
-        palette.colors[i] = read_color(reader);
+        let r = reader.get_u8();
+        let g = reader.get_u8();
+        let b = reader.get_u8();
+
+        palette.colors[i] = RawColor::new(r, g, b, if i == 0 { 0 } else { 255 });
     }
 
-    palette
+    Rc::new(palette)
 }
 
 impl PcxHeader {
@@ -67,7 +65,7 @@ impl PcxHeader {
         let y_max: u16 = reader.get_u16();
         let h_dpi: u16 = reader.get_u16();
         let y_dpi: u16 = reader.get_u16();
-        let color_map: Palette = read_palette(reader);
+        let color_map: Rc<Palette> = read_palette(reader);
         let reserved: u8 = reader.get_u8();
         let n_planes: u8 = reader.get_u8();
         let bytes_per_line: u16 = reader.get_u16();
@@ -135,15 +133,15 @@ fn read_line(reader: &mut dyn DataReader, buf: &mut Vec<u8>, header: &PcxHeader)
     }
 }
 
-pub fn read_image_1(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage {
+pub fn read_image_1(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCell<RawImage>> {
     let mut buf: Vec<u8> = Vec::new();
     buf.resize(header.bytes_per_line as usize, 0);
-    let mut img = RawImage::sized(header.width() as usize, header.height() as usize, 2);
     let width = header.width();
+    let mut pixels: Vec<u8> = vec![0u8; (header.width() * header.height()) as usize];
 
     for y in 0..header.height() {
         if reader.eof() {
-            return img;
+            return Rc::new(RefCell::new(RawImage::empty()));
         }
 
         read_line(reader, &mut buf, header);
@@ -151,28 +149,35 @@ pub fn read_image_1(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage
         let line_offset: usize = (width * y) as usize;
         let bpl = cmp::min((width + 7) / 8, header.bytes_per_line as i32);
         for x in 0..(bpl as usize) {
-            img.pixels[line_offset + x] = buf[x];
+            pixels[line_offset + x] = buf[x];
         }
     }
 
-    img.set_color(0, RawColor::new(0, 0, 0, 255));
-    img.set_color(1, RawColor::new(255, 255, 255, 255));
 
-    img
+    let mut palette = Palette::new(2);
+    palette.colors[0] = RawColor::new(0, 0, 0, 255);
+    palette.colors[1] = RawColor::new(255, 255, 255, 255);
+
+    Rc::new(RefCell::new(RawImage {
+        w: header.width() as usize,
+        h: header.height() as usize,
+        pixels: Rc::new(pixels),
+        color_table: Rc::new(palette),
+    }))
 }
 
-pub fn read_image_4(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage {
+pub fn read_image_4(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCell<RawImage>> {
     let mut buf: Vec<u8> = Vec::new();
     buf.resize((header.bytes_per_line * 4) as usize, 0);
     let mut pixbuf: Vec<u8> = Vec::new();
     buf.resize(header.width() as usize, 0);
 
-    let mut img = RawImage::sized(header.width() as usize, header.height() as usize, 16);
+    let mut pixels: Vec<u8> = vec![0u8; (header.width() * header.height()) as usize];
     let width = header.width();
 
     for y in 0..header.height() {
         if reader.eof() {
-            return img;
+            return Rc::new(RefCell::new(RawImage::empty()));
         }
 
         pixbuf.fill(0);
@@ -191,26 +196,27 @@ pub fn read_image_4(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage
         let line_offset: usize = (width * y) as usize;
 
         for x in 0..(header.width() as usize) {
-            img.pixels[line_offset + x] = pixbuf[x];
+            pixels[line_offset + x] = pixbuf[x];
         }
     }
 
-    for i in 0..16 {
-        img.set_color(i, header.color_map.colors[i]);
-    }
-
-    img
+    Rc::new(RefCell::new(RawImage {
+        w: header.width() as usize,
+        h: header.height() as usize,
+        pixels: Rc::new(pixels),
+        color_table: Rc::clone(&header.color_map),
+    }))
 }
 
-pub fn read_image_8(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage {
+pub fn read_image_8(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCell<RawImage>> {
     let mut buf: Vec<u8> = Vec::new();
     buf.resize(header.bytes_per_line as usize, 0);
-    let mut img = RawImage::sized(header.width() as usize, header.height() as usize, 256);
+    let mut pixels: Vec<u8> = vec![0u8; (header.width() * header.height()) as usize];
     let width = header.width();
 
     for y in 0..header.height() {
         if reader.eof() {
-            return img;
+            return Rc::new(RefCell::new(RawImage::empty()));
         }
 
         read_line(reader, &mut buf, header);
@@ -218,33 +224,42 @@ pub fn read_image_8(reader: &mut dyn DataReader, header: &PcxHeader) -> RawImage
         let line_offset: usize = (width * y) as usize;
         let bpl: usize = cmp::min(header.bytes_per_line as usize, width as usize);
         for x in 0..bpl {
-            img.pixels[line_offset + x] = buf[x];
+            pixels[line_offset + x] = buf[x];
         }
     }
 
     let flag: u8 = reader.get_u8();
+    let mut colors: Vec<RawColor> = Vec::new();
 
     if flag == 12 && (header.version == 5 || header.version == 2) {
         for i in 0..256 {
-            let r = reader.get_u8();
-            let g = reader.get_u8();
-            let b = reader.get_u8();
-            img.set_color(i, RawColor::new(r, g, b, if i == 0 { 0 } else { 255 }));
+            let color = RawColor::new(
+                reader.get_u8(),
+                reader.get_u8(),
+                reader.get_u8(),
+                if i == 0 { 0 } else { 255 }
+            );
+            colors.push(color);
         }
     } else {
         godot_print!("error: unsupported pcx, palette not set");
     }
 
-    img
+    Rc::new(RefCell::new(RawImage {
+        w: header.width() as usize,
+        h: header.height() as usize,
+        pixels: Rc::new(pixels),
+        color_table: Rc::new(Palette::from_colors(colors)),
+    }))
 }
 
-pub fn read_image_24(_: &mut dyn DataReader, _: &PcxHeader) -> RawImage {
+pub fn read_image_24(_: &mut dyn DataReader, _: &PcxHeader) -> Rc<RefCell<RawImage>> {
     godot_print!("error: unsupported 24bit pcx"); // TODO: Add 24bit support
 
-    RawImage::empty()
+    Rc::new(RefCell::new(RawImage::empty()))
 }
 
-pub fn read_pcx(reader: &mut dyn DataReader) -> Result<RawImage, DataError> {
+pub fn read_pcx(reader: &mut dyn DataReader) -> Result<Rc<RefCell<RawImage>>, DataError> {
     if reader.size() < 128 {
         return Result::Err(DataError { message: "Pcx data too small".to_string() });
     }
@@ -257,7 +272,7 @@ pub fn read_pcx(reader: &mut dyn DataReader) -> Result<RawImage, DataError> {
         });
     }
 
-    let mut img: RawImage = RawImage::empty();
+    let img: Rc<RefCell<RawImage>>;
 
     if header.bpp == 1 && header.n_planes == 1 {
         img = read_image_1(reader, &header);
@@ -267,9 +282,11 @@ pub fn read_pcx(reader: &mut dyn DataReader) -> Result<RawImage, DataError> {
         img = read_image_8(reader, &header);
     } else if header.bpp == 8 && header.n_planes == 3 {
         img = read_image_24(reader, &header);
+    } else {
+        img = Rc::new(RefCell::new(RawImage::empty()));
     }
 
-    if img.pixels.len() > 0 {
+    if img.borrow().pixels.len() > 0 {
         return Result::Ok(img);
     }
 
