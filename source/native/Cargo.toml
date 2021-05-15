@@ -9,3 +9,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 gdnative = "0.9"
+byteorder = "1.4.3"
