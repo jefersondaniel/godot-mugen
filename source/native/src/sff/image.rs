@@ -1,6 +1,6 @@
-use gdnative::prelude::*;
 use gdnative::api::image::Image;
-use std::rc::{ Rc };
+use gdnative::prelude::*;
+use std::rc::Rc;
 
 #[derive(Copy, Clone)]
 pub struct RawColor {
@@ -12,11 +12,11 @@ pub struct RawColor {
 
 impl RawColor {
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> RawColor {
-        RawColor{ r, g, b, a }
+        RawColor { r, g, b, a }
     }
 
     pub fn empty() -> RawColor {
-        RawColor{
+        RawColor {
             r: 0,
             g: 0,
             b: 0,
@@ -36,10 +36,7 @@ impl RawColor {
     // }
 
     pub fn equal(&self, other: &RawColor) -> bool {
-        self.r == other.r &&
-        self.g == other.g &&
-        self.b == other.b &&
-        self.a == other.a
+        self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
     }
 }
 
@@ -69,7 +66,7 @@ impl Palette {
             }
         }
 
-        return true;
+        true
     }
 }
 
@@ -95,16 +92,17 @@ impl RawImage {
     }
 
     pub fn create_image(&self) -> Ref<Image, Unique> {
-        let mut dest = ByteArray::new();
-        dest.resize((self.w * self.h * 4) as i32);
+        let mut my_byte_array: Vec<u8> = Vec::with_capacity(self.w * self.h * 4);
 
-        for (i, pixel) in self.pixels.iter().enumerate() {
-            let color = self.color_table.colors[*pixel as usize];
-            dest.set((4 * i) as i32, color.r);
-            dest.set((4 * i + 1) as i32, color.g);
-            dest.set((4 * i + 2) as i32, color.b);
-            dest.set((4 * i + 3) as i32, color.a);
+        for &pixel in self.pixels.iter() {
+            let color = &self.color_table.colors[pixel as usize];
+            my_byte_array.push(color.r);
+            my_byte_array.push(color.g);
+            my_byte_array.push(color.b);
+            my_byte_array.push(color.a);
         }
+
+        let dest = ByteArray::from_slice(my_byte_array.as_slice());
 
         let image = Image::new();
         image.create_from_data(
@@ -112,7 +110,7 @@ impl RawImage {
             self.h as i64,
             false,
             Image::FORMAT_RGBA8,
-            dest
+            dest,
         );
         image
     }

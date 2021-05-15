@@ -20,3 +20,4 @@ resources
 /data
 **/*.rs.bk
 *.pdb
+source/native/logs
