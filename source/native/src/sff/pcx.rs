@@ -1,10 +1,10 @@
+use crate::sff::data::{DataError, DataReader};
+use crate::sff::image::{Palette, RawColor, RawImage};
 use gdnative::prelude::*;
 use std::cell::RefCell;
 use std::cmp;
+use std::rc::Rc;
 use std::result::Result;
-use std::rc::{ Rc };
-use crate::sff::image::{ Palette, RawColor, RawImage };
-use crate::sff::data::{ DataReader, DataError };
 
 #[allow(dead_code)]
 pub struct PcxHeader {
@@ -94,7 +94,7 @@ impl PcxHeader {
             bytes_per_line,
             palette_info,
             h_screen_size,
-            v_screen_size
+            v_screen_size,
         }
     }
 }
@@ -115,20 +115,20 @@ fn read_line(reader: &mut dyn DataReader, buf: &mut Vec<u8>, header: &PcxHeader)
             }
             loop {
                 // TODO: Review performance
-                if i >= size || count <= 0 {
+                if i >= size || count == 0 {
                     break;
                 }
 
                 buf[i] = byte;
-                count = count - 1;
-                i = i + 1;
+                count -= 1;
+                i += 1;
             }
         }
     } else {
         while i < size {
             byte = reader.get_u8();
             buf[i] = byte;
-            i = i + 1;
+            i += 1;
         }
     }
 }
@@ -148,11 +148,9 @@ pub fn read_image_1(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCe
 
         let line_offset: usize = (width * y) as usize;
         let bpl = cmp::min((width + 7) / 8, header.bytes_per_line as i32);
-        for x in 0..(bpl as usize) {
-            pixels[line_offset + x] = buf[x];
-        }
+        pixels[line_offset..((bpl as usize) + line_offset)]
+            .clone_from_slice(&buf[..(bpl as usize)]);
     }
-
 
     let mut palette = Palette::new(2);
     palette.colors[0] = RawColor::new(0, 0, 0, 255);
@@ -188,16 +186,15 @@ pub fn read_image_4(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCe
             let offset: usize = i * header.bytes_per_line as usize;
             for x in 0..(header.width() as usize) {
                 if (buf[offset + (x / 8)] & (128 >> (x % 8))) != 0 {
-                    pixbuf[x] = pixbuf[x] + (1 << i);
+                    pixbuf[x] += 1 << i;
                 }
             }
         }
 
         let line_offset: usize = (width * y) as usize;
 
-        for x in 0..(header.width() as usize) {
-            pixels[line_offset + x] = pixbuf[x];
-        }
+        pixels[line_offset..((header.width() as usize) + line_offset)]
+            .clone_from_slice(&pixbuf[..(header.width() as usize)]);
     }
 
     Rc::new(RefCell::new(RawImage {
@@ -223,9 +220,7 @@ pub fn read_image_8(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCe
 
         let line_offset: usize = (width * y) as usize;
         let bpl: usize = cmp::min(header.bytes_per_line as usize, width as usize);
-        for x in 0..bpl {
-            pixels[line_offset + x] = buf[x];
-        }
+        pixels[line_offset..(bpl + line_offset)].clone_from_slice(&buf[..bpl]);
     }
 
     let flag: u8 = reader.get_u8();
@@ -237,7 +232,7 @@ pub fn read_image_8(reader: &mut dyn DataReader, header: &PcxHeader) -> Rc<RefCe
                 reader.get_u8(),
                 reader.get_u8(),
                 reader.get_u8(),
-                if i == 0 { 0 } else { 255 }
+                if i == 0 { 0 } else { 255 },
             );
             colors.push(color);
         }
@@ -261,14 +256,16 @@ pub fn read_image_24(_: &mut dyn DataReader, _: &PcxHeader) -> Rc<RefCell<RawIma
 
 pub fn read_pcx(reader: &mut dyn DataReader) -> Result<Rc<RefCell<RawImage>>, DataError> {
     if reader.size() < 128 {
-        return Result::Err(DataError { message: "Pcx data too small".to_string() });
+        return Result::Err(DataError {
+            message: "Pcx data too small".to_string(),
+        });
     }
 
     let header = PcxHeader::from(reader);
 
     if header.manufacturer != 10 || reader.eof() {
         return Result::Err(DataError {
-            message: format!("error: invalid pcx header: {}", header.manufacturer)
+            message: format!("error: invalid pcx header: {}", header.manufacturer),
         });
     }
 
@@ -290,5 +287,7 @@ pub fn read_pcx(reader: &mut dyn DataReader) -> Result<Rc<RefCell<RawImage>>, Da
         return Result::Ok(img);
     }
 
-    Result::Err(DataError { message: "Failed decoding PCX pixels".to_string() })
+    Result::Err(DataError {
+        message: "Failed decoding PCX pixels".to_string(),
+    })
 }

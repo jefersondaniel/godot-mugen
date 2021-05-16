@@ -1,8 +1,8 @@
+use byteorder::{LittleEndian, ReadBytesExt};
+use gdnative::api::file::File;
 use std::fmt;
 use std::io::Cursor;
 use std::io::Read;
-use gdnative::api::file::File;
-use byteorder::{ ReadBytesExt, LittleEndian };
 
 #[derive(Debug, Clone)]
 pub struct DataError {
@@ -58,7 +58,7 @@ pub struct FileReader<'a> {
 
 impl<'a> FileReader<'a> {
     pub fn new(file: &'a File) -> FileReader {
-        FileReader{ file, pos: 0 }
+        FileReader { file, pos: 0 }
     }
 }
 
@@ -120,57 +120,58 @@ impl<'a> DataReader for FileReader<'a> {
 
 pub struct BufferReader<'a> {
     buffer: &'a Vec<u8>,
-    cursor: Cursor<&'a Vec<u8>>
+    cursor: Cursor<&'a Vec<u8>>,
 }
 
 impl<'a> BufferReader<'a> {
-    pub fn new(buffer: &'a Vec<u8>) -> BufferReader {
-        BufferReader{
+    #[allow(clippy::ptr_arg)]
+    pub fn new(buffer: &Vec<u8>) -> BufferReader {
+        BufferReader {
             buffer,
-            cursor: Cursor::new(buffer)
+            cursor: Cursor::new(buffer),
         }
     }
 }
 
 impl<'a> DataReader for BufferReader<'a> {
     fn get_bool(&mut self) -> bool {
-        let result: Result<u8, u8> = self.cursor.read_u8().or_else(|_| Ok(0));
+        let result: Result<u8, u8> = self.cursor.read_u8().or(Ok(0));
 
         result.unwrap() != 0
     }
 
     fn get_u8(&mut self) -> u8 {
-        let result: Result<u8, u8> = self.cursor.read_u8().or_else(|_| Ok(0));
+        let result: Result<u8, u8> = self.cursor.read_u8().or(Ok(0));
 
         result.unwrap()
     }
 
     fn get_i8(&mut self) -> i8 {
-        let result: Result<i8, i8> = self.cursor.read_i8().or_else(|_| Ok(0));
+        let result: Result<i8, i8> = self.cursor.read_i8().or(Ok(0));
 
         result.unwrap()
     }
 
     fn get_u16(&mut self) -> u16 {
-        let result: Result<u16, u16> = self.cursor.read_u16::<LittleEndian>().or_else(|_| Ok(0));
+        let result: Result<u16, u16> = self.cursor.read_u16::<LittleEndian>().or(Ok(0));
 
         result.unwrap()
     }
 
     fn get_i16(&mut self) -> i16 {
-        let result: Result<i16, i16> = self.cursor.read_i16::<LittleEndian>().or_else(|_| Ok(0));
+        let result: Result<i16, i16> = self.cursor.read_i16::<LittleEndian>().or(Ok(0));
 
         result.unwrap()
     }
 
     fn get_u32(&mut self) -> u32 {
-        let result: Result<u32, u32> = self.cursor.read_u32::<LittleEndian>().or_else(|_| Ok(0));
+        let result: Result<u32, u32> = self.cursor.read_u32::<LittleEndian>().or(Ok(0));
 
         result.unwrap()
     }
 
     fn get_i32(&mut self) -> i32 {
-        let result: Result<i32, i32> = self.cursor.read_i32::<LittleEndian>().or_else(|_| Ok(0));
+        let result: Result<i32, i32> = self.cursor.read_i32::<LittleEndian>().or(Ok(0));
 
         result.unwrap()
     }
@@ -209,7 +210,7 @@ pub trait BufferAccess {
 
         let start_index = actual_size - new_size;
 
-        return self.subarray(start_index, actual_size - 1);
+        self.subarray(start_index, actual_size - 1)
     }
 }
 
@@ -222,7 +223,7 @@ impl BufferAccess for Vec<u8> {
         let mysize = self.len();
 
         if start > end || end > mysize - 1 || start > mysize - 1 || mysize == 0 {
-            return self[..].to_vec()
+            return self[..].to_vec();
         }
 
         self[start..end + 1].to_vec()

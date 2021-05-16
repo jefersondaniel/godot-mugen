@@ -1,4 +1,4 @@
-use crate::sff::data::{ BufferAccess, DataReader };
+use crate::sff::data::{BufferAccess, DataReader};
 
 struct ControlPacket {
     flags: [u8; 8],
@@ -43,7 +43,7 @@ impl Lz5RlePacket {
             if packet.num_times == 0 {
                 byte2 = reader.get_u8();
                 packet.num_times = byte2 as i64;
-                packet.num_times = packet.num_times + 8;
+                packet.num_times += 8;
             }
             packet.color = byte1 & 0x1f;
         }
@@ -81,25 +81,25 @@ impl Lz5LzPacket {
             byte2 = reader.get_u8();
             byte3 = reader.get_u8();
             pack.offset = (byte1 & 0xc0) as i32;
-            pack.offset = pack.offset * 4;
-            pack.offset = pack.offset + ( byte2 as i32 );
+            pack.offset *= 4;
+            pack.offset += byte2 as i32;
             pack.offset += 1;
             pack.len = byte3 as i32;
-            pack.len = pack.len + 3;
+            pack.len += 3;
         } else {
             pack.len += 1;
             let mut tmp_recyc: u8 = byte1 & 0xc0;
             if pack.recycled_bits_filled == 2 {
-                tmp_recyc = tmp_recyc >> 2;
+                tmp_recyc >>= 2;
             }
             if pack.recycled_bits_filled == 4 {
-                tmp_recyc = tmp_recyc >> 4;
+                tmp_recyc >>= 4;
             }
             if pack.recycled_bits_filled == 6 {
-                tmp_recyc = tmp_recyc >> 6;
+                tmp_recyc >>= 6;
             }
-            pack.recycled = pack.recycled + tmp_recyc;
-            pack.recycled_bits_filled = pack.recycled_bits_filled +2;
+            pack.recycled += tmp_recyc;
+            pack.recycled_bits_filled += 2;
             if pack.recycled_bits_filled < 8 {
                 byte2 = reader.get_u8();
                 pack.offset = byte2 as i32;

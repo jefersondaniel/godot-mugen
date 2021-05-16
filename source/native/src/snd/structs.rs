@@ -1,4 +1,4 @@
-use crate::sff::data::{ DataReader };
+use crate::sff::data::DataReader;
 
 pub struct FileHeader {
     pub signature: String, // 12
@@ -21,7 +21,7 @@ pub struct SubHeader {
 pub struct WavHeader {
     pub riff: Vec<u8>, // [u8; 4]
     pub chunk_size: u32,
-    pub format: Vec<u8>, // [u8; 4]
+    pub format: Vec<u8>,       // [u8; 4]
     pub subchunk1_id: Vec<u8>, // [u8; 4]
     pub subchunk1_size: u32,
     pub audio_format: u16,
@@ -74,7 +74,7 @@ impl WavHeader {
             byte_rate: reader.get_u32(),
             block_align: reader.get_u16(),
             bits_per_sample: reader.get_u16(),
-            subchunk2_id:reader.get_buffer(4),
+            subchunk2_id: reader.get_buffer(4),
             subchunk2_size: reader.get_u32(),
         }
     }

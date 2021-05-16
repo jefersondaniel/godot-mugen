@@ -1,16 +1,16 @@
+use crate::expressions::context::Context;
+use crate::expressions::expression::Expression;
+use crate::expressions::parser::{parse, ParserState};
+use gdnative::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
-use gdnative::prelude::*;
-use crate::expression::context::Context;
-use crate::expression::expression::Expression;
-use crate::expression::parser::{ ParserState, parse };
 
 #[derive(NativeClass)]
 #[inherit(Reference)]
 pub struct MugenExpression {
     error: String,
     state_ref: Rc<RefCell<ParserState>>,
-    expression: Rc<Expression>
+    expression: Rc<Expression>,
 }
 
 #[methods]
@@ -44,7 +44,7 @@ impl MugenExpression {
 
     #[export]
     fn has_error(&self, _owner: &Reference) -> bool {
-        self.error.len() > 0
+        !self.error.is_empty()
     }
 
     #[export]

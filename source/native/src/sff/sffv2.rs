@@ -1,11 +1,11 @@
-use std::rc::{ Rc };
-use std::cell::RefCell;
-use gdnative::api::file::File;
-use crate::sff::data::{ DataError, BufferReader, FileReader, DataReader };
-use crate::sff::image::{ RawImage, RawColor, Palette };
-use crate::sff::sff_common::{ SffData, SffPal };
+use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
+use crate::sff::image::{Palette, RawColor, RawImage};
 use crate::sff::lz5::decode_lz5;
-use crate::sff::rle5::{ decode_rle5, decode_rle8 };
+use crate::sff::rle5::{decode_rle5, decode_rle8};
+use crate::sff::sff_common::{SffData, SffPal};
+use gdnative::api::file::File;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[allow(dead_code)]
 struct FileHeader {
@@ -32,7 +32,7 @@ struct FileHeader {
     tdata_length: u32,
     reserved5: Vec<u8>, // [u8; 4]
     reserved6: Vec<u8>, // [u8; 4]
-    unused: Vec<u8>, // [u8; 436
+    unused: Vec<u8>,    // [u8; 436
 }
 
 impl FileHeader {
@@ -136,12 +136,19 @@ fn matrix_to_pal(reader: &mut dyn DataReader, size: usize) -> Rc<Palette> {
     Rc::new(Palette::from_colors(colors))
 }
 
-pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<SffData>) -> Result<(), DataError> {
+pub fn read_v2(
+    filename: String,
+    paldata: &mut Vec<SffPal>,
+    sffdata: &mut Vec<SffData>,
+) -> Result<(), DataError> {
     let file = File::new();
     let result = file.open(filename, File::READ);
 
     if let Err(detail) = result {
-        return Result::Err(DataError::new(format!("Error opening sff file: {}", detail)));
+        return Result::Err(DataError::new(format!(
+            "Error opening sff file: {}",
+            detail
+        )));
     }
 
     let mut reader = FileReader::new(&file);
@@ -149,12 +156,18 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
 
     if head.signature != "ElecbyteSpr" {
         file.close();
-        return Result::Err(DataError::new(format!("SffV2::read invalid signature: {}", head.signature)));
+        return Result::Err(DataError::new(format!(
+            "SffV2::read invalid signature: {}",
+            head.signature
+        )));
     }
 
     if head.verhi != 2 {
         file.close();
-        return Result::Err(DataError::new(format!("SffV2::read invalid version: {}.{}.{}.{}", head.verhi, head.verlo1, head.verlo2, head.verlo3)));
+        return Result::Err(DataError::new(format!(
+            "SffV2::read invalid version: {}.{}.{}.{}",
+            head.verhi, head.verlo1, head.verlo2, head.verlo3
+        )));
     }
 
     let mut sprnode: Vec<SpriteHeader> = Vec::new();
@@ -173,25 +186,22 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
     }
 
     for palette in palnode.iter() {
-        let mut pal: Rc<Palette> = Rc::new(Palette::new(0));
+        let pal: Rc<Palette> = match palette.len {
+            0 => Rc::clone(&paldata[palette.linked as usize].pal),
+            len if len > 0 => {
+                let mut offset: usize = head.ldata_offset as usize;
+                offset += palette.offset as usize;
+                file.seek(offset as i64);
 
-        if palette.len == 0 { //linked pal
-            pal = Rc::clone(&paldata[palette.linked as usize].pal);
-        } else if palette.len > 0 { //"normal" pal
-            let mut offset: usize = head.ldata_offset as usize;
-            offset += palette.offset as usize;
-            file.seek(offset as i64);
-
-            let mut k = palette.numcols as usize;
-            k = k * 4;
-            let tmp_arr = reader.get_buffer(k);
-            let mut tmp_arr_reader = BufferReader::new(&tmp_arr);
-            k = k / 4;
-            pal = matrix_to_pal(&mut tmp_arr_reader, k);
-        }
+                let tmp_arr = reader.get_buffer((palette.numcols * 4) as usize);
+                let mut tmp_arr_reader = BufferReader::new(&tmp_arr);
+                matrix_to_pal(&mut tmp_arr_reader, palette.numcols as usize)
+            }
+            _ => Rc::new(Palette::new(0)),
+        };
 
         paldata.push(SffPal {
-            pal: Rc::clone(&pal),
+            pal,
             itemno: palette.itemno as i32,
             groupno: palette.groupno as i32,
             is_used: false,
@@ -204,10 +214,12 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
     for sprite in sprnode.iter() {
         let linked;
         let mut image = Rc::new(RefCell::new(RawImage::empty()));
-        if sprite.len == 0 { //linked image
+        if sprite.len == 0 {
+            //linked image
             linked = -1;
             image = Rc::clone(&sffdata[sprite.linked as usize].image);
-        } else  { //"normal" image
+        } else {
+            //"normal" image
             let mut offset: usize = 0;
             if sprite.flags == 0 {
                 offset = head.ldata_offset as usize;
@@ -225,18 +237,21 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                 2 => tmp_arr = decode_rle8(&mut tmp_reader),
                 3 => tmp_arr = decode_rle5(&mut tmp_reader),
                 4 => tmp_arr = decode_lz5(&mut tmp_reader),
-                _ => ()
+                _ => (),
             };
 
             let expected_size = (sprite.w as usize * sprite.h as usize) as usize;
             let actual_size = tmp_arr.len();
 
             if expected_size != actual_size {
-                return Err(DataError::new(format!("Image decoding failed. GroupNo={}. ImageNo={}", sprite.groupno, sprite.imageno)));
+                return Err(DataError::new(format!(
+                    "Image decoding failed. GroupNo={}. ImageNo={}",
+                    sprite.groupno, sprite.imageno
+                )));
             }
 
             //adding image
-            if  sprite.colordepth == 5 || sprite.colordepth == 8 {
+            if sprite.colordepth == 5 || sprite.colordepth == 8 {
                 image = Rc::new(RefCell::new(RawImage {
                     w: sprite.w as usize,
                     h: sprite.h as usize,
@@ -259,9 +274,9 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
         });
     }
 
-    for a in 0..sffdata.len() {
-        let b = sffdata[a].palindex as usize;
-        if paldata[b].is_used == false {
+    for (a, item) in sffdata.iter().enumerate() {
+        let b = item.palindex as usize;
+        if !paldata[b].is_used {
             paldata[b].is_used = true;
             paldata[b].usedby = a as i32;
         }

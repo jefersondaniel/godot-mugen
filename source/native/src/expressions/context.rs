@@ -1,7 +1,7 @@
-use std::rc::Rc;
+use crate::expressions::expression::Expression;
+use crate::expressions::value::Value;
 use gdnative::prelude::*;
-use crate::expression::value::Value;
-use crate::expression::expression::Expression;
+use std::rc::Rc;
 
 pub struct Context {
     object: Variant,
@@ -15,7 +15,7 @@ impl Context {
     pub fn godot_call(&self, name: &str, arguments: &[Variant]) -> Option<Variant> {
         let object_ref = self.object.try_to_object::<Object>();
 
-        if let Option::None = object_ref {
+        if object_ref.is_none() {
             godot_print!("invalid_context");
             return Option::None;
         }
@@ -40,7 +40,7 @@ impl Context {
         }
     }
 
-    pub fn call(&self, name: &str, expressions: &Vec<Rc<Expression>>) -> Value {
+    pub fn call(&self, name: &str, expressions: &[Rc<Expression>]) -> Value {
         if "cond" == name {
             if expressions.len() == 3 {
                 let cond = expressions[0].evaluate(&self);
@@ -53,7 +53,10 @@ impl Context {
                 return expressions[2].evaluate(&self);
             }
 
-            godot_print!("context: invalid argument count for cond function: {}", expressions.len());
+            godot_print!(
+                "context: invalid argument count for cond function: {}",
+                expressions.len()
+            );
 
             return Value::BottomValue;
         }
@@ -66,10 +69,17 @@ impl Context {
                 if cond.is_bottom() {
                     return Value::BottomValue;
                 }
-                return if cond.to_bool() { true_value } else { false_value };
+                return if cond.to_bool() {
+                    true_value
+                } else {
+                    false_value
+                };
             }
 
-            godot_print!("context: invalid argument count for ifelse function: {}", expressions.len());
+            godot_print!(
+                "context: invalid argument count for ifelse function: {}",
+                expressions.len()
+            );
 
             return Value::BottomValue;
         }
@@ -78,7 +88,10 @@ impl Context {
         for it in expressions.iter() {
             arguments.push(it.evaluate(&self).to_variant());
         }
-        let result = self.godot_call("call_context_function", &[name.to_variant(), arguments.to_variant()]);
+        let result = self.godot_call(
+            "call_context_function",
+            &[name.to_variant(), arguments.to_variant()],
+        );
 
         match result {
             Option::Some(x) => x.into(),
@@ -87,7 +100,10 @@ impl Context {
     }
 
     pub fn assign(&self, name: &str, value: &Value) {
-        self.godot_call("set_context_variable", &[name.to_variant(), value.to_variant()]);
+        self.godot_call(
+            "set_context_variable",
+            &[name.to_variant(), value.to_variant()],
+        );
     }
 
     pub fn redirect(&self, name: &str) -> Option<Context> {

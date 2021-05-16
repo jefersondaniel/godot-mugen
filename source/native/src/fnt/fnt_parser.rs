@@ -1,7 +1,7 @@
-use gdnative::prelude::*;
+use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
+use crate::sff::pcx::read_pcx;
 use gdnative::api::file::File;
-use crate::sff::data::{ DataReader, DataError, FileReader, BufferReader };
-use crate::sff::pcx::{ read_pcx };
+use gdnative::prelude::*;
 
 #[allow(dead_code)]
 pub struct FileHeader {
@@ -36,13 +36,12 @@ impl FileHeader {
 
 #[derive(NativeClass)]
 #[inherit(Reference)]
-pub struct FntParser {
-}
+pub struct FntParser {}
 
 #[methods]
 impl FntParser {
     pub fn new(_owner: &Reference) -> Self {
-        FntParser { }
+        FntParser {}
     }
 
     #[export]
@@ -63,7 +62,10 @@ impl FntParser {
         let open_result = file.open(path, File::READ);
 
         if let Err(detail) = open_result {
-            return Result::Err(DataError::new(format!("Error opening fnt file: {}", detail)));
+            return Result::Err(DataError::new(format!(
+                "Error opening fnt file: {}",
+                detail
+            )));
         }
 
         let mut reader = FileReader::new(&file);
@@ -71,7 +73,10 @@ impl FntParser {
 
         if head.signature != "ElecbyteFnt" {
             file.close();
-            return Result::Err(DataError::new(format!("Fnt invalid signature: {}", head.signature)));
+            return Result::Err(DataError::new(format!(
+                "Fnt invalid signature: {}",
+                head.signature
+            )));
         }
 
         file.seek(head.text_offset as i64);
@@ -91,7 +96,7 @@ impl FntParser {
                 file.close();
 
                 Result::Ok(result.into_shared())
-            },
+            }
             Err(message) => {
                 file.close();
                 Result::Err(DataError::new(message.to_string()))

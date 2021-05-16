@@ -1,10 +1,10 @@
-use std::rc::{ Rc };
-use std::cell::RefCell;
+use crate::sff::data::{BufferAccess, BufferReader, DataError, DataReader, FileReader};
+use crate::sff::image::{Palette, RawColor, RawImage};
+use crate::sff::pcx::read_pcx;
+use crate::sff::sff_common::{SffData, SffPal};
 use gdnative::api::file::File;
-use crate::sff::data::{ DataError, BufferAccess, BufferReader, FileReader, DataReader };
-use crate::sff::image::{ RawImage, RawColor, Palette };
-use crate::sff::pcx::{ read_pcx };
-use crate::sff::sff_common::{ SffData, SffPal };
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[allow(dead_code)]
 struct FileHeader {
@@ -49,7 +49,20 @@ fn read_file_header(reader: &mut dyn DataReader) -> FileHeader {
     let reserved: Vec<u8> = reader.get_buffer(3);
     let comments: Vec<u8> = reader.get_buffer(476);
 
-    FileHeader { signature, verhi, verlo, verlo2, verlo3, num_groups, num_images, first_offset, subheader_size, is_shared, reserved, comments }
+    FileHeader {
+        signature,
+        verhi,
+        verlo,
+        verlo2,
+        verlo3,
+        num_groups,
+        num_images,
+        first_offset,
+        subheader_size,
+        is_shared,
+        reserved,
+        comments,
+    }
 }
 
 fn read_sprite_header(reader: &mut dyn DataReader) -> SpriteHeader {
@@ -63,7 +76,17 @@ fn read_sprite_header(reader: &mut dyn DataReader) -> SpriteHeader {
     let is_shared: bool = reader.get_bool();
     let blank: Vec<u8> = reader.get_buffer(13);
 
-    SpriteHeader { offset_next_sprite, subfile_len, x, y, groupno, imageno, linked, is_shared, blank }
+    SpriteHeader {
+        offset_next_sprite,
+        subfile_len,
+        x,
+        y,
+        groupno,
+        imageno,
+        linked,
+        is_shared,
+        blank,
+    }
 }
 
 fn matrix_to_pal(reader: &mut dyn DataReader) -> Rc<Palette> {
@@ -77,12 +100,19 @@ fn matrix_to_pal(reader: &mut dyn DataReader) -> Rc<Palette> {
     Rc::new(Palette::from_colors(colors))
 }
 
-pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<SffData>) -> Result<(), DataError> {
+pub fn read_v1(
+    filename: String,
+    paldata: &mut Vec<SffPal>,
+    sffdata: &mut Vec<SffData>,
+) -> Result<(), DataError> {
     let file = File::new();
     let result = file.open(filename, File::READ);
 
     if let Err(detail) = result {
-        return Result::Err(DataError::new(format!("Error opening sff file: {}", detail)));
+        return Result::Err(DataError::new(format!(
+            "Error opening sff file: {}",
+            detail
+        )));
     }
 
     let mut reader = FileReader::new(&file);
@@ -90,12 +120,18 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
 
     if head.signature != "ElecbyteSpr" {
         file.close();
-        return Result::Err(DataError::new(format!("SffV1::read invalid signature: {}", head.signature)));
+        return Result::Err(DataError::new(format!(
+            "SffV1::read invalid signature: {}",
+            head.signature
+        )));
     }
 
     if head.verhi != 0 && head.verlo != 1 && head.verlo2 != 0 && head.verlo3 != 1 {
         file.close();
-        return Result::Err(DataError::new(format!("SffV1::read invalid version: {}.{}.{}.{}", head.verhi, head.verlo, head.verlo2, head.verlo3)));
+        return Result::Err(DataError::new(format!(
+            "SffV1::read invalid version: {}.{}.{}.{}",
+            head.verhi, head.verlo, head.verlo2, head.verlo3
+        )));
     }
 
     let mut actual_offset = head.first_offset;
@@ -125,13 +161,11 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
         let array_size = spr.offset_next_sprite - actual_offset - 32;
 
         if array_size > 0 {
-            let mut tmp_arr = reader.get_buffer(array_size as usize) ;
+            let mut tmp_arr = reader.get_buffer(array_size as usize);
 
             if head.is_shared && spr.is_shared {
                 shared_image.push(counter as usize);
-                for _ in 0..768 {
-                    tmp_arr.push(0u8);
-                }
+                tmp_arr.append(&mut vec![0u8; 768]);
             }
 
             if !head.is_shared && spr.is_shared {
@@ -155,8 +189,8 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                 };
                 {
                     let mut checked = false;
-                    for k in 0..paldata.len() {
-                        if sffpal.pal.equal(&paldata[k].pal) {
+                    for (k, item) in paldata.iter().enumerate() {
+                        if sffpal.pal.equal(&item.pal) {
                             checked = true;
                             actual_palindex = k as i32;
                             break;
@@ -174,7 +208,11 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                 if let Ok(image) = result {
                     sffitem.image = image;
                 } else if let Err(error) = result {
-                    return Result::Err(DataError::new(format!("Pcx Error: {}. Buffer size: {}", error, tmp_arr.len())));
+                    return Result::Err(DataError::new(format!(
+                        "Pcx Error: {}. Buffer size: {}",
+                        error,
+                        tmp_arr.len()
+                    )));
                 }
             }
             tmp_arr.clear();
@@ -221,7 +259,7 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                     break;
                 }
             }
-            if have90 == false {
+            if !have90 {
                 force_pal = Rc::clone(&sffdata[ind_image[0]].image.borrow().color_table);
             }
         }
@@ -242,11 +280,11 @@ pub fn read_v1(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
             }
 
             if k > 0 {
-                for w in 0..sffdata.len() {
-                    if sffdata[w].palindex == 0 {
-                        sffdata[w].palindex = k as i32;
-                    } else if sffdata[w].palindex == k as i32 {
-                        sffdata[w].palindex = 0;
+                for item in sffdata.iter_mut() {
+                    if item.palindex == 0 {
+                        item.palindex = k as i32;
+                    } else if item.palindex == k as i32 {
+                        item.palindex = 0;
                     }
                 }
                 paldata[0].groupno = paldata[k].groupno;

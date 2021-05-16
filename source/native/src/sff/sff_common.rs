@@ -1,9 +1,9 @@
-use std::rc::{ Rc };
-use std::cell::RefCell;
-use gdnative::prelude::*;
+use crate::sff::data::{DataError, DataReader, FileReader};
+use crate::sff::image::{Palette, RawColor, RawImage};
 use gdnative::api::file::File;
-use crate::sff::data::{ FileReader, DataReader, DataError };
-use crate::sff::image::{ RawImage, Palette, RawColor };
+use gdnative::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct SffPal {
@@ -33,12 +33,16 @@ pub fn load_pal_format_pal(filename: String) -> Result<Rc<Palette>, DataError> {
 
     if let Err(details) = result {
         file.close();
-        return Result::Err(DataError { message: format!("Error opening palette {}", details) });
+        return Result::Err(DataError {
+            message: format!("Error opening palette {}", details),
+        });
     }
 
     if file.get_line().to_uppercase().to_string() != "JASC-PAL" {
         file.close();
-        return Result::Err(DataError { message: format!("Invalid pallete header") });
+        return Result::Err(DataError {
+            message: "Invalid pallete header".to_string(),
+        });
     }
 
     file.get_line(); //0100
@@ -48,31 +52,29 @@ pub fn load_pal_format_pal(filename: String) -> Result<Rc<Palette>, DataError> {
     while !file.eof_reached() {
         counter += 1;
         let line = file.get_line().to_string();
-        let strcolor: Vec<&str> = line
-            .split(" ")
-            .collect::<Vec<&str>>();
+        let strcolor: Vec<&str> = line.split(' ').collect::<Vec<&str>>();
         if strcolor.len() < 3 {
             godot_print!("warning: invalid palette line");
             continue;
         }
-        let r: Result<u8, u8> = strcolor[0].parse().or_else(|_| Ok(0));
-        let g: Result<u8, u8> = strcolor[1].parse().or_else(|_| Ok(0));
-        let b: Result<u8, u8> = strcolor[2].parse().or_else(|_| Ok(0));
+        let r: Result<u8, u8> = strcolor[0].parse().or(Ok(0));
+        let g: Result<u8, u8> = strcolor[1].parse().or(Ok(0));
+        let b: Result<u8, u8> = strcolor[2].parse().or(Ok(0));
         pal.colors.push(RawColor::new(
             r.unwrap(),
             g.unwrap(),
             b.unwrap(),
-            if 0 == counter { 0 } else { 255 }
+            if 0 == counter { 0 } else { 255 },
         ));
     }
 
-    if pal.colors.len() == 0 {
+    if pal.colors.is_empty() {
         godot_print!("warning: invalid palette file, no colors");
     }
 
     file.close();
 
-    return Result::Ok(Rc::new(pal));
+    Result::Ok(Rc::new(pal))
 }
 
 pub fn load_pal_format_act(filename: String) -> Result<Rc<Palette>, DataError> {
@@ -82,12 +84,12 @@ pub fn load_pal_format_act(filename: String) -> Result<Rc<Palette>, DataError> {
 
     if let Err(details) = result {
         file.close();
-        return Result::Err(
-            DataError { message: format!("Error opening palette {}", details) }
-        );
+        return Result::Err(DataError {
+            message: format!("Error opening palette {}", details),
+        });
     }
 
-    let mut reader  = FileReader::new(&file);
+    let mut reader = FileReader::new(&file);
     let mut reversed: Vec<RawColor> = Vec::new();
 
     for a in 0..256 {
@@ -106,5 +108,5 @@ pub fn load_pal_format_act(filename: String) -> Result<Rc<Palette>, DataError> {
 
     file.close();
 
-    return Result::Ok(Rc::new(pal));
+    Result::Ok(Rc::new(pal))
 }

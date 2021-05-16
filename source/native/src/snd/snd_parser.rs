@@ -1,17 +1,16 @@
-use gdnative::prelude::*;
+use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
+use crate::snd::structs::{FileHeader, SubHeader, WavHeader};
 use gdnative::api::file::File;
-use crate::snd::structs::{ FileHeader, SubHeader, WavHeader };
-use crate::sff::data::{ DataReader, DataError, FileReader, BufferReader };
+use gdnative::prelude::*;
 
 #[derive(NativeClass)]
 #[inherit(Reference)]
-pub struct SndParser {
-}
+pub struct SndParser {}
 
 #[methods]
 impl SndParser {
     pub fn new(_owner: &Reference) -> Self {
-        SndParser { }
+        SndParser {}
     }
 
     #[export]
@@ -32,7 +31,10 @@ impl SndParser {
         let open_result = file.open(path, File::READ);
 
         if let Err(detail) = open_result {
-            return Result::Err(DataError::new(format!("Error opening snd file: {}", detail)));
+            return Result::Err(DataError::new(format!(
+                "Error opening snd file: {}",
+                detail
+            )));
         }
 
         let mut reader = FileReader::new(&file);
@@ -40,7 +42,10 @@ impl SndParser {
 
         if head.signature != "ElecbyteSnd" {
             file.close();
-            return Result::Err(DataError::new(format!("Snd invalid signature: {}", head.signature)));
+            return Result::Err(DataError::new(format!(
+                "Snd invalid signature: {}",
+                head.signature
+            )));
         }
 
         file.seek(head.subheader_offset as i64);
@@ -85,12 +90,13 @@ impl SndParser {
 
         file.close();
 
-        return Result::Ok(result.into_shared());
+        Result::Ok(result.into_shared())
     }
 }
 
-fn to_signed(source: &Vec<u8>) -> ByteArray {
-    source.iter()
-        .map(| value | ((*value as i16) - 128) as u8)
+fn to_signed(source: &[u8]) -> ByteArray {
+    source
+        .iter()
+        .map(|value| ((*value as i16) - 128) as u8)
         .collect()
 }

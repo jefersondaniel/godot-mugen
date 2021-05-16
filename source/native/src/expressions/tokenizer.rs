@@ -1,7 +1,7 @@
-use std::rc::Rc;
+use crate::expressions::token::Token;
+use crate::expressions::value::Value;
 use std::fmt;
-use crate::expression::token::Token;
-use crate::expression::value::Value;
+use std::rc::Rc;
 
 type Result<T> = std::result::Result<T, TokenizerError>;
 
@@ -17,17 +17,14 @@ impl fmt::Display for TokenizerError {
 }
 
 fn is_identifier_char(text: char) -> bool {
-    text.is_alphabetic() ||
-    text.is_numeric() ||
-    '_' == text ||
-    '.' == text
+    text.is_alphabetic() || text.is_numeric() || '_' == text || '.' == text
 }
 
 fn is_number_char(text: char) -> bool {
     text.is_numeric() || '.' == text
 }
 
-fn match_token_type(tokens: &Vec<Rc<Token>>, index: usize, type_name: &str) -> bool {
+fn match_token_type(tokens: &[Rc<Token>], index: usize, type_name: &str) -> bool {
     if index < tokens.len() {
         tokens[index].get_type_name() == type_name
     } else {
@@ -35,10 +32,15 @@ fn match_token_type(tokens: &Vec<Rc<Token>>, index: usize, type_name: &str) -> b
     }
 }
 
-fn match_comparator_token(tokens: &Vec<Rc<Token>>, index: usize) -> bool {
+fn match_comparator_token(tokens: &[Rc<Token>], index: usize) -> bool {
     if index < tokens.len() {
         let type_name = tokens[index].get_type_name();
-        type_name == "=" || type_name == "!=" || type_name == "<" || type_name == ">" || type_name == "<=" || type_name == ">="
+        type_name == "="
+            || type_name == "!="
+            || type_name == "<"
+            || type_name == ">"
+            || type_name == "<="
+            || type_name == ">="
     } else {
         false
     }
@@ -54,8 +56,8 @@ fn preprocess(text: String) -> Result<Vec<Rc<Token>>> {
     let mut result: Vec<Rc<Token>> = Vec::new();
 
     while index < text.len() {
-        while index < text.len() && text[index..index+1].trim().is_empty() {
-            index = index + 1;
+        while index < text.len() && text[index..index + 1].trim().is_empty() {
+            index += 1;
         }
 
         if index >= text.len() {
@@ -63,287 +65,309 @@ fn preprocess(text: String) -> Result<Vec<Rc<Token>>> {
         }
 
         // Pseudo Strings (are stored as hash)
-        if text[index..index+1] == "\"".to_string() {
+        if text[index..index + 1] == *"\"" {
             string_value = String::from("");
             while index < text.len() {
-                index = index + 1;
-                if text[index..index+1] == "\"".to_string() {
+                index += 1;
+                if text[index..index + 1] == *"\"" {
                     break;
                 }
-                if text[index..index+1] == "\\".to_string() {
+                if text[index..index + 1] == *"\\" {
                     continue;
                 }
-                string_value = vec![string_value, text[index..index+1].to_string()].join("");
+                string_value = vec![string_value, text[index..index + 1].to_string()].join("");
             }
-            index = index + 1;
-            result.push(
-                Rc::new(
-                    Token::LiteralToken { value: Value::StringValue(string_value) }
-                )
-            );
+            index += 1;
+            result.push(Rc::new(Token::LiteralToken {
+                value: Value::StringValue(string_value),
+            }));
             continue;
         }
 
         // Identifiers
-        if text.chars().nth(index).expect("Invalid text").is_alphabetic() {
+        if text
+            .chars()
+            .nth(index)
+            .expect("Invalid text")
+            .is_alphabetic()
+        {
             name = String::from("");
-            while index < text.len() && is_identifier_char(text.chars().nth(index).expect("Invalid text")) {
-                name = vec![name, text[index..index+1].to_string()].join("");
-                index = index + 1;
+            while index < text.len()
+                && is_identifier_char(text.chars().nth(index).expect("Invalid text"))
+            {
+                name = vec![name, text[index..index + 1].to_string()].join("");
+                index += 1;
             }
-            while index < text.len() && text[index..index+1] == " ".to_string() { // Handles variables like Pos X, Vel Y
-                index = index + 1;
+            while index < text.len() && text[index..index + 1] == *" " {
+                // Handles variables like Pos X, Vel Y
+                index += 1;
             }
-            if  index < text.len() && is_identifier_char(text.chars().nth(index).expect("Invalid text")) {
-                name = name + "_";
+            if index < text.len()
+                && is_identifier_char(text.chars().nth(index).expect("Invalid text"))
+            {
+                name += "_";
             }
-            while index < text.len() && is_identifier_char(text.chars().nth(index).expect("Invalid text")) {
-                name = vec![name, text[index..index+1].to_string()].join("");
-                index = index + 1;
+            while index < text.len()
+                && is_identifier_char(text.chars().nth(index).expect("Invalid text"))
+            {
+                name = vec![name, text[index..index + 1].to_string()].join("");
+                index += 1;
             }
             name = name.to_lowercase();
-            result.push(
-                Rc::new(Token::IdentifierToken { name })
-            );
+            result.push(Rc::new(Token::IdentifierToken { name }));
             continue;
         }
 
-        match &text[index..index+1] {
+        match &text[index..index + 1] {
             "." | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => {
                 int_value = 0;
                 divisor = 1;
                 is_float = false;
-                while index < text.len() && is_number_char(text.chars().nth(index).expect("Invalid text")) {
-                    if &text[index..index+1] == "." && !is_float {
+                while index < text.len()
+                    && is_number_char(text.chars().nth(index).expect("Invalid text"))
+                {
+                    if &text[index..index + 1] == "." && !is_float {
                         is_float = true;
-                        index = index + 1;
+                        index += 1;
                         continue;
-                    } else if &text[index..index+1] == "." {
-                        return Result::Err(TokenizerError { message: String::from("Unexpected .") });
+                    } else if &text[index..index + 1] == "." {
+                        return Result::Err(TokenizerError {
+                            message: String::from("Unexpected ."),
+                        });
                     }
-                    let text_int_value: i64 = (text.chars().nth(index).expect("Invalid text").to_digit(10).unwrap()).into();
+                    let text_int_value: i64 = (text
+                        .chars()
+                        .nth(index)
+                        .expect("Invalid text")
+                        .to_digit(10)
+                        .unwrap())
+                    .into();
                     int_value = int_value * 10 + text_int_value;
                     if is_float {
-                        divisor = divisor * 10;
+                        divisor *= 10;
                     }
-                    index = index + 1;
+                    index += 1;
                 }
                 if is_float {
-                    result.push(
-                        Rc::new(
-                            Token::LiteralToken {
-                                value: Value::FloatValue(int_value as f64 / divisor as f64)
-                            }
-                        )
-                    );
+                    result.push(Rc::new(Token::LiteralToken {
+                        value: Value::FloatValue(int_value as f64 / divisor as f64),
+                    }));
                 } else {
-                    result.push(
-                        Rc::new(
-                            Token::LiteralToken { value: Value::IntValue(int_value) }
-                        )
-                    );
+                    result.push(Rc::new(Token::LiteralToken {
+                        value: Value::IntValue(int_value),
+                    }));
                 }
-            },
+            }
             "(" => {
                 result.push(Rc::new(Token::ParenthesisOpenToken));
-                index = index + 1;
-            },
+                index += 1;
+            }
             ")" => {
-                result.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
-                index = index + 1;
-            },
+                result.push(Rc::new(Token::ReservedToken {
+                    name: ")".to_string(),
+                }));
+                index += 1;
+            }
             "," => {
                 result.push(Rc::new(Token::CommaToken));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "[" => {
-                result.push(Rc::new(Token::ReservedToken { name: "[".to_string() }));
-                index = index + 1;
-            },
+                result.push(Rc::new(Token::ReservedToken {
+                    name: "[".to_string(),
+                }));
+                index += 1;
+            }
             "]" => {
-                result.push(Rc::new(Token::ReservedToken { name: "]".to_string() }));
-                index = index + 1;
-            },
+                result.push(Rc::new(Token::ReservedToken {
+                    name: "]".to_string(),
+                }));
+                index += 1;
+            }
             "+" => {
                 result.push(Rc::new(Token::BinaryAndUnaryOperatorToken {
                     op: "+".to_string(),
                     precedence: 55,
-                    right_associative: false
+                    right_associative: false,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "-" => {
                 result.push(Rc::new(Token::BinaryAndUnaryOperatorToken {
                     op: "-".to_string(),
                     precedence: 55,
-                    right_associative: false
+                    right_associative: false,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "%" => {
                 result.push(Rc::new(Token::BinaryOperatorToken {
                     op: "%".to_string(),
                     precedence: 60,
-                    right_associative: false
+                    right_associative: false,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "/" => {
                 result.push(Rc::new(Token::BinaryOperatorToken {
                     op: "/".to_string(),
                     precedence: 60,
-                    right_associative: false
+                    right_associative: false,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "*" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "*" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "**".to_string(),
                         precedence: 65,
-                        right_associative: true
+                        right_associative: true,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "*".to_string(),
                         precedence: 60,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             "^" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "^" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "^^".to_string(),
                         precedence: 15,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "^".to_string(),
                         precedence: 30,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             "&" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "&" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "&&".to_string(),
                         precedence: 20,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "&".to_string(),
                         precedence: 35,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             "|" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "|" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "||".to_string(),
                         precedence: 10,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "|".to_string(),
                         precedence: 25,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             ">" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "=" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: ">=".to_string(),
                         precedence: 50,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: ">".to_string(),
                         precedence: 50,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             "<" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "=" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "<=".to_string(),
                         precedence: 50,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "<".to_string(),
                         precedence: 50,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             ":" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "=" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: ":=".to_string(),
                         precedence: 40,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
-                    return Result::Err(TokenizerError { message: String::from("Expected = after :") });
+                    return Result::Err(TokenizerError {
+                        message: String::from("Expected = after :"),
+                    });
                 }
-            },
+            }
             "!" => {
                 if index + 1 < text.len() && &text[(index + 1)..(index + 2)] == "=" {
                     result.push(Rc::new(Token::BinaryOperatorToken {
                         op: "!=".to_string(),
                         precedence: 45,
-                        right_associative: false
+                        right_associative: false,
                     }));
-                    index = index + 2;
+                    index += 2;
                 } else {
                     result.push(Rc::new(Token::UnaryOperatorToken {
                         op: "!".to_string(),
-                        precedence: 70
+                        precedence: 70,
                     }));
-                    index = index + 1;
+                    index += 1;
                 }
-            },
+            }
             "=" => {
                 result.push(Rc::new(Token::BinaryOperatorToken {
                     op: "=".to_string(),
                     precedence: 45,
-                    right_associative: false
+                    right_associative: false,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             "~" => {
                 result.push(Rc::new(Token::UnaryOperatorToken {
                     op: "~".to_string(),
-                    precedence: 70
+                    precedence: 70,
                 }));
-                index = index + 1;
-            },
+                index += 1;
+            }
             invalid_char => {
-                return Result::Err(TokenizerError { message: format!("Invalid character: \"{}\"", invalid_char) });
-            },
+                return Result::Err(TokenizerError {
+                    message: format!("Invalid character: \"{}\"", invalid_char),
+                });
+            }
         }
     }
 
@@ -360,12 +384,15 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
             break;
         }
 
-        let is_interval_operator = (match_token_type(&oldtokens, i, "=") || match_token_type(&oldtokens, i, "!="))
-            && (match_token_type(&oldtokens, i + 1, "(") || match_token_type(&oldtokens, i + 1, "["))
+        let is_interval_operator = (match_token_type(&oldtokens, i, "=")
+            || match_token_type(&oldtokens, i, "!="))
+            && (match_token_type(&oldtokens, i + 1, "(")
+                || match_token_type(&oldtokens, i + 1, "["))
             && match_token_type(&oldtokens, i + 2, "(literal)")
             && match_token_type(&oldtokens, i + 3, ",")
             && match_token_type(&oldtokens, i + 4, "(literal)")
-            && (match_token_type(&oldtokens, i + 5, ")") || match_token_type(&oldtokens, i + 5, "]"));
+            && (match_token_type(&oldtokens, i + 5, ")")
+                || match_token_type(&oldtokens, i + 5, "]"));
 
         if is_interval_operator {
             newtokens.push(Rc::new(Token::IntervalOperatorToken {
@@ -373,7 +400,7 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
                 start_op: oldtokens[i + 1].get_type_name(),
                 end_op: oldtokens[i + 5].get_type_name(),
                 min_value: oldtokens[i + 2].get_literal_value(),
-                max_value: oldtokens[i + 4].get_literal_value()
+                max_value: oldtokens[i + 4].get_literal_value(),
             }));
             i += 6;
             continue;
@@ -397,7 +424,8 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
 
         let is_hit_def_attr = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "hitdefattr"
-            && (match_token_type(&oldtokens, i + 1, "=") || match_token_type(&oldtokens, i + 1, "!="));
+            && (match_token_type(&oldtokens, i + 1, "=")
+                || match_token_type(&oldtokens, i + 1, "!="));
 
         let sca = "sca";
 
@@ -405,13 +433,15 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
             newtokens.push(Rc::clone(&oldtokens[i]));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::new(Token::LiteralToken {
-                value: Value::StringValue(oldtokens[i + 1].get_type_name())
+                value: Value::StringValue(oldtokens[i + 1].get_type_name()),
             }));
             newtokens.push(Rc::new(Token::CommaToken));
-            i = i + 2;
+            i += 2;
 
             if match_token_type(&oldtokens, i, ",") {
-                newtokens.push(Rc::new(Token::LiteralToken { value: Value::StringValue(sca.to_string()) }));
+                newtokens.push(Rc::new(Token::LiteralToken {
+                    value: Value::StringValue(sca.to_string()),
+                }));
                 newtokens.push(Rc::new(Token::CommaToken));
                 i += 1;
             }
@@ -428,11 +458,12 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
                 i += 1;
                 break;
             }
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             i += 1;
             continue;
         }
-
 
         // The command trigger is converted to a function in format command("=", "name"), so the
         // implementation can do any type of logic:
@@ -441,18 +472,21 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
 
         let is_command = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "command"
-            && (match_token_type(&oldtokens, i + 1, "=") || match_token_type(&oldtokens, i + 1, "!="))
+            && (match_token_type(&oldtokens, i + 1, "=")
+                || match_token_type(&oldtokens, i + 1, "!="))
             && match_token_type(&oldtokens, i + 2, "(literal)");
 
         if is_command {
             newtokens.push(Rc::clone(&oldtokens[i]));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::new(Token::LiteralToken {
-                value:Value::StringValue(oldtokens[i + 1].get_type_name())
+                value: Value::StringValue(oldtokens[i + 1].get_type_name()),
             }));
             newtokens.push(Rc::new(Token::CommaToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             i += 3;
             continue;
         }
@@ -468,16 +502,22 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         let is_anim_elem_format30 = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "animelem"
             && match_token_type(&oldtokens, i + 1, "=")
-            && (match_token_type(&oldtokens, i + 2, "(literal)") || match_token_type(&oldtokens, i + 2, "(identifier)"))
+            && (match_token_type(&oldtokens, i + 2, "(literal)")
+                || match_token_type(&oldtokens, i + 2, "(identifier)"))
             && match_token_type(&oldtokens, i + 3, ",")
             && match_comparator_token(&oldtokens, i + 4)
-            && (match_token_type(&oldtokens, i + 5, "(literal)") || match_token_type(&oldtokens, i + 5, "(identifier)"));
+            && (match_token_type(&oldtokens, i + 5, "(literal)")
+                || match_token_type(&oldtokens, i + 5, "(identifier)"));
 
         if is_anim_elem_format30 {
-            newtokens.push(Rc::new(Token::IdentifierToken { name: "animelemtime".to_string() }));
+            newtokens.push(Rc::new(Token::IdentifierToken {
+                name: "animelemtime".to_string(),
+            }));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             newtokens.push(Rc::clone(&oldtokens[i + 4]));
             newtokens.push(Rc::clone(&oldtokens[i + 5]));
             i += 6;
@@ -487,15 +527,21 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         let is_anim_elem_format20 = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "animelem"
             && match_token_type(&oldtokens, i + 1, "=")
-            && (match_token_type(&oldtokens, i + 2, "(literal)") || match_token_type(&oldtokens, i + 2, "(identifier)"))
+            && (match_token_type(&oldtokens, i + 2, "(literal)")
+                || match_token_type(&oldtokens, i + 2, "(identifier)"))
             && match_token_type(&oldtokens, i + 3, ",")
-            && (match_token_type(&oldtokens, i + 4, "(literal)") || match_token_type(&oldtokens, i + 5, "(identifier)"));
+            && (match_token_type(&oldtokens, i + 4, "(literal)")
+                || match_token_type(&oldtokens, i + 5, "(identifier)"));
 
         if is_anim_elem_format20 {
-            newtokens.push(Rc::new(Token::IdentifierToken { name: "animelemtime".to_string() }));
+            newtokens.push(Rc::new(Token::IdentifierToken {
+                name: "animelemtime".to_string(),
+            }));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             newtokens.push(Rc::clone(&oldtokens[i + 1]));
             newtokens.push(Rc::clone(&oldtokens[i + 4]));
             i += 5;
@@ -505,17 +551,23 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         let is_anim_elem_format31 = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "animelem"
             && match_token_type(&oldtokens, i + 1, "=")
-            && (match_token_type(&oldtokens, i + 2, "(literal)") || match_token_type(&oldtokens, i + 2, "(identifier)"))
+            && (match_token_type(&oldtokens, i + 2, "(literal)")
+                || match_token_type(&oldtokens, i + 2, "(identifier)"))
             && match_token_type(&oldtokens, i + 3, ",")
             && match_comparator_token(&oldtokens, i + 4)
             && match_token_type(&oldtokens, i + 5, "-")
-            && (match_token_type(&oldtokens, i + 6, "(literal)") || match_token_type(&oldtokens, i + 6, "(identifier)"));
+            && (match_token_type(&oldtokens, i + 6, "(literal)")
+                || match_token_type(&oldtokens, i + 6, "(identifier)"));
 
         if is_anim_elem_format31 {
-            newtokens.push(Rc::new(Token::IdentifierToken{ name: "animelemtime".to_string() }));
+            newtokens.push(Rc::new(Token::IdentifierToken {
+                name: "animelemtime".to_string(),
+            }));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             newtokens.push(Rc::clone(&oldtokens[i + 4]));
             newtokens.push(Rc::clone(&oldtokens[i + 5]));
             newtokens.push(Rc::clone(&oldtokens[i + 6]));
@@ -526,16 +578,22 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         let is_anim_elem_format21 = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "animelem"
             && match_token_type(&oldtokens, i + 1, "=")
-            && (match_token_type(&oldtokens, i + 2, "(literal)") || match_token_type(&oldtokens, i + 2, "(identifier)"))
+            && (match_token_type(&oldtokens, i + 2, "(literal)")
+                || match_token_type(&oldtokens, i + 2, "(identifier)"))
             && match_token_type(&oldtokens, i + 3, ",")
             && match_token_type(&oldtokens, i + 4, "-")
-            && (match_token_type(&oldtokens, i + 5, "(literal)") || match_token_type(&oldtokens, i + 5, "(identifier)"));
+            && (match_token_type(&oldtokens, i + 5, "(literal)")
+                || match_token_type(&oldtokens, i + 5, "(identifier)"));
 
         if is_anim_elem_format21 {
-            newtokens.push(Rc::new(Token::IdentifierToken{ name: "animelemtime".to_string() }));
+            newtokens.push(Rc::new(Token::IdentifierToken {
+                name: "animelemtime".to_string(),
+            }));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             newtokens.push(Rc::clone(&oldtokens[i + 1]));
             newtokens.push(Rc::clone(&oldtokens[i + 4]));
             newtokens.push(Rc::clone(&oldtokens[i + 5]));
@@ -546,15 +604,22 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         let is_anim_elem_format1 = match_token_type(&oldtokens, i, "(identifier)")
             && oldtokens[i].get_identifier_name() == "animelem"
             && match_token_type(&oldtokens, i + 1, "=")
-            && (match_token_type(&oldtokens, i + 2, "(literal)") || match_token_type(&oldtokens, i + 2, "(identifier)"));
+            && (match_token_type(&oldtokens, i + 2, "(literal)")
+                || match_token_type(&oldtokens, i + 2, "(identifier)"));
 
         if is_anim_elem_format1 {
-            newtokens.push(Rc::new(Token::IdentifierToken{ name: "animelemtime".to_string() }));
+            newtokens.push(Rc::new(Token::IdentifierToken {
+                name: "animelemtime".to_string(),
+            }));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::clone(&oldtokens[i + 2]));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
             newtokens.push(Rc::clone(&oldtokens[i + 1]));
-            newtokens.push(Rc::new(Token::LiteralToken { value: Value::IntValue(0) }));
+            newtokens.push(Rc::new(Token::LiteralToken {
+                value: Value::IntValue(0),
+            }));
             i += 3;
             continue;
         }
@@ -564,7 +629,8 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
         // gethitvar(velocity.x) => gethitvar("velocity.x")
 
         let is_getter = match_token_type(&oldtokens, i, "(identifier)")
-            && (oldtokens[i].get_identifier_name() == "const" || oldtokens[i].get_identifier_name() == "gethitvar")
+            && (oldtokens[i].get_identifier_name() == "const"
+                || oldtokens[i].get_identifier_name() == "gethitvar")
             && match_token_type(&oldtokens, i + 1, "(")
             && match_token_type(&oldtokens, i + 2, "(identifier)")
             && match_token_type(&oldtokens, i + 3, ")");
@@ -573,24 +639,26 @@ fn postprocess(oldtokens: Vec<Rc<Token>>) -> Vec<Rc<Token>> {
             newtokens.push(Rc::clone(&oldtokens[i]));
             newtokens.push(Rc::new(Token::ParenthesisOpenToken));
             newtokens.push(Rc::new(Token::LiteralToken {
-                value: Value::StringValue(oldtokens[i + 2].get_identifier_name())
+                value: Value::StringValue(oldtokens[i + 2].get_identifier_name()),
             }));
-            newtokens.push(Rc::new(Token::ReservedToken { name: ")".to_string() }));
-            i = i + 4;
+            newtokens.push(Rc::new(Token::ReservedToken {
+                name: ")".to_string(),
+            }));
+            i += 4;
             continue;
         }
 
         newtokens.push(Rc::clone(&oldtokens[i]));
 
-        i = i + 1;
+        i += 1;
     }
 
-    return newtokens;
+    newtokens
 }
 
 pub fn tokenize(text: String) -> Result<Vec<Rc<Token>>> {
     match preprocess(text) {
         Result::Ok(tokens) => Result::Ok(postprocess(tokens)),
-        Result::Err(err) => Result::Err(err)
+        Result::Err(err) => Result::Err(err),
     }
 }

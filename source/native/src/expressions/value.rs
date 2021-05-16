@@ -1,4 +1,5 @@
 use gdnative::prelude::*;
+use std::fmt;
 
 pub enum Value {
     IntValue(i64),
@@ -23,26 +24,22 @@ impl Clone for Value {
 impl From<Variant> for Value {
     fn from(variant: Variant) -> Self {
         match variant.get_type() {
-            VariantType::Bool => Value::IntValue(
-                if bool::from_variant(&variant).unwrap() { 1 } else { 0 }
-            ),
-            VariantType::I64 => Value::IntValue(
-                i64::from_variant(&variant).unwrap()
-            ),
-            VariantType::F64 => Value::FloatValue(
-                f64::from_variant(&variant).unwrap()
-            ),
-            VariantType::GodotString => Value::StringValue(
-                String::from_variant(&variant).unwrap()
-            ),
+            VariantType::Bool => Value::IntValue(if bool::from_variant(&variant).unwrap() {
+                1
+            } else {
+                0
+            }),
+            VariantType::I64 => Value::IntValue(i64::from_variant(&variant).unwrap()),
+            VariantType::F64 => Value::FloatValue(f64::from_variant(&variant).unwrap()),
+            VariantType::GodotString => Value::StringValue(String::from_variant(&variant).unwrap()),
             VariantType::VariantArray => {
-              let variant_array = VariantArray::from_variant(&variant).unwrap();
-              let mut vec: Vec<Value> = Vec::new();
-              for item in variant_array.iter() {
-                vec.push(item.into());
-              }
-              Value::ArrayValue(vec)
-            },
+                let variant_array = VariantArray::from_variant(&variant).unwrap();
+                let mut vec: Vec<Value> = Vec::new();
+                for item in variant_array.iter() {
+                    vec.push(item.into());
+                }
+                Value::ArrayValue(vec)
+            }
             _ => Value::BottomValue,
         }
     }
@@ -60,22 +57,26 @@ impl ToVariant for Value {
                     array.push(&val.to_variant());
                 }
                 array.into_shared().to_variant()
-            },
+            }
             _ => Variant::new(),
         }
     }
 }
 
-impl Value {
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let text = match self {
             Value::FloatValue(x) => x.to_string(),
             Value::IntValue(x) => x.to_string(),
             Value::StringValue(x) => x.to_string(),
             _ => "bottom".to_string(),
-        }
-    }
+        };
 
+        write!(f, "{}", text)
+    }
+}
+
+impl Value {
     pub fn to_i64(&self) -> i64 {
         match self {
             Value::FloatValue(x) => *x as i64,
@@ -95,10 +96,7 @@ impl Value {
     }
 
     pub fn is_string(&self) -> bool {
-        match self {
-            Value::StringValue(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::StringValue(_))
     }
 
     pub fn to_bool(&self) -> bool {
@@ -112,24 +110,15 @@ impl Value {
     }
 
     pub fn is_int(&self) -> bool {
-        match self {
-            Value::IntValue(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::IntValue(_))
     }
 
     pub fn is_float(&self) -> bool {
-        match self {
-            Value::FloatValue(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::FloatValue(_))
     }
 
     pub fn is_bottom(&self) -> bool {
-        match self {
-            Value::BottomValue => true,
-            _ => false,
-        }
+        matches!(self, Value::BottomValue)
     }
 
     pub fn is_arithmetic(&self) -> bool {
@@ -142,19 +131,31 @@ impl Value {
 
     pub fn equal(&self, other: &Value) -> Value {
         if !self.is_comparable() {
-            return Value::BottomValue
+            return Value::BottomValue;
         }
 
         if self.is_string() || other.is_string() {
-            return Value::IntValue(if self.to_string() == other.to_string() { 1 } else { 0 });
+            return Value::IntValue(if self.to_string() == other.to_string() {
+                1
+            } else {
+                0
+            });
         }
 
         if self.is_int() && other.is_int() {
-            return Value::IntValue(if self.to_i64() == other.to_i64() { 1 } else { 0 });
+            return Value::IntValue(if self.to_i64() == other.to_i64() {
+                1
+            } else {
+                0
+            });
         }
 
         if self.is_float() || other.is_float() {
-            return Value::IntValue(if self.to_f64() == other.to_f64() { 1 } else { 0 });
+            return Value::IntValue(if (self.to_f64() - other.to_f64()).abs() < f64::EPSILON {
+                1
+            } else {
+                0
+            });
         }
 
         Value::BottomValue
@@ -165,7 +166,7 @@ impl Value {
             return Value::BottomValue;
         }
 
-        Value::IntValue(if 0 == self.to_i64() { 1 } else { 0 } )
+        Value::IntValue(if 0 == self.to_i64() { 1 } else { 0 })
     }
 
     pub fn logical_and(&self, other: &Value) -> Value {
@@ -173,7 +174,11 @@ impl Value {
             return Value::BottomValue;
         }
 
-        Value::IntValue(if self.to_bool() && other.to_bool() { 1 } else { 0 })
+        Value::IntValue(if self.to_bool() && other.to_bool() {
+            1
+        } else {
+            0
+        })
     }
 
     pub fn logical_or(&self, other: &Value) -> Value {
@@ -181,7 +186,11 @@ impl Value {
             return Value::BottomValue;
         }
 
-        Value::IntValue(if self.to_bool() || other.to_bool() { 1 } else { 0 })
+        Value::IntValue(if self.to_bool() || other.to_bool() {
+            1
+        } else {
+            0
+        })
     }
 
     pub fn logical_xor(&self, other: &Value) -> Value {
@@ -189,7 +198,11 @@ impl Value {
             return Value::BottomValue;
         }
 
-        Value::IntValue(if self.to_bool() != other.to_bool() { 1 } else { 0 })
+        Value::IntValue(if self.to_bool() != other.to_bool() {
+            1
+        } else {
+            0
+        })
     }
 
     pub fn bitwise_not(&self) -> Value {
@@ -205,7 +218,7 @@ impl Value {
             return Value::BottomValue;
         }
 
-        return Value::IntValue(self.to_i64() & other.to_i64());
+        Value::IntValue(self.to_i64() & other.to_i64())
     }
 
     pub fn bitwise_or(&self, other: &Value) -> Value {
@@ -213,7 +226,7 @@ impl Value {
             return Value::BottomValue;
         }
 
-        return Value::IntValue(self.to_i64() | other.to_i64());
+        Value::IntValue(self.to_i64() | other.to_i64())
     }
 
     pub fn bitwise_xor(&self, other: &Value) -> Value {
@@ -221,7 +234,7 @@ impl Value {
             return Value::BottomValue;
         }
 
-        return Value::IntValue(self.to_i64() ^ other.to_i64());
+        Value::IntValue(self.to_i64() ^ other.to_i64())
     }
 
     pub fn compare(&self, other: &Value) -> Value {
@@ -234,7 +247,11 @@ impl Value {
                 return Value::IntValue(0);
             }
 
-            return Value::IntValue(if self.to_string().len() < other.to_string().len() { -1 } else { 1 });
+            return Value::IntValue(if self.to_string().len() < other.to_string().len() {
+                -1
+            } else {
+                1
+            });
         }
 
         if self.is_int() && other.is_int() {
@@ -249,7 +266,7 @@ impl Value {
             return Value::IntValue(1);
         }
 
-        if self.to_f64() == other.to_f64() {
+        if (self.to_f64() - other.to_f64()).abs() < f64::EPSILON {
             return Value::IntValue(0);
         }
 
@@ -337,11 +354,16 @@ impl Value {
             return Value::IntValue(-self.to_i64());
         }
 
-        return Value::FloatValue(-self.to_f64());
+        Value::FloatValue(-self.to_f64())
     }
 
     pub fn modl(&self, other: &Value) -> Value {
-        if !self.is_arithmetic() || !other.is_arithmetic() || self.is_float() || other.is_float() || other.equal(&Value::IntValue(0)).to_bool() {
+        if !self.is_arithmetic()
+            || !other.is_arithmetic()
+            || self.is_float()
+            || other.is_float()
+            || other.equal(&Value::IntValue(0)).to_bool()
+        {
             return Value::BottomValue;
         }
 

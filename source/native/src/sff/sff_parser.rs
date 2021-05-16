@@ -1,21 +1,16 @@
-use std::rc::{ Rc };
-use gdnative::prelude::*;
-use crate::sff::data::{ DataError };
+use crate::sff::data::DataError;
+use crate::sff::image::Palette;
+use crate::sff::sff_common::{load_pal_format_act, load_pal_format_pal, SffData, SffPal};
 use crate::sff::sffv1::read_v1;
 use crate::sff::sffv2::read_v2;
-use crate::sff::sff_common::{
-    SffData,
-    SffPal,
-    load_pal_format_pal,
-    load_pal_format_act
-};
-use crate::sff::image::{ Palette };
+use gdnative::prelude::*;
+use std::rc::Rc;
 
 #[derive(NativeClass)]
 #[inherit(Reference)]
 pub struct SffParser {
     paldata: Vec<SffPal>,
-    sffdata: Vec<SffData>
+    sffdata: Vec<SffData>,
 }
 
 #[methods]
@@ -28,7 +23,12 @@ impl SffParser {
     }
 
     #[export]
-    pub fn get_images(&mut self, _owner: &Reference, path: String, selected_pallete: Variant) -> Variant {
+    pub fn get_images(
+        &mut self,
+        _owner: &Reference,
+        path: String,
+        selected_pallete: Variant,
+    ) -> Variant {
         if !self.select_version(path) {
             godot_print!("error: invalid file. aborting");
             return Variant::new();
@@ -77,14 +77,20 @@ impl SffParser {
         match selected_pallete.get_type() {
             VariantType::I64 => {
                 let selected_palette_index = i64::from_variant(&selected_pallete).unwrap();
-                if selected_palette_index > 0 && selected_palette_index <= self.paldata.len() as i64 {
-                    return Result::Ok(Rc::clone(&self.paldata[selected_palette_index as usize - 1].pal));
+                if selected_palette_index > 0 && selected_palette_index <= self.paldata.len() as i64
+                {
+                    Result::Ok(Rc::clone(
+                        &self.paldata[selected_palette_index as usize - 1].pal,
+                    ))
                 } else if selected_palette_index <= 0 {
-                    return Result::Ok(Rc::new(Palette::empty()));
+                    Result::Ok(Rc::new(Palette::empty()))
                 } else {
-                    return Result::Err(DataError::new(format!("invalid palette index: {}", selected_palette_index)));
+                    Result::Err(DataError::new(format!(
+                        "invalid palette index: {}",
+                        selected_palette_index
+                    )))
                 }
-            },
+            }
             VariantType::GodotString => {
                 let act_extension = ".act";
                 let palette_path = String::from_variant(&selected_pallete).unwrap();
@@ -96,23 +102,23 @@ impl SffParser {
                     palette_result = load_pal_format_pal(palette_path);
                 }
 
-                return palette_result;
-            },
-            _ => {
-                return Result::Err(DataError::new(format!("error: invalid selected pallete argument")));
+                palette_result
             }
+            _ => Result::Err(DataError::new(
+                "error: invalid selected pallete argument".to_string(),
+            )),
         }
     }
 
     fn select_version(&mut self, path: String) -> bool {
         let v2 = read_v2(path.to_string(), &mut self.paldata, &mut self.sffdata);
 
-        if let Ok(_) = v2 {
+        if v2.is_ok() {
             return true;
         } else if let Err(message) = v2 {
-            let v1 = read_v1(path.to_string(), &mut self.paldata, &mut self.sffdata);
+            let v1 = read_v1(path, &mut self.paldata, &mut self.sffdata);
             godot_print!("error: sff v2: {}", message);
-            if let Ok(_) = v1 {
+            if v1.is_ok() {
                 return true;
             } else if let Err(message) = v1 {
                 godot_print!("error: sff v1: {}", message);

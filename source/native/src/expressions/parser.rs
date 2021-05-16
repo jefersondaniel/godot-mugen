@@ -1,8 +1,8 @@
+use crate::expressions::expression::Expression;
+use crate::expressions::token::Token;
+use crate::expressions::tokenizer::tokenize;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::expression::expression::Expression;
-use crate::expression::token::Token;
-use crate::expression::tokenizer::tokenize;
 
 pub struct ParserState {
     cursor: usize,
@@ -15,7 +15,7 @@ impl ParserState {
         ParserState {
             cursor: 0,
             tokens: Vec::new(),
-            error: "".to_string()
+            error: "".to_string(),
         }
     }
 }
@@ -35,7 +35,7 @@ pub fn parse(state_ref: Rc<RefCell<ParserState>>, text: String) -> Rc<Expression
             }
 
             expression(state_ref, 0)
-        },
+        }
         Err(message) => {
             {
                 let mut state = state_ref.borrow_mut();
@@ -49,14 +49,18 @@ pub fn parse(state_ref: Rc<RefCell<ParserState>>, text: String) -> Rc<Expression
 
 pub fn advance(state_ref: Rc<RefCell<ParserState>>) {
     let mut state_mut = state_ref.borrow_mut();
-    state_mut.cursor = state_mut.cursor + 1
+    state_mut.cursor += 1
 }
 
 pub fn advance_and_expects(state_ref: Rc<RefCell<ParserState>>, type_name: &str) {
     advance_and_expects_message(state_ref, type_name, &format!("Expects: {}", type_name)[..])
 }
 
-pub fn advance_and_expects_message(state_ref: Rc<RefCell<ParserState>>, type_name: &str, message: &str) {
+pub fn advance_and_expects_message(
+    state_ref: Rc<RefCell<ParserState>>,
+    type_name: &str,
+    message: &str,
+) {
     if token(Rc::clone(&state_ref)).get_type_name() != type_name {
         let mut state = state_ref.borrow_mut();
         state.error = message.to_string();
@@ -70,7 +74,7 @@ pub fn token(state_ref: Rc<RefCell<ParserState>>) -> Rc<Token> {
         let state = state_ref.borrow_mut();
 
         if state.cursor < state.tokens.len() {
-            return Rc::clone(&state.tokens[state.cursor])
+            return Rc::clone(&state.tokens[state.cursor]);
         }
     }
 
