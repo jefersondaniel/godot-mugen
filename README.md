@@ -13,7 +13,7 @@ Mugen clone using the Godot engine
 1. Clone the repo with the submodules
 
 ```sh
-git clone --recurse-submodules -j2 git@github.com:jefersondaniel/neo-mugen.git
+git clone git@github.com:jefersondaniel/neo-mugen.git
 ```
 
 2. Download game data
@@ -23,21 +23,12 @@ wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-def
 unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
 ```
 
-3. Compile the godot-cpp library
-
-```sh
-cd source/native/godot-cpp
-scons generate_bindings=yes -j4
-```
-
-4. Compile custom GDNative modules
+3. Compile custom GDNative modules
 
 ```sh
 cd source/native
-scons platform=linux bits=64 -j4
+cargo build
 ```
-
-Once the setup is done, only the last step needs to be executed to recompile the modules.
 
 ## Running
 
