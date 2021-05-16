@@ -228,7 +228,7 @@ pub fn read_v2(filename: String, paldata: &mut Vec<SffPal>, sffdata: &mut Vec<Sf
                 _ => ()
             };
 
-            let expected_size = (sprite.w * sprite.h) as usize;
+            let expected_size = (sprite.w as usize * sprite.h as usize) as usize;
             let actual_size = tmp_arr.len();
 
             if expected_size != actual_size {

@@ -44,7 +44,7 @@ impl SffParser {
             }
         }
 
-        if palette.colors.len() > 0 {
+        if !palette.is_empty() {
             for i in 0..self.sffdata.len() {
                 if self.sffdata[i].palindex == 0 {
                     self.sffdata[i].image.borrow_mut().color_table = Rc::clone(&palette);
@@ -79,6 +79,8 @@ impl SffParser {
                 let selected_palette_index = i64::from_variant(&selected_pallete).unwrap();
                 if selected_palette_index > 0 && selected_palette_index <= self.paldata.len() as i64 {
                     return Result::Ok(Rc::clone(&self.paldata[selected_palette_index as usize - 1].pal));
+                } else if selected_palette_index <= 0 {
+                    return Result::Ok(Rc::new(Palette::empty()));
                 } else {
                     return Result::Err(DataError::new(format!("invalid palette index: {}", selected_palette_index)));
                 }
@@ -107,13 +109,13 @@ impl SffParser {
 
         if let Ok(_) = v2 {
             return true;
-        } else if let Err(_) = v2 {
+        } else if let Err(message) = v2 {
             let v1 = read_v1(path.to_string(), &mut self.paldata, &mut self.sffdata);
-
+            godot_print!("error: sff v2: {}", message);
             if let Ok(_) = v1 {
                 return true;
             } else if let Err(message) = v1 {
-                godot_print!("error: {}", message);
+                godot_print!("error: sff v1: {}", message);
             }
         }
 

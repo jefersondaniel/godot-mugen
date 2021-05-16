@@ -51,8 +51,16 @@ impl Palette {
         Palette { colors }
     }
 
+    pub fn empty() -> Palette {
+        Self::new(0)
+    }
+
     pub fn from_colors(colors: Vec<RawColor>) -> Palette {
         Palette { colors }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.colors.is_empty()
     }
 
     pub fn equal(&self, other: &Palette) -> bool {
