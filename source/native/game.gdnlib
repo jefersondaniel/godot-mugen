@@ -6,5 +6,4 @@ symbol_prefix="godot_"
 
 [entry]
 
-X11.64="res://source/native/bin/libgame.linux.debug.64.so"
-Windows.64="res://source/native/bin/game.windows.debug.64.dll"
+X11.64="res://source/native/target/debug/libgame.so"

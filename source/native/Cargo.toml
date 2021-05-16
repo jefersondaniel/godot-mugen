@@ -1,0 +1,12 @@
+[package]
+name = "game"
+version = "0.1.0"
+authors = ["Jeferson Daniel <jeferson.daniel412@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+gdnative = "0.9"
+byteorder = "1.4.3"

@@ -62,7 +62,7 @@ func load_vector_font(path: String):
 func load_fnt_v1(path: String):
     var data = fnt_parser.get_font_data(path)
     var image = data['image']
-    var text = data['text'].get_string_from_utf8()
+    var text = data['text']
 
     var file = File.new()
     file.open("res://font.txt", File.WRITE)
