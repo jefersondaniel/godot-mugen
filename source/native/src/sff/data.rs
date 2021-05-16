@@ -219,6 +219,12 @@ impl BufferAccess for Vec<u8> {
     }
 
     fn subarray(&self, start: usize, end: usize) -> Vec<u8> {
-        self[start..end].to_vec()
+        let mysize = self.len();
+
+        if start > end || end > mysize - 1 || start > mysize - 1 || mysize == 0 {
+            return self[..].to_vec()
+        }
+
+        self[start..end + 1].to_vec()
     }
 }

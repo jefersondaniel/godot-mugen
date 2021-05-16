@@ -2,6 +2,7 @@ use std::rc::{ Rc };
 use gdnative::prelude::*;
 use crate::sff::data::{ DataError };
 use crate::sff::sffv1::read_v1;
+use crate::sff::sffv2::read_v2;
 use crate::sff::sff_common::{
     SffData,
     SffPal,
@@ -102,12 +103,18 @@ impl SffParser {
     }
 
     fn select_version(&mut self, path: String) -> bool {
-        let v1 = read_v1(path, &mut self.paldata, &mut self.sffdata);
+        let v2 = read_v2(path.to_string(), &mut self.paldata, &mut self.sffdata);
 
-        if let Ok(_) = v1 {
+        if let Ok(_) = v2 {
             return true;
-        } else if let Err(message) = v1 {
-            godot_print!("error: {}", message);
+        } else if let Err(_) = v2 {
+            let v1 = read_v1(path.to_string(), &mut self.paldata, &mut self.sffdata);
+
+            if let Ok(_) = v1 {
+                return true;
+            } else if let Err(message) = v1 {
+                godot_print!("error: {}", message);
+            }
         }
 
         false
