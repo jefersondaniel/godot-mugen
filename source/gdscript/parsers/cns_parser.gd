@@ -1,5 +1,3 @@
-extends Object
-
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 var MugenExpression = load('res://source/native/mugen_expression.gdns')

@@ -1,5 +1,3 @@
-extends Object
-
 signal element_update(element, collisions)
 
 var animations = null

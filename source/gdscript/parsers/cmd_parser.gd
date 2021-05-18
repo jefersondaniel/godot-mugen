@@ -1,5 +1,3 @@
-extends Object
-
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var cns_parser = load('res://source/gdscript/parsers/cns_parser.gd').new()
 
@@ -78,7 +76,7 @@ func read(path):
                 if not key_name in item:
                     continue
                 code += KEY_MAP[remap.get(key_name, key_name)]
-                    
+
             actual_step = {
                 'modifier': modifier,
                 'ticks': ticks,

@@ -1,5 +1,3 @@
-extends Object
-
 var HitDef = load('res://source/gdscript/nodes/character/hit_def.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 var HitBy = load('res://source/gdscript/nodes/character/hit_by.gd')
@@ -371,11 +369,11 @@ func handle_posfreeze(controller):
 func handle_assertspecial(controller):
     var character = get_character()
     if controller.has('flag'):
-        character.assert_special(controller['flag'].execute(character))
+        character.assert_special(controller['flag'].to_string())
     if controller.has('flag2'):
-        character.assert_special(controller['flag2'].execute(character))
+        character.assert_special(controller['flag2'].to_string())
     if controller.has('flag3'):
-        character.assert_special(controller['flag3'].execute(character))
+        character.assert_special(controller['flag3'].to_string())
 
 func handle_defencemulset(controller):
     var character = get_character()

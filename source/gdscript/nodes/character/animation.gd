@@ -1,5 +1,3 @@
-extends Object
-
 var identifier: int = 0
 var loopstart: int = 0
 var elements: Array = []

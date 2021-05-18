@@ -1,5 +1,3 @@
-extends Object
-
 var id: int = 0
 var groupno: int = 0
 var imageno: int = 0

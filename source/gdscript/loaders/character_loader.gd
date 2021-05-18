@@ -1,6 +1,6 @@
-extends Object
-
 var Character = load('res://source/gdscript/nodes/character.gd')
+var Data = load('res://source/gdscript/nodes/character/data.gd')
+var Definition = load('res://source/gdscript/nodes/character/definition.gd')
 var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var cns_parser = load('res://source/gdscript/parsers/cns_parser.gd').new()
@@ -8,11 +8,6 @@ var cmd_parser = load('res://source/gdscript/parsers/cmd_parser.gd').new()
 var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
-var st_regex: RegEx
-
-func _init():
-    st_regex = RegEx.new()
-    st_regex.compile("^st[0-9]+$")
 
 func load(path: String, palette, command_manager):
     var sprite_path: String
@@ -21,26 +16,24 @@ func load(path: String, palette, command_manager):
     var state_paths: Array
     var sound_path: String
 
-    var definition = def_parser.read(path)
+    var definition = Definition.new()
+    definition.parse(def_parser.read(path))
+
     var folder = path.substr(0, path.find_last('/'))
-    sprite_path = '%s/%s' % [folder, definition['files']['sprite']]
-    animation_path = '%s/%s' % [folder, definition['files']['anim']]
-    command_path = '%s/%s' % [folder, definition['files']['cmd']]
-    sound_path = '%s/%s' % [folder, definition['files']['sound']]
+    sprite_path = '%s/%s' % [folder, definition.files.sprite]
+    animation_path = '%s/%s' % [folder, definition.files.anim]
+    command_path = '%s/%s' % [folder, definition.files.cmd]
+    sound_path = '%s/%s' % [folder, definition.files.sound]
     state_paths = []
 
-    if 'stcommon' in definition['files']:
-        state_paths.append('%s/%s' % ['res://data/data', definition['files']['stcommon']])
+    if definition.files.stcommon:
+        state_paths.append('%s/%s' % ['res://data/data', definition.files.stcommon])
 
-    for key in ['cmd', 'st']:
-        if key in definition['files']:
-            state_paths.append('%s/%s' % [folder, definition['files'][key]])
+    if definition.files.cmd:
+        state_paths.append('%s/%s' % [folder, definition.files.cmd])
 
-    for key in definition['files']:
-        var result = st_regex.search(key.to_lower())
-        if not result:
-            continue
-        state_paths.append('%s/%s' % [folder, definition['files'][key]])
+    for state in definition.files.states:
+        state_paths.append('%s/%s' % [folder, state])
 
     state_paths.append('res://internal.cns')
 
@@ -67,10 +60,11 @@ func load(path: String, palette, command_manager):
 
     var character = Character.new()
 
-    if 'localcoord' in definition['info']:
-        character.info_localcoord = parse_vector(definition['info']['localcoord'])
+    var data = Data.new()
+    data.parse(consts)
+    var state_defs = consts['states']
 
-    character.setup(consts, images, animations, sounds, command_manager)
+    character.setup(definition, data, state_defs, images, animations, sounds, command_manager)
 
     return character
 

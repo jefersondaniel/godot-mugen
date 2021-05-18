@@ -1,5 +1,3 @@
-extends Object
-
 var input_prefix: String = ''
 var input_map: Dictionary = {
     'U': constants.KEY_U,
@@ -81,7 +79,7 @@ func check_commands(in_hit_pause: bool) -> void:
 
 func update_active_commands() -> void:
     active_commands = []
-    
+
     for key in command_countdown:
         if command_countdown[key] <= 0:
             continue

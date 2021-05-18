@@ -1,5 +1,3 @@
-extends Object
-
 var is_active: bool = false
 var is_target_bind: bool = false
 var facing_flag: int = 0

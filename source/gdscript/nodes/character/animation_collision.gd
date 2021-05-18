@@ -1,5 +1,3 @@
-extends Object
-
 var type: int = 0
 var default: bool = false
 var boxes: Array = []
