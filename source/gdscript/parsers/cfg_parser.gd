@@ -1,5 +1,3 @@
-extends Object
-
 func read(path, allow_lines=false):
     var file = File.new()
     file.open(path, File.READ)

@@ -1,5 +1,3 @@
-extends Object
-
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
 var MugenExpression = load('res://source/native/mugen_expression.gdns')
 

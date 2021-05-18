@@ -15,17 +15,10 @@ var state_manager = null
 var sound_manager = null
 var fight = null
 
-# Constants
-var consts: Dictionary = {
-    'data': {},
-    'size': {},
-    'velocity': {},
-    'movement': {},
-    'quotes': {},
-    'states': {},
-}
-
 # Private variables
+var definition = null
+var data = null
+var state_defs = null
 var info_localcoord: Vector2 = Vector2(320, 240)
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
@@ -86,8 +79,10 @@ var back_width_override: float = 0.0
 var frontedge_width_override: float = 0.0
 var backedge_width_override: float = 0.0
 
-func setup(_consts, images, animations, sounds, _command_manager):
-    consts = _consts
+func setup(_definition, _data, _state_defs, images, animations, sounds, _command_manager):
+    definition = _definition
+    data = _data
+    state_defs = _state_defs
     character_sprite = MugenSprite.new(images, animations)
     command_manager = _command_manager
     state_manager = StateManager.new(self)
@@ -95,8 +90,9 @@ func setup(_consts, images, animations, sounds, _command_manager):
     bind = Bind.new(self)
 
     alive = 1
-    life = consts['data']['life']
-    power = consts['data'].get('power', 1000)
+    life = data.data.life
+    power = data.data.power
+    info_localcoord = definition.info.localcoord
     velocity = Vector2(0, 0)
     acceleration = Vector2(0, 0)
     setup_vars()
@@ -146,33 +142,7 @@ func get_const(fullname):
     if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
         return 1 # TODO: Implement parsing global constants
 
-    var data = fullname.to_lower().split(".", false, 1)
-    var kind = data[0]
-    var name = data[1]
-
-    if kind == 'states':
-        return
-
-    var vector_attr: String
-
-    if name.ends_with('.x') or name.ends_with('.y'):
-        vector_attr = name.substr(name.length() - 1, name.length() - 1)
-        name = name.substr(0, name.length() - 2)
-
-    var result = consts[kind][name]
-    var x: float = 0
-    var y: float = 0
-
-    if typeof(result) == TYPE_ARRAY:
-        x = result[0]
-        y = result[1]
-    else:
-        x = result
-
-    if vector_attr:
-        result = x if vector_attr == 'x' else y
-
-    return result
+    return data.get_value(fullname)
 
 func is_falling():
     return movetype == constants.FLAG_H and received_hit_def and received_hit_def.fall
@@ -302,10 +272,10 @@ func get_front_width() -> float:
     var width = front_width_override * global_scale.x
 
     if is_ground_state():
-        width += float(consts['size']['ground.front']) * global_scale.x
+        width += float(data.size.ground_front) * global_scale.x
 
     if is_air_state():
-        width += float(consts['size']['air.front']) * global_scale.x
+        width += float(data.size.air_front) * global_scale.x
 
     return width
 
@@ -313,10 +283,10 @@ func get_back_width() -> float:
     var width = back_width_override * global_scale.x
 
     if is_ground_state():
-        width += float(consts['size']['ground.back']) * global_scale.x
+        width += float(data.size.ground_back) * global_scale.x
 
     if is_air_state():
-        width += float(consts['size']['air.back']) * global_scale.x
+        width += float(data.size.air_back) * global_scale.x
 
     return width
 
@@ -327,7 +297,7 @@ func is_air_state() -> bool:
     return statetype == constants.FLAG_A
 
 func get_state_def(number: int):
-    return consts['states'][String(number)]
+    return state_defs[String(number)]
 
 func set_context_variable(key, value):
     if key == "vel_x":
@@ -762,9 +732,9 @@ func handle_physics():
     var relative_position: Vector2 = get_relative_position()
 
     if physics == constants.FLAG_S:
-        ground_friction = consts['movement']['stand.friction']
+        ground_friction = data.movement.stand_friction
     elif physics == constants.FLAG_C:
-        ground_friction = consts['movement']['crouch.friction']
+        ground_friction = data.movement.crouch_friction
 
     if physics == constants.FLAG_S or physics == constants.FLAG_C:
         if relative_position.y == 0:

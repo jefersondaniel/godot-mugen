@@ -1,5 +1,3 @@
-extends Object
-
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 
 func read_string(text, allow_lines=false):

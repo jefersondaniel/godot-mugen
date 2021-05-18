@@ -1,5 +1,3 @@
-extends Object
-
 var attribute = null
 var stateno: int = -1000
 var time: int = 0

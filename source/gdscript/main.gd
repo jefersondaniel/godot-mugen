@@ -34,7 +34,7 @@ func load_character(index: int, path: String, palette: int):
     var character = CharacterLoader.load(path, palette, command_manager)
     return character
 
-func load_ai(path: String, palette: int):
+func load_ai(path: String, palette):
     var command_manager = AiCommandManager.new()
     var character = CharacterLoader.load(path, palette, command_manager)
     return character

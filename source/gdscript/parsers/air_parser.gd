@@ -1,5 +1,3 @@
-extends Object
-
 var Animation = load('res://source/gdscript/nodes/character/animation.gd')
 var AnimationElement = load('res://source/gdscript/nodes/character/animation_element.gd')
 var AnimationCollision = load('res://source/gdscript/nodes/character/animation_collision.gd')
@@ -147,7 +145,7 @@ func create_animation(animation_data):
         )
         elements.append(element)
         element_id += 1
-    
+
     for collision_data in animation_data['collisions']:
         var collision = AnimationCollision.new(
             collision_data['type'],
@@ -156,7 +154,7 @@ func create_animation(animation_data):
             collision_data['element']
         )
         collisions.append(collision)
-    
+
     var identifier = int(animation_data['identifier'])
 
     return Animation.new(identifier, animation_data['loopstart'], elements, collisions)

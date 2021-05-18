@@ -1,7 +1,6 @@
-extends Object
-
 var Stage = load('res://source/gdscript/nodes/stage.gd')
 var Background = load('res://source/gdscript/nodes/stage/background.gd')
+var parser_helper = load('res://source/gdscript/helpers/parser_helper.gd').new()
 var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
 var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
@@ -90,7 +89,7 @@ func create_stage(definition: Dictionary, backgrounds: Array):
     if 'resetbg' in stageinfo:
         stage.stageinfo_resetbg = int(stageinfo['resetbg'])
     if 'localcoord' in stageinfo:
-        stage.stageinfo_localcoord = parse_vector(stageinfo['localcoord'])
+        stage.stageinfo_localcoord = parser_helper.parse_vector(stageinfo['localcoord'])
     if 'xscale' in stageinfo:
         stage.stageinfo_xscale = int(stageinfo['xscale'])
     if 'yscale' in stageinfo:
@@ -98,11 +97,11 @@ func create_stage(definition: Dictionary, backgrounds: Array):
     if 'intensity' in shadow:
         stage.shadow_intensity = int(shadow['intensity'])
     if 'color' in shadow:
-        stage.shadow_color = parse_int_array(shadow['color'])
+        stage.shadow_color = parser_helper.parse_int_array(shadow['color'])
     if 'yscale' in shadow:
         stage.shadow_yscale = int(shadow['yscale'])
     if 'fade.range' in shadow:
-        stage.shadow_fade_range = parse_int_array(shadow['fade.range'])
+        stage.shadow_fade_range = parser_helper.parse_int_array(shadow['fade.range'])
     if 'reflect' in reflection:
         stage.reflection_reflect = int(reflection['reflect'])
     if 'bgmusic' in music:
@@ -124,39 +123,39 @@ func create_background(definition: Dictionary, images: Dictionary, animations: D
     if 'positionlink' in definition:
         background.positionlink = int(definition['positionlink'])
     if 'velocity' in definition:
-        background.velocity = parse_vector(definition['velocity'])
+        background.velocity = parser_helper.parse_vector(definition['velocity'])
     if 'sin_x' in definition:
-        background.sin_x = parse_int_array(definition['sin_x'])
+        background.sin_x = parser_helper.parse_int_array(definition['sin_x'])
     if 'sin_y' in definition:
-        background.sin_y = parse_int_array(definition['sin_y'])
+        background.sin_y = parser_helper.parse_int_array(definition['sin_y'])
     if 'spriteno' in definition:
-        background.spriteno = parse_int_array(definition['spriteno'])
+        background.spriteno = parser_helper.parse_int_array(definition['spriteno'])
     if 'id' in definition:
         background.id = int(definition['id'])
     if 'layerno' in definition:
         background.layerno = int(definition['layerno'])
     if 'start' in definition:
-        background.start = parse_vector(definition['start'])
+        background.start = parser_helper.parse_vector(definition['start'])
     if 'delta' in definition:
-        background.delta = parse_vector(definition['delta'])
+        background.delta = parser_helper.parse_vector(definition['delta'])
     if 'trans' in definition:
         background.trans = definition['trans'].to_lower()
     if 'alpha' in definition:
-        background.alpha = parse_vector(definition['alpha'])
+        background.alpha = parser_helper.parse_vector(definition['alpha'])
     if 'mask' in definition:
         background.mask = int(definition['mask'])
     if 'tile' in definition:
-        background.tile = parse_vector(definition['tile'])
+        background.tile = parser_helper.parse_vector(definition['tile'])
     if 'tilespacing' in definition:
-        background.tilespacing = parse_vector(definition['tilespacing'])
+        background.tilespacing = parser_helper.parse_vector(definition['tilespacing'])
     if 'window' in definition:
-        background.window = parse_int_array(definition['window'])
+        background.window = parser_helper.parse_int_array(definition['window'])
     if 'windowdelta' in definition:
-        background.windowdelta = parse_vector(definition['windowdelta'])
+        background.windowdelta = parser_helper.parse_vector(definition['windowdelta'])
     if 'width' in definition:
-        background.width = parse_float_array(definition['width'])
+        background.width = parser_helper.parse_float_array(definition['width'])
     if 'xscale' in definition:
-        var float_array = parse_float_array(definition['xscale'])
+        var float_array = parser_helper.parse_float_array(definition['xscale'])
         background.top_xscale = float_array[0] if float_array.size() > 0 else 1
         background.bottom_xscale = float_array[1] if float_array.size() > 1 else 1
     if 'yscalestart' in definition:
@@ -165,28 +164,3 @@ func create_background(definition: Dictionary, images: Dictionary, animations: D
         background.yscaledelta = float(definition['yscaledelta'])
     # TODO: Implement scalestart and scaledelta
     return background
-
-func parse_int_array(value: String):
-    var raw_values = value.split(',')
-    var values = []
-    for value in raw_values:
-        values.append(int(value))
-    return values
-
-func parse_float_array(value: String):
-    var raw_values = value.split(',')
-    var values = []
-    for value in raw_values:
-        values.append(float(value))
-    return values
-
-func parse_vector(value: String):
-    var raw_values = value.split(',')
-    var vector: Vector2 = Vector2(0, 0)
-
-    if raw_values.size() > 0:
-        vector.x = float(raw_values[0])
-    if raw_values.size() > 1:
-        vector.y = float(raw_values[1])
-
-    return vector

@@ -1,5 +1,3 @@
-extends Object
-
 var state_type: int = 0
 var attack_types: Array = []
 
