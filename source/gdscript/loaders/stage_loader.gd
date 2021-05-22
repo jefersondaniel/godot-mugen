@@ -30,6 +30,7 @@ func create_stage(definition: Dictionary, backgrounds: Array):
     var reflection: Dictionary = definition.get('reflection', {})
     var music: Dictionary = definition.get('music', {})
 
+    # TODO: use bg parser
     stage.backgrounds = backgrounds
 
     if 'name' in info:

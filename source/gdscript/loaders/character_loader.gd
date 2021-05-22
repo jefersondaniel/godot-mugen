@@ -2,6 +2,7 @@ var Character = load('res://source/gdscript/nodes/character.gd')
 var Data = load('res://source/gdscript/nodes/character/data.gd')
 var Definition = load('res://source/gdscript/nodes/character/definition.gd')
 var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
+var data_hydrator = load('res://source/gdscript/helpers/data_hydrator.gd').new()
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
 var cns_parser = load('res://source/gdscript/parsers/cns_parser.gd').new()
 var cmd_parser = load('res://source/gdscript/parsers/cmd_parser.gd').new()
@@ -41,31 +42,22 @@ func load(path: String, palette, command_manager):
     var sounds = snd_parser.get_sounds(sound_path)
     var animations = air_parser.read(animation_path)
     var commands: Array =  cmd_parser.read(command_path)
-    var consts: Dictionary = {
-        'data': {},
-        'size': {},
-        'velocity': {
-            'jump': [0, -8.4],
-        },
-        'movement': {},
-        'quotes': {},
+    var all_constant_data: Dictionary = {
         'states': {},
     }
 
     for path in state_paths:
         var new_states = cns_parser.read(path)
-        merge_states(new_states, consts)
+        merge_states(new_states, all_constant_data)
 
     command_manager.set_commands(commands)
 
-    var character = Character.new()
-
+    var state_defs = all_constant_data['states']
     var data = Data.new()
-    data.parse(consts)
-    var state_defs = consts['states']
+    data_hydrator.hydrate_object(data, all_constant_data)
 
+    var character = Character.new()
     character.setup(definition, data, state_defs, images, animations, sounds, command_manager)
-
     return character
 
 func merge_states(new_states, states):

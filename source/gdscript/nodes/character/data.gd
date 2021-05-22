@@ -1,4 +1,4 @@
-class Data extends "res://source/gdscript/helpers/parser_helper.gd":
+class Data:
     var life: float = 1000.0 # amount of life to start with
     var power: float = 0.0
     var attack: float = 100.0 # attack power (more is stronger)
@@ -10,36 +10,8 @@ class Data extends "res://source/gdscript/helpers/parser_helper.gd":
     var guard_sparkno: float = 40.0 # default guard spark number
     var ko_echo: float = 0.0 # 1 to enable echo on KO
     var volume: float = 0.0 # volume offset (negative for softer)
-    var int_persist_index: float = 60.0
-    var float_persist_index: float = 40.0
-
-    func parse(data: Dictionary):
-        if data.has("life"):
-            life = float(data["life"])
-        if data.has("power"):
-            power = float(data["power"])
-        if data.has("attack"):
-            attack = float(data["attack"])
-        if data.has("defence"):
-            defence = float(data["defence"])
-        if data.has("fall.defence_up"):
-            fall_defence_up = float(data["fall.defence_up"])
-        if data.has("liedown.time"):
-            liedown_time = float(data["liedown.time"])
-        if data.has("airjuggle"):
-            airjuggle = float(data["airjuggle"])
-        if data.has("sparkno"):
-            sparkno = float(data["sparkno"])
-        if data.has("guard.sparkno"):
-            guard_sparkno = float(data["guard.sparkno"])
-        if data.has("ko.echo"):
-            ko_echo = float(data["ko.echo"])
-        if data.has("volume"):
-            volume = float(data["volume"])
-        if data.has("intpersistindex"):
-            int_persist_index = float(data["intpersistindex"])
-        if data.has("floatpersistindex"):
-            float_persist_index = float(data["floatpersistindex"])
+    var intpersistindex: float = 60.0
+    var floatpersistindex: float = 40.0
 
     func get_value(key: String):
         if key == "life":
@@ -65,12 +37,12 @@ class Data extends "res://source/gdscript/helpers/parser_helper.gd":
         if key == "volume":
             return volume
         if key == "intpersistindex":
-            return int_persist_index
+            return intpersistindex
         if key == "floatpersistindex":
-            return float_persist_index
+            return floatpersistindex
         push_error("invalid key: %s" % [key])
 
-class Size extends "res://source/gdscript/helpers/parser_helper.gd":
+class Size:
     var xscale: int = 1 # Horizontal scaling factor.
     var yscale: int = 1 # Vertical scaling factor.
     var ground_back: int = 15 # Player width (back, ground)
@@ -85,36 +57,6 @@ class Size extends "res://source/gdscript/helpers/parser_helper.gd":
     var mid_pos: Vector2 = Vector2(-5, -60) # Approximate position of midsection
     var shadowoffset: int = 0 # Number of pixels to vertically offset the shadow
     var draw_offset: Vector2 = Vector2(0, 0) # Player drawing offset in pixels (x, y). Recommended 0,0
-
-    func parse(data: Dictionary):
-        if data.has("xscale"):
-            xscale = data["xscale"]
-        if data.has("yscale"):
-            yscale = data["yscale"]
-        if data.has("ground.back"):
-            ground_back = data["ground.back"]
-        if data.has("ground.front"):
-            ground_front = data["ground.front"]
-        if data.has("air.back"):
-            air_back = data["air.back"]
-        if data.has("air.front"):
-            air_front = data["air.front"]
-        if data.has("height"):
-            height = data["height"]
-        if data.has("attack.dist"):
-            attack_dist = data["attack.dist"]
-        if data.has("proj.attack.dist"):
-            proj_attack_dist = data["proj.attack.dist"]
-        if data.has("proj.doscale"):
-            proj_doscale = data["proj.doscale"]
-        if data.has("head.pos"):
-            head_pos = parse_vector(data["head.pos"])
-        if data.has("mid.pos"):
-            mid_pos = parse_vector(data["mid.pos"])
-        if data.has("shadowoffset"):
-            shadowoffset = data["shadowoffset"]
-        if data.has("draw.offset"):
-            draw_offset = parse_vector(data["draw.offset"])
 
     func get_value(key: String):
         if key == "xscale":
@@ -168,46 +110,6 @@ class Velocity extends "res://source/gdscript/helpers/parser_helper.gd":
     var air_gethit_airrecover_up: float = -2 # Extra y-velocity for holding up during air recovery **MUGEN 1.0**
     var air_gethit_airrecover_down: float = 1.5 # Extra y-velocity for holding down during air recovery **MUGEN 1.0**
 
-    func parse(data: Dictionary):
-        if data.has("walk.fwd"):
-            walk_fwd = parse_vector(data["walk.fwd"])
-        if data.has("walk.back"):
-            walk_back = parse_vector(data["walk.back"])
-        if data.has("run.fwd"):
-            run_fwd = parse_vector(data["run.fwd"])
-        if data.has("run.back"):
-            run_back = parse_vector(data["run.back"])
-        if data.has("jump.neu"):
-            jump_neu = parse_vector(data["jump.neu"])
-        if data.has("jump.back"):
-            jump_back = parse_vector(data["jump.back"])
-        if data.has("jump.fwd"):
-            jump_fwd = parse_vector(data["jump.fwd"])
-        if data.has("runjump.back"):
-            runjump_back = parse_vector(data["runjump.back"])
-        if data.has("runjump.fwd"):
-            runjump_fwd = parse_vector(data["runjump.fwd"])
-        if data.has("airjump.neu"):
-            airjump_neu = parse_vector(data["airjump.neu"])
-        if data.has("airjump.back"):
-            airjump_back = parse_vector(data["airjump.back"])
-        if data.has("airjump.fwd"):
-            airjump_fwd = parse_vector(data["airjump.fwd"])
-        if data.has("air.gethit.groundrecover"):
-            air_gethit_groundrecover = parse_vector(data["air.gethit.groundrecover"])
-        if data.has("air.gethit.airrecover.mul"):
-            air_gethit_airrecover_mul = parse_vector(data["air.gethit.airrecover.mul"])
-        if data.has("air.gethit.airrecover.add"):
-            air_gethit_airrecover_add = parse_vector(data["air.gethit.airrecover.add"])
-        if data.has("air.gethit.airrecover.back"):
-            air_gethit_airrecover_back = float(data["air.gethit.airrecover.back"])
-        if data.has("air.gethit.airrecover.fwd"):
-            air_gethit_airrecover_fwd = float(data["air.gethit.airrecover.fwd"])
-        if data.has("air.gethit.airrecover.up"):
-            air_gethit_airrecover_up = float(data["air.gethit.airrecover.up"])
-        if data.has("air.gethit.airrecover.down"):
-            air_gethit_airrecover_down = float(data["air.gethit.airrecover.down"])
-
     func get_value(key: String):
         if key == "walk.fwd":
             return walk_fwd
@@ -251,7 +153,7 @@ class Velocity extends "res://source/gdscript/helpers/parser_helper.gd":
             return air_gethit_airrecover_down
         push_error("invalid key: %s" % [key])
 
-class Movement extends "res://source/gdscript/helpers/parser_helper.gd":
+class Movement:
     var airjump_num: int = 1 # Number of air jumps allowed (opt)
     var airjump_height: int = 35 # Minimum distance from ground before you can air jump (opt)
     var yaccel: float = 0.44 # Vertical acceleration
@@ -269,42 +171,6 @@ class Movement extends "res://source/gdscript/helpers/parser_helper.gd":
     var down_bounce_yaccel: float = 0.4 # Vertical acceleration for player bouncing off the ground **MUGEN 1.0**
     var down_bounce_groundlevel: float = 12 # Y-position at which player bouncing off the ground touches the ground again **MUGEN 1.0**
     var down_friction_threshold: float = 0.05 # If the player's speed drops below this threshold while lying down, stop his movement **MUGEN 1.0**
-
-    func parse(data: Dictionary):
-        if data.has("airjump.num"):
-            airjump_num = int(data["airjump.num"])
-        if data.has("airjump.height"):
-            airjump_height = int(data["airjump.height"])
-        if data.has("yaccel"):
-            yaccel = float(data["yaccel"])
-        if data.has("stand.friction"):
-            stand_friction = float(data["stand.friction"])
-        if data.has("crouch.friction"):
-            crouch_friction = float(data["crouch.friction"])
-        if data.has("stand.friction.threshold"):
-            stand_friction_threshold = float(data["stand.friction.threshold"])
-        if data.has("crouch.friction.threshold"):
-            crouch_friction_threshold = float(data["crouch.friction.threshold"])
-        if data.has("air.gethit.groundlevel"):
-            air_gethit_groundlevel = float(data["air.gethit.groundlevel"])
-        if data.has("air.gethit.groundrecover.ground.threshold"):
-            air_gethit_groundrecover_ground_threshold = float(data["air.gethit.groundrecover.ground.threshold"])
-        if data.has("air.gethit.groundrecover.groundlevel"):
-            air_gethit_groundrecover_groundlevel = float(data["air.gethit.groundrecover.groundlevel"])
-        if data.has("air.gethit.airrecover.threshold"):
-            air_gethit_airrecover_threshold = float(data["air.gethit.airrecover.threshold"])
-        if data.has("air.gethit.airrecover.yaccel"):
-            air_gethit_airrecover_yaccel = float(data["air.gethit.airrecover.yaccel"])
-        if data.has("air.gethit.trip.groundlevel"):
-            air_gethit_trip_groundlevel = float(data["air.gethit.trip.groundlevel"])
-        if data.has("down.bounce.offset"):
-            down_bounce_offset = parse_vector(data["down.bounce.offset"])
-        if data.has("down.bounce.yaccel"):
-            down_bounce_yaccel = float(data["down.bounce.yaccel"])
-        if data.has("down.bounce.groundlevel"):
-            down_bounce_groundlevel = float(data["down.bounce.groundlevel"])
-        if data.has("down.friction.threshold"):
-            down_friction_threshold = float(data["down.friction.threshold"])
 
     func get_value(key: String):
         if key == "airjump.num":
@@ -342,27 +208,6 @@ class Movement extends "res://source/gdscript/helpers/parser_helper.gd":
         if key == "down.friction.threshold":
             return down_friction_threshold
 
-var data = null
-var size = null
-var velocity = null
-var movement = null
-var quotes: Dictionary = {}
-
-func parse(user_data: Dictionary):
-    data = Data.new()
-    data.parse(user_data.get("data", {}))
-
-    size = Size.new()
-    size.parse(user_data.get("size", {}))
-
-    velocity = Velocity.new()
-    velocity.parse(user_data.get("velocity", {}))
-
-    movement = Movement.new()
-    movement.parse(user_data.get("movement", {}))
-
-    quotes = user_data.get("quotes", {})
-
 func get_value(key: String):
     var pieces = Array(key.split("."))
     var prefix = pieces.pop_front()
@@ -390,3 +235,9 @@ func get_value(key: String):
         result = result.x if vector_attribute == "x" else result.y
 
     return result
+
+var data: Data = Data.new()
+var size: Size = Size.new()
+var velocity: Velocity = Velocity.new()
+var movement: Movement = Movement.new()
+var quotes: Dictionary = {}
