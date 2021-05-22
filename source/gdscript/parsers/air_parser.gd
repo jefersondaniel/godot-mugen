@@ -45,6 +45,9 @@ func read(path):
                 'loopstart': 0
             }
             continue
+        elif line.begins_with('['):
+            # Ignore files with mixed animations and other configurations
+            current_animation = null
 
         if not current_animation:
             continue
