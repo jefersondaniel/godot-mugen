@@ -2,55 +2,70 @@ var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var fnt_parser = load('res://source/native/fnt_parser.gdns').new()
 
-func load(path: String):
+func load(path: String, color_bank: int):
     if path.to_lower().ends_with(".def"):
-        return load_fnt_v2(path)
+        return load_fnt_v2(path, color_bank)
     if path.to_lower().ends_with(".fnt"):
         return load_fnt_v1(path)
 
     printerr("Unsupported format: %s" % [path])
 
-func load_fnt_v2(path: String):
+func load_fnt_v2(path: String, color_bank: int):
     var folder = path.substr(0, path.find_last('/'))
     var definition = def_parser.read(path)
-    var result = {}
     var filename = definition['def']['file']
     var font = null
     var size = _parse_vector(definition['def'], 'size', Vector2(0, 0))
     var spacing = _parse_vector(definition['def'], 'spacing', Vector2(0, 0))
+    var offset = _parse_vector(definition['def'], 'offset', Vector2(0, 0))
+    var type: String = ''
 
     if filename.to_lower().ends_with('.sff'):
-        font = load_sff_font('%s/%s' % [folder, filename])
+        type = 'bitmap'
+        font = load_sff_font('%s/%s' % [folder, filename], size, color_bank)
         font.height = size.y
-        # TODO: Support spacing and width
     else:
+        type = 'vector'
         font = load_vector_font('%s/%s' % [folder, filename])
         font.size = size.y
         font.set_spacing(DynamicFont.SPACING_TOP, spacing.y / 2)
         font.set_spacing(DynamicFont.SPACING_BOTTOM, spacing.y / 2)
         # TODO: Support blend
 
-    result['font'] = font
+    return {
+        'type': type,
+        'font': font,
+        'size': size,
+        'spacing': spacing,
+        'offset': offset,
+    }
 
-    return result
-
-func load_sff_font(path: String):
+func load_sff_font(path: String, size: Vector2, color_bank: int):
     var font = BitmapFont.new()
-    var data: Dictionary = sff_parser.get_images(path, 0)
+    var palettes = sff_parser.read_palettes(path)
+    var palette = palettes[color_bank + 1]
+    var data: Dictionary = sff_parser.read_images(path, palette, PoolIntArray([0]))
     var texture_id: int = 0
     for key in data.keys():
         var key_code: int = int(key.split('-')[1])
         var image = data[key]['image']
         var texture = ImageTexture.new()
-        texture.create_from_image(image, 0)
+        texture.create_from_image(image)
         font.add_texture(texture)
         font.add_char(
             key_code,
             texture_id,
-            Rect2(Vector2(0, 0), image.get_size()),
-            Vector2(data[key]['x'], data[key]['y'])
+            Rect2(Vector2(0, 0), image.get_size())
         )
         texture_id += 1
+
+    font.add_texture(_create_space_texture(size))
+
+    font.add_char(
+        " ".ord_at(0),
+        texture_id,
+        Rect2(Vector2(0, 0), size)
+    )
 
     return font
 
@@ -78,7 +93,7 @@ func load_fnt_v1(path: String):
 
     var font = BitmapFont.new()
     var texture = ImageTexture.new()
-    texture.create_from_image(image, 0)
+    texture.create_from_image(image)
     font.add_texture(texture)
     font.height = size.y
 
@@ -111,12 +126,15 @@ func load_fnt_v1(path: String):
     font.add_char(
         " ".ord_at(0),
         1,
-        Rect2(Vector2(0, 0), size),
-        Vector2(0, 0)
+        Rect2(Vector2(0, 0), size)
     )
 
     return {
-        'font': font
+        'type': 'bitmap',
+        'font': font,
+        'size': size,
+        'spacing': spacing,
+        'offset': offset,
     }
 
 func _parse_vector(data: Dictionary, key: String, default_value):

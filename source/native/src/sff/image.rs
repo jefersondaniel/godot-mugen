@@ -24,17 +24,6 @@ impl RawColor {
         }
     }
 
-    // pub fn rgba(&self) -> u32 {
-    //     let mut result: u32 = 0;
-
-    //     result ^= (self.a as u32) << 24;
-    //     result ^= (self.b as u32) << 16;
-    //     result ^= (self.g as u32) << 8;
-    //     result ^= self.r as u32;
-
-    //     return result;
-    // }
-
     pub fn equal(&self, other: &RawColor) -> bool {
         self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
     }
@@ -49,10 +38,6 @@ impl Palette {
     pub fn new(num_colors: usize) -> Palette {
         let colors = vec![RawColor::empty(); num_colors];
         Palette { colors }
-    }
-
-    pub fn empty() -> Palette {
-        Self::new(0)
     }
 
     pub fn from_colors(colors: Vec<RawColor>) -> Palette {

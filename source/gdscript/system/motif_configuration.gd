@@ -27,6 +27,22 @@ class Files:
     var font6: String = ""
     var font6_height: int = 0
 
+    func get_font_reference(index: int) -> Array:
+        if index == 1:
+            return [font1, font1_height]
+        if index == 2:
+            return [font2, font2_height]
+        if index == 3:
+            return [font3, font3_height]
+        if index == 4:
+            return [font4, font4_height]
+        if index == 5:
+            return [font5, font5_height]
+        if index == 6:
+            return [font6, font6_height]
+        push_error("Invalid font index: %d" % [index])
+        return []
+
 class BgmConfig:
     var bgm: String = ""
     var bgm_volume: int = 100
@@ -44,8 +60,8 @@ class TitleInfo:
     var fadein_time: int = 0
     var fadeout_time: int = 0
     var menu_pos: Vector2 = Vector2(0, 0)
-    var menu_item_font: Array = []
-    var menu_item_active_font: Array = []
+    var menu_item_font: PoolIntArray = PoolIntArray([])
+    var menu_item_active_font: PoolIntArray = PoolIntArray([])
     var menu_item_spacing: Vector2 = Vector2(0, 0)
     var menu_itemname_arcade: String = "ARCADE"
     var menu_itemname_versus: String = "VERSUS"
@@ -61,7 +77,7 @@ class TitleInfo:
     var menu_window_margins_y: Vector2 = Vector2(0, 0)
     var menu_window_visibleitems: int = 5
     var menu_boxcursor_visible: int = 0
-    var menu_boxcursor_coords: Array = []
+    var menu_boxcursor_coords: PoolIntArray = []
     var cursor_move_snd: Array = []
     var cursor_done_snd: Array = []
     var cancel_snd: Array = []
@@ -244,6 +260,7 @@ var option_info: OptionInfo
 # Resources
 var animations: Dictionary = {}
 var backgrounds: Dictionary = {}
+var sounds: Dictionary = {}
 
 func _init():
     info = Info.new()
