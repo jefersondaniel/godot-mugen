@@ -2,9 +2,12 @@ use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
 use crate::sff::image::{Palette, RawColor, RawImage};
 use crate::sff::lz5::decode_lz5;
 use crate::sff::rle5::{decode_rle5, decode_rle8};
-use crate::sff::sff_common::{SffData, SffPal};
+use crate::sff::sff_common::{SffData, SffPal, SffMetadata, SffReference};
+use gdnative::Ref;
 use gdnative::api::file::File;
+use gdnative::prelude::Unique;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[allow(dead_code)]
@@ -123,6 +126,10 @@ impl PaletteHeader {
         }
     }
 }
+struct FileHandler {
+    file: Rc<Ref<File, Unique>>,
+    head: FileHeader
+}
 
 fn matrix_to_pal(reader: &mut dyn DataReader, size: usize) -> Rc<Palette> {
     let mut colors: Vec<RawColor> = Vec::new();
@@ -136,17 +143,13 @@ fn matrix_to_pal(reader: &mut dyn DataReader, size: usize) -> Rc<Palette> {
     Rc::new(Palette::from_colors(colors))
 }
 
-pub fn read_v2(
-    filename: String,
-    paldata: &mut Vec<SffPal>,
-    sffdata: &mut Vec<SffData>,
-) -> Result<(), DataError> {
-    let file = File::new();
+fn open(filename: &str) -> Result<FileHandler, DataError> {
+    let file = Rc::new(File::new());
     let result = file.open(filename, File::READ);
 
     if let Err(detail) = result {
         return Result::Err(DataError::new(format!(
-            "Error opening sff file: {}",
+            "error opening file: {}",
             detail
         )));
     }
@@ -157,7 +160,7 @@ pub fn read_v2(
     if head.signature != "ElecbyteSpr" {
         file.close();
         return Result::Err(DataError::new(format!(
-            "SffV2::read invalid signature: {}",
+            "invalid signature: {}",
             head.signature
         )));
     }
@@ -165,13 +168,104 @@ pub fn read_v2(
     if head.verhi != 2 {
         file.close();
         return Result::Err(DataError::new(format!(
-            "SffV2::read invalid version: {}.{}.{}.{}",
+            "invalid version: {}.{}.{}.{}",
             head.verhi, head.verlo1, head.verlo2, head.verlo3
         )));
     }
 
+    Result::Ok(FileHandler {
+        file,
+        head
+    })
+}
+
+pub fn read_metadata(filename: &str) -> Result<SffMetadata, DataError> {
+    let open_result = open(filename);
+
+    if let Err(error) = open_result {
+        return Result::Err(error);
+    }
+
+    let handler = open_result.expect("Invalid open result");
+    let file = handler.file;
+    let head = handler.head;
+    let mut reader = FileReader::new(&file);
+    let mut images: Vec<SffReference> = Vec::new();
+
+    file.seek(head.first_sprnode_offset as i64);
+
+    for _ in 0..head.total_frames {
+        let sprite_header = SpriteHeader::read(&mut reader);
+
+        images.push(SffReference {
+            groupno: sprite_header.groupno,
+            imageno: sprite_header.imageno
+        });
+    }
+
+    file.close();
+
+    Result::Ok(SffMetadata { major_version: 2, images })
+}
+
+pub fn read_palettes(filename: &str) -> Result<Vec<Rc<Palette>>, DataError> {
+    let open_result = open(filename);
+
+    if let Err(error) = open_result {
+        return Result::Err(error);
+    }
+
+    let handler = open_result.expect("Invalid open result");
+    let file = handler.file;
+    let head = handler.head;
+    let mut result: Vec<Rc<Palette>> = Vec::new();
+    let mut palnode: Vec<PaletteHeader> = Vec::new();
+    let mut reader = FileReader::new(&file);
+
+    file.seek(head.first_palnode_offset as i64);
+
+    for _ in 0..head.total_palettes {
+        palnode.push(PaletteHeader::read(&mut reader));
+    }
+
+    for palette in palnode.iter() {
+        let pal: Rc<Palette> = match palette.len {
+            0 => Rc::clone(&result[palette.linked as usize]),
+            len if len > 0 => {
+                let mut offset: usize = head.ldata_offset as usize;
+                offset += palette.offset as usize;
+                file.seek(offset as i64);
+
+                let tmp_arr = reader.get_buffer((palette.numcols * 4) as usize);
+                let mut tmp_arr_reader = BufferReader::new(&tmp_arr);
+                matrix_to_pal(&mut tmp_arr_reader, palette.numcols as usize)
+            }
+            _ => Rc::new(Palette::new(0)),
+        };
+
+        result.push(pal);
+    }
+
+    Result::Ok(result)
+}
+
+pub fn read_images(filename: &str, groups: &[i16]) -> Result<Vec<SffData>, DataError> {
+    let open_result = open(filename);
+
+    if let Err(error) = open_result {
+        return Result::Err(error);
+    }
+
+    let handler = open_result.expect("Invalid open result");
+    let file = handler.file;
+    let head = handler.head;
+    let mut reader = FileReader::new(&file);
+
+    let mut sffdata: HashMap<i32, SffData> = HashMap::new();
+    let mut paldata: Vec<SffPal> = Vec::new();
     let mut sprnode: Vec<SpriteHeader> = Vec::new();
     let mut palnode: Vec<PaletteHeader> = Vec::new();
+    let mut requested_indexes: Vec<i32> = Vec::new();
 
     file.seek(head.first_palnode_offset as i64);
 
@@ -181,8 +275,17 @@ pub fn read_v2(
 
     file.seek(head.first_sprnode_offset as i64);
 
-    for _ in 0..head.total_frames {
-        sprnode.push(SpriteHeader::read(&mut reader));
+    for counter in 0..head.total_frames {
+        let spr = SpriteHeader::read(&mut reader);
+
+        if groups.contains(&spr.groupno) {
+            requested_indexes.push(counter as i32);
+            if spr.len == 0 {
+                requested_indexes.push(spr.linked as i32);
+            }
+        }
+
+        sprnode.push(spr);
     }
 
     for palette in palnode.iter() {
@@ -211,13 +314,17 @@ pub fn read_v2(
     }
 
     //reading images
-    for sprite in sprnode.iter() {
+    for (counter, sprite) in sprnode.iter().enumerate() {
+        if !groups.is_empty() && !requested_indexes.contains(&(counter as i32)) {
+            continue;
+        }
+
         let linked;
         let mut image = Rc::new(RefCell::new(RawImage::empty()));
         if sprite.len == 0 {
             //linked image
             linked = -1;
-            image = Rc::clone(&sffdata[sprite.linked as usize].image);
+            image = Rc::clone(&sffdata[&(sprite.linked as i32)].image);
         } else {
             //"normal" image
             let mut offset: usize = 0;
@@ -263,7 +370,7 @@ pub fn read_v2(
             linked = -1;
         }
 
-        sffdata.push(SffData {
+        sffdata.insert(counter as i32, SffData {
             groupno: sprite.groupno as i32,
             imageno: sprite.imageno as i32,
             x: sprite.x as i32,
@@ -274,15 +381,21 @@ pub fn read_v2(
         });
     }
 
-    for (a, item) in sffdata.iter().enumerate() {
+    for (a, item) in sffdata.iter_mut() {
         let b = item.palindex as usize;
         if !paldata[b].is_used {
             paldata[b].is_used = true;
-            paldata[b].usedby = a as i32;
+            paldata[b].usedby = *a;
         }
     }
 
     file.close();
 
-    Result::Ok(())
+    let mut result: Vec<SffData> = Vec::new();
+
+    for value in sffdata.values() {
+        result.push(value.clone());
+    }
+
+    Result::Ok(result)
 }

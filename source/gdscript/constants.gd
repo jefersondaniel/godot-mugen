@@ -1,7 +1,7 @@
 extends Node
 
 var TARGET_FPS: int = 60
-var WINDOW_SIZE = Vector2(640, 480)
+var WINDOW_SIZE = Vector2(1280, 720)
 
 var KEY_MODIFIER_MUST_BE_HELD: int = 1 << 1
 var KEY_MODIFIER_DETECT_AS_4WAY: int = 1 << 2

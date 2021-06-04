@@ -1,6 +1,7 @@
 use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
 use crate::snd::structs::{FileHeader, SubHeader, WavHeader};
 use gdnative::api::file::File;
+use gdnative::api::audio_stream_sample::AudioStreamSample;
 use gdnative::prelude::*;
 
 #[derive(NativeClass)]
@@ -14,13 +15,13 @@ impl SndParser {
     }
 
     #[export]
-    pub fn get_sounds(&self, _owner: &Reference, path: String) -> Variant {
+    pub fn read_sounds(&self, _owner: &Reference, path: String) -> Variant {
         let result = self.read_file(path);
 
         if let Ok(dict) = result {
             return dict.to_variant();
         } else if let Err(message) = result {
-            godot_print!("error: {}", message);
+            godot_error!("{}", message);
         }
 
         Variant::new()
@@ -67,19 +68,20 @@ impl SndParser {
             let mut tmp_arr_reader = BufferReader::new(&tmp_arr);
             let wav_header = WavHeader::read(&mut tmp_arr_reader);
 
-            let dict = Dictionary::new();
-            dict.insert("groupno", subheader.groupno);
-            dict.insert("soundno", subheader.soundno);
-            dict.insert("audio_format", wav_header.audio_format);
-            dict.insert("num_channels", wav_header.num_channels);
-            dict.insert("sample_rate", wav_header.sample_rate);
-            dict.insert("byte_rate", wav_header.byte_rate);
-            dict.insert("block_align", wav_header.block_align);
-            dict.insert("bits_per_sample", wav_header.bits_per_sample);
-            dict.insert("data", to_signed(&tmp_arr));
+            let stream = AudioStreamSample::new();
+            stream.set_data(to_signed(&tmp_arr));
+            stream.set_mix_rate(wav_header.sample_rate as i64);
+            stream.set_stereo(wav_header.num_channels == 2);
+            match wav_header.bits_per_sample {
+                8 => stream.set_format(AudioStreamSample::FORMAT_8_BITS),
+                16 => stream.set_format(AudioStreamSample::FORMAT_16_BITS),
+                _ => {
+                    godot_warn!("invalid bits_per_sample: {}", wav_header.bits_per_sample);
+                }
+            };
 
             let key = format!("{}-{}", subheader.groupno, subheader.soundno);
-            result.insert(key, dict);
+            result.insert(key, stream);
 
             if subheader.next > 0 && subheader.next < file.get_len() as u32 {
                 file.seek(subheader.next as i64);

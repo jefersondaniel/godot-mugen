@@ -1,43 +1,25 @@
-extends Node
+extends Node2D
 
-var UserCommandManager = load('res://source/gdscript/nodes/character/user_command_manager.gd')
-var AiCommandManager = load('res://source/gdscript/nodes/character/ai_command_manager.gd')
-var CharacterLoader = load('res://source/gdscript/loaders/character_loader.gd').new()
-var StageLoader = load('res://source/gdscript/loaders/stage_loader.gd').new()
-var Fight = load('res://source/gdscript/nodes/fight.gd')
-var Stage = load('res://source/gdscript/nodes/stage.gd')
-var fight = null
-var stage = null
+var Kernel = load('res://source/gdscript/system/kernel.gd')
+var AudioPlayer = load('res://source/gdscript/system/audio_player.gd')
+var TitleScreen = load('res://source/gdscript/nodes/screens/title_screen.gd')
+var kernel = null
+var current_screen = null
+var audio_player = null
 
 func _init():
-    Engine.set_target_fps(constants.TARGET_FPS)
+    kernel = Kernel.new()
+    kernel.load()
+    audio_player = AudioPlayer.new()
+    show_title_screen()
+    add_child(audio_player)
 
-    fight = Fight.new()
-    stage = self.load_stage("res://data/stages/kfm.def")
+func show_title_screen():
+    var screen = TitleScreen.new()
+    screen.setup(kernel)
+    set_current_screen(screen)
 
-    fight.set_stage(stage)
-
-    var character1 = load_character(1, 'res://data/chars/kfm/kfm.def', 0)
-    fight.add_character(character1, 1)
-
-    var character2 = load_ai('res://data/chars/kfm/kfm.def', 3)
-    fight.add_character(character2, 2)
-
-    self.add_child(self.fight)
-
-func _physics_process(_delta: float):
-    stage.update_tick()
-    fight.update_tick()
-
-func load_character(index: int, path: String, palette: int):
-    var command_manager = UserCommandManager.new('P%s_' % [index])
-    var character = CharacterLoader.load(path, palette, command_manager)
-    return character
-
-func load_ai(path: String, palette):
-    var command_manager = AiCommandManager.new()
-    var character = CharacterLoader.load(path, palette, command_manager)
-    return character
-
-func load_stage(path: String):
-    return StageLoader.load(path)
+func set_current_screen(screen):
+    if current_screen:
+        remove_child(current_screen)
+    add_child(screen)
