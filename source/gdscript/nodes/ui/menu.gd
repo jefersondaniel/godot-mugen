@@ -20,6 +20,7 @@ var cursor_texture = null
 var selected_action_index: int = 0
 var custom_rect = null
 var scroller = null
+var action_timestamp: int = 0
 
 class Cursor extends Node2D:
     var texture = null
@@ -48,7 +49,7 @@ func setup():
         cursor_box.position,
         Vector2(
             cursor_box.size.x,
-            item_spacing.y * window_visibleitems + item_spacing.y / 2
+            item_spacing.y * window_visibleitems + item_spacing.y / 3
         )
     )
 
@@ -72,12 +73,24 @@ func _process(delta: float):
     update_scroller_position(delta)
     update()
 
+func is_action_just_pressed(action: String):
+    var result = user_input.any.is_action_pressed(action)
+
+    if user_input.any.is_action_just_released(action):
+        action_timestamp = 0
+
+    if result and 200 < OS.get_system_time_msecs() - action_timestamp:
+        action_timestamp = OS.get_system_time_msecs()
+        return true
+
+    return false
+
 func update_selected_action_index():
     var old_selected_action_index = selected_action_index
-    if user_input.any.is_action_just_pressed("D"):
+    if is_action_just_pressed("D"):
         if selected_action_index + 1 < actions.size():
             selected_action_index += 1
-    if user_input.any.is_action_just_pressed("U"):
+    if is_action_just_pressed("U"):
         if selected_action_index > 0:
             selected_action_index -= 1
     if old_selected_action_index != selected_action_index:
@@ -97,9 +110,9 @@ func update_scroller_position(delta: float):
     var top_edge_diff  = get_cursor_top_edge() - get_scroll_top_edge()
     var bottom_edge_diff = get_cursor_bottom_edge() - get_scroll_bottom_edge()
     if top_edge_diff < 0:
-        scroller.position.y = lerp(scroller.position.y, scroller.position.y - top_edge_diff, 0.2)
+        scroller.position.y = lerp(scroller.position.y, scroller.position.y + cursor_box.size.y, 0.2)
     if bottom_edge_diff > 0:
-        scroller.position.y = lerp(scroller.position.y, scroller.position.y - bottom_edge_diff, 0.2)
+        scroller.position.y = lerp(scroller.position.y, scroller.position.y - cursor_box.size.y, 0.2)
 
 func update_label_font(index: int, active: bool):
     var action = actions[index]

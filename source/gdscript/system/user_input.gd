@@ -10,6 +10,9 @@ class Controller:
     func is_action_just_pressed(action):
         return Input.is_action_just_pressed(prefix + action)
 
+    func is_action_just_released(action):
+        return Input.is_action_just_released(prefix + action)
+
 class MergedController:
     var controls: Array = []
 
@@ -25,6 +28,12 @@ class MergedController:
     func is_action_just_pressed(action):
         for control in controls:
             if control.is_action_just_pressed(action):
+                return true
+        return false
+
+    func is_action_just_released(action):
+        for control in controls:
+            if control.is_action_just_released(action):
                 return true
         return false
 

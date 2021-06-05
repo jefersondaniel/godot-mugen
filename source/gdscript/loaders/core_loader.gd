@@ -2,6 +2,7 @@ var data_hydrator = load('res://source/gdscript/helpers/data_hydrator.gd').new()
 var air_parser = load("res://source/gdscript/parsers/air_parser.gd").new()
 var bg_parser = load("res://source/gdscript/parsers/bg_parser.gd").new()
 var cfg_parser = load("res://source/gdscript/parsers/cfg_parser.gd").new()
+var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
 var CoreConfiguration = load("res://source/gdscript/system/core_configuration.gd")
 var MotifConfiguration = load("res://source/gdscript/system/motif_configuration.gd")
@@ -12,7 +13,7 @@ func load(base_path: String):
     var core_configuration = load_core_configuration(core_path)
 
     var motif_path = "%s/%s" % [base_path, core_configuration.options.motif]
-    var motif = load_motif_configuration(motif_path, system_path)
+    var motif = load_motif_configuration(motif_path)
 
     core_configuration.motif_configuration = motif
 
@@ -24,7 +25,7 @@ func load_core_configuration(path: String):
     data_hydrator.hydrate_object(result, sections)
     return result
 
-func load_motif_configuration(path: String, system_path: String):
+func load_motif_configuration(path: String):
     var sections = cfg_parser.read(path, false, true)
     var result = MotifConfiguration.new()
     data_hydrator.hydrate_object(result, sections)
@@ -36,9 +37,28 @@ func load_motif_configuration(path: String, system_path: String):
     result.backgrounds = backgrounds
 
     if result.files.snd:
-        var sound_path = "%s/%s" % [system_path, result.files.snd]
+        var sound_path = find_file_path(path, result.files.snd)
         var sounds = snd_parser.read_sounds(sound_path)
         if sounds:
             result.sounds = sounds
 
+    if result.files.spr:
+        var spr_path = find_file_path(path, result.files.spr)
+        var images = sff_parser.read_images(spr_path, null, null)
+        if images:
+            result.images = images
+
     return result
+
+func find_file_path(referrer: String, name: String) -> String:
+    var pieces = referrer.split("/")
+    var file_check = File.new()
+    var base_path: String = "res://"
+
+    while pieces.size() > 1:
+        pieces.remove(pieces.size() - 1)
+        base_path = pieces.join("/")
+        if file_check.file_exists("%s/%s" % [base_path, name]):
+            return "%s/%s" % [base_path, name]
+
+    return "%s/%s" % [base_path, name]
