@@ -261,6 +261,7 @@ var option_info: OptionInfo
 var animations: Dictionary = {}
 var backgrounds: Dictionary = {}
 var sounds: Dictionary = {}
+var images: Dictionary = {}
 
 func _init():
     info = Info.new()

@@ -1,10 +1,12 @@
 var CoreLoader = load('res://source/gdscript/loaders/core_loader.gd').new()
 var FontLoader = load('res://source/gdscript/loaders/font_loader.gd').new()
+var ShaderFactory = load('res://source/gdscript/system/shader_factory.gd')
 
 var core_configuration = null
 var base_path = "res://data"
 var font_cache: Dictionary = {}
 var audio_player = null
+var shader_factory = ShaderFactory.new()
 
 func load():
     core_configuration = CoreLoader.load(base_path)
@@ -15,6 +17,9 @@ func get_motif():
 func get_sound(sound_def: Array):
     var sounds = core_configuration.motif_configuration.sounds
     return sounds["%s-%s" % [sound_def[0], sound_def[1]]]
+
+func get_images() -> Dictionary:
+    return core_configuration.motif_configuration.images
 
 func get_font(font_def: Array) -> Dictionary:
     var cache_key = PoolStringArray(font_def).join("-")
@@ -47,3 +52,4 @@ func get_font(font_def: Array) -> Dictionary:
 
 func get_scale() -> Vector2:
     return constants.get_scale(get_motif().info.localcoord)
+

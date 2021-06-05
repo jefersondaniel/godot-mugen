@@ -1,15 +1,23 @@
 extends Node2D
 
 var UiMenu = load('res://source/gdscript/nodes/ui/menu.gd')
+var BackgroundGroup = load('res://source/gdscript/nodes/ui/background_group.gd')
 
 var kernel = null
 var title_info = null
 var menu_item_font = null
 var menu_item_active_font = null
+var background_definition = null
 
 func setup(_kernel):
     kernel = _kernel
     title_info = kernel.get_motif().title_info
+    background_definition = kernel.get_motif().backgrounds["title"]
+
+    setup_background()
+    setup_menu()
+
+func setup_menu():
     menu_item_font = kernel.get_font(title_info.menu_item_font)
     menu_item_active_font = kernel.get_font(title_info.menu_item_active_font)
 
@@ -43,5 +51,12 @@ func setup(_kernel):
         {"id": "exit", "text": title_info.menu_itemname_exit},
     ]
     menu.setup()
+
     add_child(menu)
 
+func setup_background():
+    var background_group = BackgroundGroup.new()
+    background_group.images = kernel.get_images()
+    background_group.setup(background_definition)
+
+    add_child(background_group)

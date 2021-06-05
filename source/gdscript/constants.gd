@@ -149,3 +149,10 @@ func get_scale(localcoord: Vector2):
     var scale: int  = WINDOW_SIZE.x / localcoord.x
 
     return Vector2(scale, scale)
+
+func get_screen_coordinate(position: Vector2) -> Vector2:
+    # The coordinates are measured from the center of the bottom edge of the screen
+    return Vector2(
+        constants.WINDOW_SIZE.x / 2 + position.x,
+        position.y
+    )
