@@ -1,4 +1,4 @@
-extends Node2D
+extends ParallaxLayer
 
 # Default Mugen Fields
 var id: int = 0
@@ -25,6 +25,7 @@ var bottom_xscale: float = 1
 var yscalestart: float = 100
 var yscaledelta: float = 1
 # Custom Fields
+var setup = false
 var root: Node2D
 var images: Dictionary = {}
 var custom_scale: Vector2 = Vector2(1, 1)
