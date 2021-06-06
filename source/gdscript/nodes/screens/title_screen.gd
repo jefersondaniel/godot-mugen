@@ -3,14 +3,21 @@ extends Node2D
 var UiMenu = load('res://source/gdscript/nodes/ui/menu.gd')
 var BackgroundGroup = load('res://source/gdscript/nodes/ui/background_group.gd')
 
-var kernel = null
+signal on_menu_action(action)
+
 var title_info = null
 var menu_item_font = null
 var menu_item_active_font = null
 var background_definition = null
+var kernel = null
+var setup = false
 
-func setup(_kernel):
-    kernel = _kernel
+func _ready():
+    if setup:
+        return
+
+    setup = true
+    kernel = get_node('/root/main').kernel
     title_info = kernel.get_motif().title_info
     background_definition = kernel.get_motif().backgrounds["title"]
 
@@ -38,19 +45,20 @@ func setup_menu():
         title_info.menu_boxcursor_coords[3] - title_info.menu_boxcursor_coords[1]
     )
     menu.actions = [
-        {"id": "arcade", "text": title_info.menu_itemname_arcade},
-        {"id": "versus", "text": title_info.menu_itemname_versus},
-        {"id": "teamarcade", "text": title_info.menu_itemname_teamarcade},
-        {"id": "teamversus", "text": title_info.menu_itemname_teamversus},
-        {"id": "teamcoop", "text": title_info.menu_itemname_teamcoop},
-        {"id": "survival", "text": title_info.menu_itemname_survival},
-        {"id": "survivalcoop", "text": title_info.menu_itemname_survivalcoop},
-        {"id": "training", "text": title_info.menu_itemname_training},
-        {"id": "watch", "text": title_info.menu_itemname_watch},
-        {"id": "options", "text": title_info.menu_itemname_options},
-        {"id": "exit", "text": title_info.menu_itemname_exit},
+        {"id": constants.MENU_ARCADE, "text": title_info.menu_itemname_arcade},
+        {"id": constants.MENU_VERSUS, "text": title_info.menu_itemname_versus},
+        {"id": constants.MENU_TEAMARCADE, "text": title_info.menu_itemname_teamarcade},
+        {"id": constants.MENU_TEAMVERSUS, "text": title_info.menu_itemname_teamversus},
+        {"id": constants.MENU_TEAMCOOP, "text": title_info.menu_itemname_teamcoop},
+        {"id": constants.MENU_SURVIVAL, "text": title_info.menu_itemname_survival},
+        {"id": constants.MENU_SURVIVALCOOP, "text": title_info.menu_itemname_survivalcoop},
+        {"id": constants.MENU_TRAINING, "text": title_info.menu_itemname_training},
+        {"id": constants.MENU_WATCH, "text": title_info.menu_itemname_watch},
+        {"id": constants.MENU_OPTIONS, "text": title_info.menu_itemname_options},
+        {"id": constants.MENU_EXIT, "text": title_info.menu_itemname_exit},
     ]
     menu.setup()
+    menu.connect("on_action", self, "dispatch_menu_action")
 
     add_child(menu)
 
@@ -60,3 +68,6 @@ func setup_background():
     background_group.setup(background_definition)
 
     add_child(background_group)
+
+func dispatch_menu_action(action):
+    emit_signal("on_menu_action", action)

@@ -136,6 +136,18 @@ var HIT_TYPE_ID = {
     'trip': 3
 }
 
+var MENU_ARCADE: String = "arcade"
+var MENU_VERSUS: String = "versus"
+var MENU_TEAMARCADE: String = "teamarcade"
+var MENU_TEAMVERSUS: String = "teamversus"
+var MENU_TEAMCOOP: String = "teamcoop"
+var MENU_SURVIVAL: String = "survival"
+var MENU_SURVIVALCOOP: String = "survivalcoop"
+var MENU_TRAINING: String = "training"
+var MENU_WATCH: String = "watch"
+var MENU_OPTIONS: String = "options"
+var MENU_EXIT: String = "exit"
+
 func _init():
     for p in get_property_list():
         if not p['name'].begins_with('FLAG_'):

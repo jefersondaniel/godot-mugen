@@ -1,5 +1,7 @@
 extends Node2D
 
+signal on_action(action)
+
 var UiLabel = load('res://source/gdscript/nodes/ui/label.gd')
 var user_input = load('res://source/gdscript/system/user_input.gd').new()
 
@@ -87,6 +89,10 @@ func is_action_just_pressed(action: String):
 
 func update_selected_action_index():
     var old_selected_action_index = selected_action_index
+    if is_action_just_pressed("s"):
+        emit_done_sound()
+        emit_signal("on_action", actions[selected_action_index])
+        return
     if is_action_just_pressed("D"):
         if selected_action_index + 1 < actions.size():
             selected_action_index += 1
@@ -119,13 +125,19 @@ func update_label_font(index: int, active: bool):
     var label = label_map[action["id"]]
     label.set_font(default_font if not active else active_font)
 
-func emit_move_sound():
+func play_sound(sound_def):
     var kernel = get_node('/root/main').kernel
     var audio_player = get_node('/root/main').audio_player
-    var sound = kernel.get_sound(cursor_move_snd)
+    var sound = kernel.get_sound(sound_def)
 
     if sound:
         audio_player.play_sound(sound)
+
+func emit_move_sound():
+    play_sound(cursor_move_snd)
+
+func emit_done_sound():
+    play_sound(cursor_done_snd)
 
 func get_scroll_top_edge():
     return cursor_box.position.y - scroller.position.y
