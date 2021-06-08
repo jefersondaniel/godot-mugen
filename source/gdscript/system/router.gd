@@ -5,6 +5,7 @@ var TitleScreen = load('res://source/gdscript/nodes/screens/title_screen.gd')
 var SelectScreen = load('res://source/gdscript/nodes/screens/select_screen.gd')
 var current_screen = null
 var state_machine = null
+var store = null
 
 func _ready():
     state_machine = StateMachine.new()
@@ -18,22 +19,25 @@ func _ready():
     state_machine.start(title_state)
 
 func on_title_menu_action(action):
-    state_machine.trigger(action.id)
+    state_machine.trigger(action.id, action)
 
-func on_state_change(state):
+func on_state_change(state, payload = null):
+    var store = constants.container["store"]
+
     match state.name:
         "title":
             var screen = TitleScreen.new()
             screen.connect("on_menu_action", self, "on_title_menu_action")
             set_current_screen(screen)
         "training_selection":
-            show_select_screen("training")
+            show_select_screen(payload)
         _:
             push_error("unhandled state: %s" % [state.name])
 
-func show_select_screen(fight_type: String):
+func show_select_screen(action):
     var store = constants.container["store"]
-    store.fight_type = fight_type
+    store.fight_type = action.id
+    store.fight_type_text = action.text
 
     var screen = SelectScreen.new()
     set_current_screen(screen)
