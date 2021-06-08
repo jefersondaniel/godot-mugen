@@ -17,7 +17,7 @@ func _ready():
         return
 
     setup = true
-    kernel = get_node('/root/main').kernel
+    kernel = constants.container["kernel"]
     title_info = kernel.get_motif().title_info
     background_definition = kernel.get_motif().backgrounds["title"]
 

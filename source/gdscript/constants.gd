@@ -2,6 +2,7 @@ extends Node
 
 var TARGET_FPS: int = 60
 var WINDOW_SIZE = Vector2(1280, 720)
+var container: Dictionary = {} # Dependency container
 
 var KEY_MODIFIER_MUST_BE_HELD: int = 1 << 1
 var KEY_MODIFIER_DETECT_AS_4WAY: int = 1 << 2
@@ -147,6 +148,8 @@ var MENU_TRAINING: String = "training"
 var MENU_WATCH: String = "watch"
 var MENU_OPTIONS: String = "options"
 var MENU_EXIT: String = "exit"
+
+var FIGHT_TYPE_TRAINING = "training"
 
 func _init():
     for p in get_property_list():
