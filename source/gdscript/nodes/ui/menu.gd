@@ -126,8 +126,8 @@ func update_label_font(index: int, active: bool):
     label.set_font(default_font if not active else active_font)
 
 func play_sound(sound_def):
-    var kernel = get_node('/root/main').kernel
-    var audio_player = get_node('/root/main').audio_player
+    var kernel = constants.container["kernel"]
+    var audio_player = constants.container["audio_player"]
     var sound = kernel.get_sound(sound_def)
 
     if sound:

@@ -27,11 +27,16 @@ func on_state_change(state):
             screen.connect("on_menu_action", self, "on_title_menu_action")
             set_current_screen(screen)
         "training_selection":
-            var screen = SelectScreen.new()
-            print("show select screen")
-            set_current_screen(screen)
+            show_select_screen("training")
         _:
             push_error("unhandled state: %s" % [state.name])
+
+func show_select_screen(fight_type: String):
+    var store = constants.container["store"]
+    store.fight_type = fight_type
+
+    var screen = SelectScreen.new()
+    set_current_screen(screen)
 
 func set_current_screen(screen):
     if current_screen:

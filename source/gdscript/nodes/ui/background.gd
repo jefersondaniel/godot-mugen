@@ -63,7 +63,7 @@ func update_custom_rect():
         custom_rect = null
 
 func update_material():
-    var shader_factory = get_node("/root/main").kernel.shader_factory
+    var shader_factory = constants.container["kernel"].shader_factory
 
     if not trans or trans == "none":
         mesh.material = null
