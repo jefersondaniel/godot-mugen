@@ -1,6 +1,6 @@
 extends AnimatedSprite
 
-var AnimationManager = load('res://source/gdscript/nodes/character/animation_manager.gd')
+var AnimationManager = load('res://source/gdscript/nodes/sprite/animation_manager.gd')
 
 var animation_manager = null
 var attacking_area_2d: Area2D = null
@@ -16,6 +16,7 @@ var image_mapping = {}
 var is_facing_right: bool = true
 var flip_v_override: bool = false
 var flip_h_override: bool = false
+var debug_collisions: bool = false
 
 func _init(_images, _animations):
     var empty_image = Image.new()
@@ -240,6 +241,10 @@ func handle_element_update(element, collisions):
     set_collisions(collisions)
 
 func _draw():
+    if debug_collisions:
+        draw_collision_boxes()
+
+func draw_collision_boxes():
     for type in boxes:
         var points = boxes[type]
         var color = Color.red if type == 1 else Color.blue
@@ -248,6 +253,3 @@ func _draw():
             draw_line(Vector2(point[0], point[3]), Vector2(point[2], point[3]), color)
             draw_line(Vector2(point[0], point[1]), Vector2(point[0], point[3]), color)
             draw_line(Vector2(point[2], point[1]), Vector2(point[2], point[3]), color)
-
-func _ready():
-    change_anim(0)

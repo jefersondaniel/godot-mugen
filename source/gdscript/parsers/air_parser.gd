@@ -1,6 +1,6 @@
-var Animation = load('res://source/gdscript/nodes/character/animation.gd')
-var AnimationElement = load('res://source/gdscript/nodes/character/animation_element.gd')
-var AnimationCollision = load('res://source/gdscript/nodes/character/animation_collision.gd')
+var Animation = load('res://source/gdscript/nodes/sprite/animation.gd')
+var AnimationElement = load('res://source/gdscript/nodes/sprite/animation_element.gd')
+var AnimationCollision = load('res://source/gdscript/nodes/sprite/animation_collision.gd')
 
 func read(path):
     var file = File.new()

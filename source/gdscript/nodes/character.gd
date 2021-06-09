@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
 # Dependencies
-var MugenSprite = load('res://source/gdscript/nodes/sprite.gd')
+var MugenSprite = load('res://source/gdscript/nodes/sprite/sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
@@ -137,6 +137,7 @@ func setup_vars():
 func _ready():
     self.add_child(character_sprite)
     self.add_child(sound_manager)
+    character_sprite.change_anim(0)
 
 func get_const(fullname):
     if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
