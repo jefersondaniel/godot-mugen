@@ -36,8 +36,10 @@ func on_state_change(state, payload = null):
 
 func show_select_screen(action):
     var store = constants.container["store"]
-    store.fight_type = action.id
-    store.fight_type_text = action.text
+
+    if action:
+        store.fight_type = action.id
+        store.fight_type_text = action.text
 
     var screen = SelectScreen.new()
     set_current_screen(screen)

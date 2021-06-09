@@ -64,7 +64,7 @@ func setup_menu():
 
 func setup_background():
     var background_group = BackgroundGroup.new()
-    background_group.images = kernel.get_images()
+    background_group.sprite_bundle = kernel.get_sprite_bundle()
     background_group.setup(background_definition)
 
     add_child(background_group)
