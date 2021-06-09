@@ -10,7 +10,7 @@ var shaders = {
     """,
     "sub": """
     shader_type canvas_item;
-    render_mode blend_add;
+    render_mode blend_sub;
     """
 }
 
