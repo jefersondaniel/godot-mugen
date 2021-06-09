@@ -8,7 +8,7 @@ var spr: String = "" # Optional sprite file. Empty on motif backgrounds
 var bgclearcolor: PoolIntArray = PoolIntArray([])
 var debugbg: int = 0
 # Custom Variables
-var images: Dictionary = {}
+var sprite_bundle: Object
 var texture: ImageTexture
 var custom_rect: Rect2
 
@@ -23,7 +23,7 @@ func setup(definition):
     for item in definition.items:
         var background = Background.new()
         background.position = constants.get_screen_coordinate(item.start)
-        background.images = images
+        background.image = sprite_bundle.get_image(item.spriteno)
         background.type = item.type
         background.positionlink = item.positionlink
         background.velocity = item.velocity

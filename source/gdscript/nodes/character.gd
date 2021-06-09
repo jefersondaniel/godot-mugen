@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
 # Dependencies
-var MugenSprite = load('res://source/gdscript/nodes/sprite/sprite.gd')
+var MugenSprite = load('res://source/gdscript/nodes/sprite/animated_sprite.gd')
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')

@@ -4,6 +4,7 @@ var bg_parser = load("res://source/gdscript/parsers/bg_parser.gd").new()
 var cfg_parser = load("res://source/gdscript/parsers/cfg_parser.gd").new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
+var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
 var CoreConfiguration = load("res://source/gdscript/system/core_configuration.gd")
 var MotifConfiguration = load("res://source/gdscript/system/motif_configuration.gd")
 
@@ -46,7 +47,7 @@ func load_motif_configuration(path: String):
         var spr_path = find_file_path(path, result.files.spr)
         var images = sff_parser.read_images(spr_path, null, null)
         if images:
-            result.images = images
+            result.sprite_bundle = SpriteBundle.new(images)
 
     return result
 

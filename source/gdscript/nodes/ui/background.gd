@@ -27,7 +27,7 @@ var yscaledelta: float = 1
 # Custom Fields
 var setup = false
 var root: Node2D
-var images: Dictionary = {}
+var image: Dictionary
 var custom_scale: Vector2 = Vector2(1, 1)
 var tile_available_size: Vector2 = Vector2(4096, 4096)
 var camera_position: Vector2 = Vector2(0, 0)
@@ -77,13 +77,6 @@ func update_material():
     mesh.material = shader_factory.get_shader_material(trans)
 
 func setup_mesh():
-    var spritekey = '%s-%s' % [spriteno[0], spriteno[1]]
-
-    if not images.has(spritekey):
-        printerr("Invalid spriteno: %s,%s" % spriteno)
-        return
-
-    var image = images[spritekey]
     var offset = Vector2(image['x'], image['y'])
 
     create_mesh(image['image'])

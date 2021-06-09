@@ -1,3 +1,5 @@
+var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
+
 class Info:
     var name: String = ""
     var author: String = ""
@@ -77,7 +79,7 @@ class TitleInfo:
     var menu_window_margins_y: Vector2 = Vector2(0, 0)
     var menu_window_visibleitems: int = 5
     var menu_boxcursor_visible: int = 0
-    var menu_boxcursor_coords: PoolIntArray = []
+    var menu_boxcursor_coords: PoolIntArray = PoolIntArray([])
     var cursor_move_snd: Array = []
     var cursor_done_snd: Array = []
     var cancel_snd: Array = []
@@ -96,22 +98,22 @@ class SelectPlayer:
     var face_facing: int = 0
     var face_window: Array = []
     var name_offset: Vector2 = Vector2(0, 0)
-    var name_font: Array = []
+    var name_font: PoolIntArray = PoolIntArray([])
     var name_spacing: Vector2 = Vector2(0, 0)
     var teammenu_pos: Vector2 = Vector2(80, 130)
     var teammenu_bg_spr: Array = []
-    var teammenu_selftitle_font: Array = []
+    var teammenu_selftitle_font: PoolIntArray = PoolIntArray([])
     var teammenu_selftitle_text: String = "TEAM MODE"
-    var teammenu_enemytitle_font: Array = []
+    var teammenu_enemytitle_font: PoolIntArray = PoolIntArray([])
     var teammenu_enemytitle_text: String = "TEAM MODE"
     var teammenu_move_snd: Array = []
     var teammenu_value_snd: Array = []
     var teammenu_done_snd: Array = []
     var teammenu_item_offset: Vector2 = Vector2(0, 110)
     var teammenu_item_spacing: Vector2 = Vector2(0, 60)
-    var teammenu_item_font: Array = []
-    var teammenu_item_active_font: Array = []
-    var teammenu_item_active2_font: Array = []
+    var teammenu_item_font: PoolIntArray = PoolIntArray([])
+    var teammenu_item_active_font: PoolIntArray = PoolIntArray([])
+    var teammenu_item_active2_font: PoolIntArray = PoolIntArray([])
     var teammenu_item_cursor_offset: Vector2 = Vector2(-30, 0)
     var teammenu_item_cursor_anim: Array = []
     var teammenu_value_icon_offset: Vector2 = Vector2(210, 1)
@@ -132,7 +134,7 @@ class SelectInfo:
     var showemptyboxes: int = 1
     var moveoveremptyboxes: int = 1
     var cell_size: Vector2 = Vector2(100, 100)
-    var cell_spacing: int = 10
+    var cell_spacing: int = 0
     var cell_bg_spr: Array = []
     var cell_random_spr: Array = []
     var cell_random_switchtime: int = 4
@@ -144,11 +146,11 @@ class SelectInfo:
     var portrait_offset: Vector2 = Vector2(0, 0)
     var portrait_scale: Vector2 = Vector2(0, 0)
     var title_offset: Vector2 = Vector2(0, 0)
-    var title_font: Array = []
+    var title_font: PoolIntArray = PoolIntArray([])
     var stage_pos: Vector2 = Vector2(0, 0)
-    var stage_active_font: Array = []
-    var stage_active2_font: Array = []
-    var stage_done_font: Array = []
+    var stage_active_font: PoolIntArray = PoolIntArray([])
+    var stage_active2_font: PoolIntArray = PoolIntArray([])
+    var stage_done_font: PoolIntArray = PoolIntArray([])
     var teammenu_move_wrapping: int = 1
 
 class VersusPlayer:
@@ -158,7 +160,7 @@ class VersusPlayer:
     var scale: Vector2 = Vector2(1, 1)
     var window: Rect2 = Rect2(0, 0, 0, 0)
     var name_offset: Vector2 = Vector2(0, 0)
-    var name_font: Array = [3, 3, 1]
+    var name_font: PoolIntArray = PoolIntArray([3, 3, 1])
     var name_spacing: Vector2 = Vector2(0, 0)
 
 class VSScreen:
@@ -169,14 +171,14 @@ class VSScreen:
     var fadeout_time: int = 25
     var match_text: String = "Match %i"
     var match_offset: Vector2 = Vector2(0, 0)
-    var match_font: Array = [2, 0, 1]
+    var match_font: PoolIntArray = PoolIntArray([2, 0, 1])
 
 class LabelConfig:
     var text: String = ""
     var font: Array = [1, 0, 0]
     var offset: Vector2 = Vector2(0, 0)
     var active_text: String = ""
-    var active_font: Array = [1, 0, 0]
+    var active_font: PoolIntArray = PoolIntArray([1, 0, 0])
     var active_offset: Vector2 = Vector2(0, 0)
 
 class ContinueScreen:
@@ -208,18 +210,18 @@ class VictoryScreen:
     var p1_scale: Vector2 = Vector2(1, 1)
     var p1_window: Rect2 = Rect2(0, 0, 0, 0)
     var p1_name_offset: Vector2 = Vector2(40, 570)
-    var p1_name_font: Array = [3, 3, 1]
+    var p1_name_font: PoolIntArray = PoolIntArray([3, 3, 1])
     # Win quote text
     var winquote_text: String = "Winner!" # Default win quote text to show
     var winquote_offset: Vector2 = Vector2(40, 615)
-    var winquote_font: Array = [5, 0, 1]
+    var winquote_font: PoolIntArray = PoolIntArray([5, 0, 1])
     var winquote_window: Rect2 = Rect2(0, 0, 0, 0)
     var winquote_textwrap: String = "w"
 
 class WinScreen:
     var enabled: int = 0
     var wintext_text: String = "Congratulations!"
-    var wintext_font: Array = []
+    var wintext_font: PoolIntArray = PoolIntArray([])
     var wintext_offset: Vector2 = Vector2(0, 0)
     var wintext_displaytime: int = -1
     var wintext_layerno: int = 2
@@ -237,7 +239,7 @@ class EndCredits:
 
 class OptionInfo:
     var title_offset: Vector2 = Vector2(0, 0)
-    var title_font: Array = []
+    var title_font: PoolIntArray = PoolIntArray([])
     var cursor_move_snd: Array = []
     var cursor_done_snd: Array = []
     var cancel_snd: Array = []
@@ -261,7 +263,7 @@ var option_info: OptionInfo
 var animations: Dictionary = {}
 var backgrounds: Dictionary = {}
 var sounds: Dictionary = {}
-var images: Dictionary = {}
+var sprite_bundle: Object = SpriteBundle.new({})
 
 func _init():
     info = Info.new()

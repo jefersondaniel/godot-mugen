@@ -18,8 +18,8 @@ func get_sound(sound_def: Array):
     var sounds = core_configuration.motif_configuration.sounds
     return sounds["%s-%s" % [sound_def[0], sound_def[1]]]
 
-func get_images() -> Dictionary:
-    return core_configuration.motif_configuration.images
+func get_sprite_bundle() -> Dictionary:
+    return core_configuration.motif_configuration.sprite_bundle
 
 func get_font(font_def: Array) -> Dictionary:
     var cache_key = PoolStringArray(font_def).join("-")
