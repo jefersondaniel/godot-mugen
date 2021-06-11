@@ -1,6 +1,8 @@
 var images: Dictionary = {}
 
 func _init(images):
+    if not images:
+        return
     self.images = images
 
 func get_image(path: Array):

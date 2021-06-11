@@ -1,4 +1,5 @@
 var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
+var SelectBundle = load("res://source/gdscript/system/select_bundle.gd")
 
 class Info:
     var name: String = ""
@@ -92,7 +93,7 @@ class SelectPlayer:
     var cursor_done_snd: Array = []
     var random_move_snd: Array = []
     var cursor_blink: int = 0
-    var face_spr: Array = []
+    var face_spr: PoolIntArray = PoolIntArray([9000, 1])
     var face_offset: Vector2 = Vector2()
     var face_scale: Array = []
     var face_facing: int = 0
@@ -142,9 +143,9 @@ class SelectInfo:
     var stage_move_snd: Array = []
     var stage_done_snd: Array = []
     var cancel_snd: Array = []
-    var portrait_spr: Array = []
+    var portrait_spr: PoolIntArray = PoolIntArray([9000, 0])
     var portrait_offset: Vector2 = Vector2(0, 0)
-    var portrait_scale: Vector2 = Vector2(0, 0)
+    var portrait_scale: Vector2 = Vector2(1, 1)
     var title_offset: Vector2 = Vector2(0, 0)
     var title_font: PoolIntArray = PoolIntArray([])
     var stage_pos: Vector2 = Vector2(0, 0)
@@ -263,7 +264,8 @@ var option_info: OptionInfo
 var animations: Dictionary = {}
 var backgrounds: Dictionary = {}
 var sounds: Dictionary = {}
-var sprite_bundle: Object = SpriteBundle.new({})
+var sprite_bundle: Object = SpriteBundle.new(null)
+var select_bundle: Object = SelectBundle.new(null)
 
 func _init():
     info = Info.new()

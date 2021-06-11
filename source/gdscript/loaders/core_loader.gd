@@ -2,9 +2,11 @@ var data_hydrator = load('res://source/gdscript/helpers/data_hydrator.gd').new()
 var air_parser = load("res://source/gdscript/parsers/air_parser.gd").new()
 var bg_parser = load("res://source/gdscript/parsers/bg_parser.gd").new()
 var cfg_parser = load("res://source/gdscript/parsers/cfg_parser.gd").new()
+var select_parser = load('res://source/gdscript/parsers/select_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
 var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
+var SelectBundle = load("res://source/gdscript/system/select_bundle.gd")
 var CoreConfiguration = load("res://source/gdscript/system/core_configuration.gd")
 var MotifConfiguration = load("res://source/gdscript/system/motif_configuration.gd")
 
@@ -48,6 +50,12 @@ func load_motif_configuration(path: String):
         var images = sff_parser.read_images(spr_path, null, null)
         if images:
             result.sprite_bundle = SpriteBundle.new(images)
+
+    if result.files.select:
+        var select_path = find_file_path(path, result.files.select)
+        var select_data = select_parser.read(select_path)
+        if select_data:
+            result.select_bundle = SelectBundle.new(select_data)
 
     return result
 

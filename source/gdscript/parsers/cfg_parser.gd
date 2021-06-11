@@ -39,9 +39,11 @@ func read_string(text: String, allow_lines=false, replace_key_dots=false):
             continue
 
         var equal_idx = line.find('=')
+        var comma_idx = line.find(',')
         var line_size = line.length()
 
-        if equal_idx <= 0:
+        # checking commas allow this line pattern, kfm.def, option=value
+        if equal_idx <= 0 or (comma_idx > 0 and equal_idx > comma_idx):
             if allow_lines:
                 current_section['lines'].append(line)
             continue

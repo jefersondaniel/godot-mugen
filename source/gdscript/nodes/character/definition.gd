@@ -66,6 +66,7 @@ var info = null
 var files = null
 var arcade = null
 var palette_keymap: Dictionary = {}
+var base_path: String = ""
 
 func parse(user_data: Dictionary):
     info = Info.new()
@@ -78,3 +79,32 @@ func parse(user_data: Dictionary):
     arcade.parse(user_data.get("arcade", {}))
 
     palette_keymap = user_data.get("palette keymap", {})
+
+func get_sprite_path() -> String:
+    return "%s/%s" % [base_path, files.sprite]
+
+func get_animation_path() -> String:
+    return "%s/%s" % [base_path, files.anim]
+
+func get_command_path() -> String:
+    return "%s/%s" % [base_path, files.cmd]
+
+func get_sound_path() -> String:
+    return "%s/%s" % [base_path, files.sound]
+
+func get_state_paths():
+    var results: Array = []
+    var data_path = constants.container["kernel"].base_path
+
+    if files.stcommon:
+        results.push_back("%s/%s/%s" % [data_path, "data", files.stcommon])
+
+    if files.cmd:
+        results.push_back("%s/%s" % [base_path, files.cmd])
+
+    for state in files.states:
+        results.push_back("%s/%s" % [base_path, state])
+
+    results.push_back("res://internal.cns")
+
+    return results
