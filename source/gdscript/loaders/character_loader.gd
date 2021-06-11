@@ -11,32 +11,18 @@ var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
 
 func load(path: String, palette, command_manager):
-    var sprite_path: String
-    var animation_path: String
-    var command_path: String
-    var state_paths: Array
-    var sound_path: String
+    var base_path = path.substr(0, path.find_last('/'))
 
     var definition = Definition.new()
+    definition.base_path = base_path
     definition.parse(def_parser.read(path))
 
-    var folder = path.substr(0, path.find_last('/'))
-    sprite_path = '%s/%s' % [folder, definition.files.sprite]
-    animation_path = '%s/%s' % [folder, definition.files.anim]
-    command_path = '%s/%s' % [folder, definition.files.cmd]
-    sound_path = '%s/%s' % [folder, definition.files.sound]
-    state_paths = []
-
-    if definition.files.stcommon:
-        state_paths.append('%s/%s' % ['res://data/data', definition.files.stcommon])
-
-    if definition.files.cmd:
-        state_paths.append('%s/%s' % [folder, definition.files.cmd])
-
-    for state in definition.files.states:
-        state_paths.append('%s/%s' % [folder, state])
-
-    state_paths.append('res://internal.cns')
+    var sprite_path: String = definition.get_sprite_path()
+    var animation_path: String = definition.get_animation_path()
+    var command_path: String = definition.get_command_path()
+    var state_paths: Array = definition.get_state_paths()
+    var sound_path: String = definition.get_sound_path()
+    var state_paths: String = definition.get_state_paths()
 
     var images = sff_parser.get_images(sprite_path, palette)
     var sounds = snd_parser.get_sounds(sound_path)
@@ -74,14 +60,3 @@ func merge_states(new_states, states):
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:
                 states[parent_key][child_key] = new_states[parent_key][child_key]
-
-func parse_vector(value: String):
-    var raw_values = value.split(',')
-    var vector: Vector2 = Vector2(0, 0)
-
-    if raw_values.size() > 0:
-        vector.x = float(raw_values[0])
-    if raw_values.size() > 1:
-        vector.y = float(raw_values[1])
-
-    return vector

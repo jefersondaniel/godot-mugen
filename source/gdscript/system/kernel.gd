@@ -21,6 +21,9 @@ func get_sound(sound_def: Array):
 func get_sprite_bundle() -> Dictionary:
     return core_configuration.motif_configuration.sprite_bundle
 
+func get_select_bundle() -> Dictionary:
+    return core_configuration.motif_configuration.select_bundle
+
 func get_font(font_def: Array) -> Dictionary:
     var cache_key = PoolStringArray(font_def).join("-")
 
