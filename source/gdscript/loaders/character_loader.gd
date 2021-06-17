@@ -20,7 +20,6 @@ func load(path: String, palette, command_manager):
     var sprite_path: String = definition.get_sprite_path()
     var animation_path: String = definition.get_animation_path()
     var command_path: String = definition.get_command_path()
-    var state_paths: Array = definition.get_state_paths()
     var sound_path: String = definition.get_sound_path()
     var state_paths: String = definition.get_state_paths()
 

@@ -20,8 +20,8 @@ class State:
 
         transitions[event] = state
 
-func start(initial_state: State):
-    set_state(initial_state)
+func start(initial_state: State, payload = null):
+    set_state(initial_state, payload)
 
 func add_state(name: String) -> State:
     if states.has(name):

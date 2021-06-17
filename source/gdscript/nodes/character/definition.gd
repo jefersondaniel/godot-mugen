@@ -108,3 +108,18 @@ func get_state_paths():
     results.push_back("res://internal.cns")
 
     return results
+
+func get_scale() -> Vector2:
+    var kernel = constants.container["kernel"]
+    var motif = kernel.get_motif()
+    var motif_localcoord = motif.info.localcoord
+    var char_localcoord = info.localcoord
+
+    var motif_scale = Vector2(
+        motif_localcoord.x / char_localcoord.x,
+        motif_localcoord.x / char_localcoord.x
+    )
+
+    return motif_scale * kernel.get_scale()
+
+

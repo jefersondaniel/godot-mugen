@@ -86,18 +86,18 @@ class TitleInfo:
     var cancel_snd: Array = []
 
 class SelectPlayer:
-    var cursor_startcell: Array = []
-    var cursor_active_anim: Array = []
+    var cursor_startcell: Vector2 = Vector2(0, 0)
+    var cursor_active_anim: int = 160
     var cursor_done_spr: Array = []
     var cursor_move_snd: Array = []
     var cursor_done_snd: Array = []
     var random_move_snd: Array = []
     var cursor_blink: int = 0
     var face_spr: PoolIntArray = PoolIntArray([9000, 1])
-    var face_offset: Vector2 = Vector2()
-    var face_scale: Array = []
+    var face_offset: Vector2 = Vector2(0, 0)
+    var face_scale: Vector2 = Vector2(1, 1)
     var face_facing: int = 0
-    var face_window: Array = []
+    var face_window: PoolIntArray = PoolIntArray([])
     var name_offset: Vector2 = Vector2(0, 0)
     var name_font: PoolIntArray = PoolIntArray([])
     var name_spacing: Vector2 = Vector2(0, 0)
