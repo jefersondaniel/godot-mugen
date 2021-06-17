@@ -1,14 +1,11 @@
 extends AnimatedSprite
 
-var AnimationManager = load('res://source/gdscript/nodes/sprite/animation_manager.gd')
+var AnimationManager = load("res://source/gdscript/nodes/sprite/animation_manager.gd")
 
+var sprite_bundle: Object
 var animation_manager = null
 var attacking_area_2d: Area2D = null
 var collision_area_2d: Area2D = null
-var images: Dictionary = {}
-var animations: Dictionary = {}
-var looptimes: Dictionary = {}
-var element_by_tick: Dictionary = {} # Map at which tick each element starts
 var boxes = {1: [], 2: []}
 var boxes_facing_right: bool = true
 var frame_mapping = {}
@@ -18,39 +15,44 @@ var flip_v_override: bool = false
 var flip_h_override: bool = false
 var debug_collisions: bool = false
 
-func _init(_images, _animations):
-    var empty_image = Image.new()
-    var sprite_frames = SpriteFrames.new()
-    var empty_texture = null
-    var frame_index = 1
+func _init(sprite_bundle, animations):
+    self.sprite_bundle = sprite_bundle
 
-    images = _images
-    animation_manager = AnimationManager.new(_animations)
+    animation_manager = AnimationManager.new(animations)
     animation_manager.connect("element_update", self, "handle_element_update")
 
-    # Prepare an empty texture
-    empty_image.create_from_data(1, 1, false, Image.FORMAT_RGBA8, PoolByteArray([0,0,0,0]))
-    empty_texture = ImageTexture.new()
-    empty_texture.create_from_image(empty_image, 0)
+    load_sprite_frames(animations)
+    set_animation("default")
 
-    # Load animation spec
-    sprite_frames.add_frame('default', empty_texture)
+    centered = false
+    name = "AnimatedSprite"
+    # show_behind_parent = true TODO: Refactor collision
+
+func load_sprite_frames(animations):
+    var sprite_frames = SpriteFrames.new()
+    var frame_index = 1
+    var images: Dictionary = {}
+
+    for animation_key in animations:
+        for element in animations[animation_key].elements:
+            var image_key = "%s-%s" % [element.groupno, element.imageno]
+            if images.has(image_key):
+                continue
+            images[image_key] = sprite_bundle.get_image([element.groupno, element.imageno])
+
+    sprite_frames.add_frame("default", sprite_bundle.create_empty_texture())
 
     for image_key in images:
         var image = images[image_key]
         frame_mapping[image_key] = frame_index
         image_mapping[image_key] = {
-            'offset': Vector2(-image['x'], -image['y']),
-            'size': image['image'].get_size(),
+            "offset": Vector2(-image["x"], -image["y"]),
+            "size": image["image"].get_size(),
         }
         frame_index = frame_index + 1
-        sprite_frames.add_frame('default', image_to_texture(image['image']))
+        sprite_frames.add_frame("default", sprite_bundle.create_texture(image))
 
-    self.set_sprite_frames(sprite_frames)
-    self.set_animation('default')
-    self.centered = false
-    self.name = 'AnimatedSprite'
-    self.show_behind_parent = true
+    set_sprite_frames(sprite_frames)
 
 func set_image(groupno, imageno, offset):
     var frame_key = '%s-%s' % [groupno, imageno]
@@ -75,6 +77,7 @@ func set_image(groupno, imageno, offset):
 
     self.frame = frame_value
     self.offset = frame_offset
+
     update_image_flip()
 
 func change_anim(value: int, element_index: int = 0):
@@ -179,11 +182,6 @@ func create_collision_box(type: int, points: Array):
     else:
         self.collision_area_2d.add_child(collision_shape)
 
-func image_to_texture(image):
-    var texture = ImageTexture.new()
-    texture.create_from_image(image, 0)
-    return texture
-
 func fix_boxes_direction():
     if boxes_facing_right == is_facing_right or is_facing_right:
         return
@@ -223,9 +221,6 @@ func get_current_animation():
 func get_animation_element():
     return animation_manager.element.id
 
-func handle_tick():
-    animation_manager.handle_tick()
-
 func handle_element_update(element, collisions):
     var flip_flags = element.flags[0] if len(element.flags) > 0 else null
     flip_h_override = false
@@ -253,3 +248,9 @@ func draw_collision_boxes():
             draw_line(Vector2(point[0], point[3]), Vector2(point[2], point[3]), color)
             draw_line(Vector2(point[0], point[1]), Vector2(point[0], point[3]), color)
             draw_line(Vector2(point[2], point[1]), Vector2(point[2], point[3]), color)
+
+func _process(delta: float):
+    handle_tick()
+
+func handle_tick():
+    animation_manager.handle_tick()
