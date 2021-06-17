@@ -38,4 +38,5 @@ class MergedController:
         return false
 
 var p1 = Controller.new('P1_')
-var any = MergedController.new([p1])
+var p2 = Controller.new('P2_')
+var any = MergedController.new([p1, p2])
