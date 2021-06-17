@@ -96,9 +96,13 @@ func update_selected_action_index():
     if is_action_just_pressed("D"):
         if selected_action_index + 1 < actions.size():
             selected_action_index += 1
+        else:
+            selected_action_index = 0
     if is_action_just_pressed("U"):
         if selected_action_index > 0:
             selected_action_index -= 1
+        else:
+            selected_action_index = actions.size() - 1
     if old_selected_action_index != selected_action_index:
         update_label_font(old_selected_action_index, false)
         update_label_font(selected_action_index, true)
@@ -116,9 +120,9 @@ func update_scroller_position(delta: float):
     var top_edge_diff  = get_cursor_top_edge() - get_scroll_top_edge()
     var bottom_edge_diff = get_cursor_bottom_edge() - get_scroll_bottom_edge()
     if top_edge_diff < 0:
-        scroller.position.y = lerp(scroller.position.y, scroller.position.y + cursor_box.size.y, 0.2)
+        scroller.position.y = lerp(scroller.position.y, scroller.position.y + cursor_box.size.y, 0.4)
     if bottom_edge_diff > 0:
-        scroller.position.y = lerp(scroller.position.y, scroller.position.y - cursor_box.size.y, 0.2)
+        scroller.position.y = lerp(scroller.position.y, scroller.position.y - cursor_box.size.y, 0.4)
 
 func update_label_font(index: int, active: bool):
     var action = actions[index]
