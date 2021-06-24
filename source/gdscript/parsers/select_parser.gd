@@ -24,7 +24,7 @@ func read(path: String):
                 options[key] = new_options[key]
         result["characters"].push_back({
             "name": character,
-            "stage": stage,
+            "stage": stage.strip_edges(),
             "options": options
         })
 

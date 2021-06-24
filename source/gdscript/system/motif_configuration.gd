@@ -88,7 +88,7 @@ class TitleInfo:
 class SelectPlayer:
     var cursor_startcell: Vector2 = Vector2(0, 0)
     var cursor_active_anim: int = 160
-    var cursor_done_spr: Array = []
+    var cursor_done_spr: PoolIntArray = PoolIntArray([])
     var cursor_move_snd: Array = []
     var cursor_done_snd: Array = []
     var random_move_snd: Array = []

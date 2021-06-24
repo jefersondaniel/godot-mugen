@@ -10,6 +10,15 @@ var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 var snd_parser = load('res://source/native/snd_parser.gdns').new()
 
+func load_definition(path: String):
+    var base_path = path.substr(0, path.find_last('/'))
+
+    var definition = Definition.new()
+    definition.base_path = base_path
+    definition.parse(def_parser.read(path))
+
+    return definition
+
 func load(path: String, palette, command_manager):
     var base_path = path.substr(0, path.find_last('/'))
 

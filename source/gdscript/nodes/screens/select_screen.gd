@@ -17,16 +17,21 @@ var title_font = null
 var sprite_bundle: Object
 var select_bundle: Object
 var cell_slots: Array = []
-var characters = []
+var characters: Array = []
+var stages: Array = []
 var cursor_sprite = null
 var cursor_position: Vector2 = Vector2(0, 0)
 var cursor_move_snd: Array = []
 var cursor_done_snd: Array = []
 var current_team: int = 1
+var current_input: int = 1
+var current_request = null
 var current_character = null
-var faces: Dictionary = {}
-var names: Dictionary = {}
-var face_layer: Node2D
+var current_stage = null
+var face_sprites: Dictionary = {}
+var name_sprites: Dictionary = {}
+var face_layer = null
+var stage_label = null
 
 func _ready():
     if setup:
@@ -41,47 +46,78 @@ func _ready():
     background_definition = kernel.get_motif().backgrounds["select"]
     sprite_bundle = kernel.get_sprite_bundle()
     select_bundle = kernel.get_select_bundle()
-    current_team = 1
     face_layer = Node2D.new()
 
+    pick_select_request()
     load_characters()
-    setup_background()
+    load_stages()
+    create_background()
     add_child(face_layer)
-    setup_title()
-    setup_cells()
-    setup_character_cells()
-    setup_cursor()
+    create_title()
+    create_cells()
+    create_character_cells()
+    update_cursor_sprite()
     update_current_character()
-    # TODO: Confirm selection based on versus mode
-    # TODO: Stage selection
+
+func pick_select_request() -> bool:
+    var store = constants.container["store"]
+
+    if store.select_requests.size() == 0:
+        return false
+
+    current_request = store.select_requests.pop_front()
+    current_team = current_request["team"]
+    current_input = current_request["input"]
+
+    return true
+
+func handle_selection():
+    var store = constants.container["store"]
+
+    store.select_results.push_back({
+        "character": current_character,
+        "team": current_request["team"],
+        "role": current_request["role"]
+    })
+
+    create_done_sprite()
+
+    if pick_select_request():
+        update_cursor_sprite()
+        update_current_character()
+        return
+
+    # Stage Selection
+    remove_cursor_sprite()
+    create_stage_label()
 
 func get_cursor_input():
-    if current_team == 1:
+    if current_input == 1:
         return user_input.p1
     else:
         return user_input.p2
 
-func get_player_info():
-    if current_team == 1:
+func get_player_info(player: int):
+    if player == 1:
         return select_info.p1
     else:
         return select_info.p2
 
-func setup_background():
+func create_background():
     var background_group = BackgroundGroup.new()
     background_group.sprite_bundle = sprite_bundle
     background_group.setup(background_definition)
 
     add_child(background_group)
 
-func setup_title():
+func create_title():
     var label = UiLabel.new()
     label.set_text(store.fight_type_text)
     label.set_font(title_font)
     label.position = select_info.title_offset * kernel.get_scale()
     add_child(label)
 
-func setup_cells():
+func create_cells():
     var base_sprite = sprite_bundle.create_sprite(select_info.cell_bg_spr)
     for row in range(0, select_info.rows):
         for column in range(0, select_info.columns):
@@ -128,7 +164,11 @@ func load_characters():
             },
         })
 
-func setup_character_cells():
+func load_stages():
+    stages = select_bundle.get_stage_definitions()
+    current_stage = stages[0]
+
+func create_character_cells():
     var index = -1
     var cell_size = select_info.cell_size
 
@@ -139,7 +179,6 @@ func setup_character_cells():
         var image = character["portrait"]
         var definition = character["definition"]
         var texture = sprite_bundle.create_texture(image)
-        var texture_data = texture.get_data()
         var sprite = Sprite.new()
         sprite.texture = texture
         sprite.centered = false
@@ -149,8 +188,8 @@ func setup_character_cells():
         sprite.scale = definition.get_scale() * select_info.portrait_scale
         add_child(sprite)
 
-func setup_cursor():
-    var player = get_player_info()
+func update_cursor_sprite():
+    var player = get_player_info(current_input)
     cursor_move_snd = player.cursor_move_snd
     cursor_done_snd = player.cursor_done_snd
     cursor_position = player.cursor_startcell
@@ -167,6 +206,10 @@ func setup_cursor():
 
     update_cursor_position()
     add_child(cursor_sprite)
+
+func remove_cursor_sprite():
+    cursor_sprite.queue_free()
+    cursor_sprite = null
 
 func update_cursor_position():
     var cell_index = get_cell_index(cursor_position)
@@ -193,8 +236,10 @@ func handle_cursor_input():
         cursor_position.x = min(select_info.columns - 1, cursor_position.x + 1)
         moved = true
 
-    if cursor_input.is_action_just_pressed("s"):
+    if cursor_input.is_action_just_pressed("s") and is_valid_selection():
         play_sound(cursor_done_snd)
+        handle_selection()
+        return
 
     if moved:
         update_current_character()
@@ -209,8 +254,9 @@ func play_sound(sound_def):
         audio_player.play_sound(sound)
 
 func _process(delta: float):
-    handle_cursor_input()
-    update_cursor_position()
+    if cursor_sprite != null:
+        handle_cursor_input()
+        update_cursor_position()
 
 func update_current_character():
     var index = get_cell_index(cursor_position)
@@ -221,10 +267,10 @@ func update_current_character():
     update_name()
 
 func update_face():
-    var player_info = get_player_info()
+    var player_info = get_player_info(current_team)
 
-    if faces.has(current_team):
-        faces[current_team].queue_free()
+    if face_sprites.has(current_team):
+        face_sprites[current_team].queue_free()
 
     var face_window = Rect2(
         player_info.face_window[0],
@@ -235,22 +281,23 @@ func update_face():
     var image = current_character["faces"][current_team]
     var definition = current_character["definition"]
     var texture = sprite_bundle.create_texture(image)
-    var texture_data = texture.get_data()
     var sprite = Sprite.new()
     sprite.texture = texture
     sprite.centered = false
-    sprite.position += face_window.position
+    sprite.position += player_info.face_offset
     sprite.scale = definition.get_scale() * player_info.face_scale
     sprite.flip_h = player_info.face_facing == -1
-
-    faces[current_team] = sprite
+    if player_info.face_facing == -1:
+        var texture_size = texture.get_data().get_size()
+        sprite.position.x -= texture_size.x * sprite.scale.x
+    face_sprites[current_team] = sprite
     face_layer.add_child(sprite)
 
 func update_name():
-    var player_info = get_player_info()
+    var player_info = get_player_info(current_team)
 
-    if names.has(current_team):
-        names[current_team].queue_free()
+    if name_sprites.has(current_team):
+        name_sprites[current_team].queue_free()
 
     var definition = current_character["definition"]
     var label = UiLabel.new()
@@ -261,5 +308,35 @@ func update_name():
 
     # TODO: Consider spacing (space between character names in same team)
 
-    names[current_team] = label
+    name_sprites[current_team] = label
     face_layer.add_child(label)
+
+func is_valid_selection() -> bool:
+    var cell_index = get_cell_index(cursor_position)
+    return cell_index < characters.size()
+
+func create_done_sprite():
+    var player_info = get_player_info(current_team)
+    var cell_index = get_cell_index(cursor_position)
+    var sprite = sprite_bundle.create_sprite(player_info.cursor_done_spr)
+    sprite.position = cell_slots[cell_index]
+    sprite.centered = false
+    sprite.scale = kernel.get_scale()
+    add_child(sprite)
+
+func create_stage_label():
+    var stage_pos = select_info.stage_pos
+    var stage_active_font = select_info.stage_active_font
+    var stage_active2_font = select_info.stage_active2_font
+    var stage_done_font = select_info.stage_done_font
+
+    if stage_label:
+        stage_label.queue_free()
+
+    var name_font = kernel.get_font(stage_active_font)
+    stage_label = UiLabel.new()
+    stage_label.set_text(current_stage.info_displayname)
+    stage_label.set_font(name_font)
+    stage_label.position = stage_pos * kernel.get_scale()
+
+    add_child(stage_label)
