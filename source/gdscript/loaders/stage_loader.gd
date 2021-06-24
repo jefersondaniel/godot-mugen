@@ -5,6 +5,10 @@ var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
 var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 
+func load_definition(path: String):
+    var definition: Dictionary = def_parser.read(path)
+    return create_stage(definition)
+
 func load(path: String):
     var definition: Dictionary = def_parser.read(path)
     var folder: String = path.substr(0, path.find_last('/'))
@@ -13,13 +17,17 @@ func load(path: String):
     var animations = air_parser.read(path)
     var backgrounds = []
 
+    # TODO: Use bg_parser
     for key in definition.keys():
         if key.begins_with('bg '):
             backgrounds.append(create_background(definition[key], images, animations))
 
-    return create_stage(definition, backgrounds)
+    var stage = create_stage(definition)
+    stage.backgrounds = backgrounds
+    stage.setup()
+    return stage
 
-func create_stage(definition: Dictionary, backgrounds: Array):
+func create_stage(definition: Dictionary):
     var stage = Stage.new()
     var info: Dictionary = definition.get('info', {})
     var camera: Dictionary = definition.get('camera', {})
@@ -29,9 +37,6 @@ func create_stage(definition: Dictionary, backgrounds: Array):
     var shadow: Dictionary = definition.get('shadow', {})
     var reflection: Dictionary = definition.get('reflection', {})
     var music: Dictionary = definition.get('music', {})
-
-    # TODO: use bg parser
-    stage.backgrounds = backgrounds
 
     if 'name' in info:
         stage.info_name = info['name']
@@ -109,8 +114,6 @@ func create_stage(definition: Dictionary, backgrounds: Array):
         stage.music_bgmusic = music['bgmusic']
     if 'bgvolume' in music:
         stage.music_bgvolume = int(music['bgvolume'])
-
-    stage.setup()
 
     return stage
 
