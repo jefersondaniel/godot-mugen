@@ -18,8 +18,10 @@ func set_text(text):
     update_cache()
 
 func update_cache():
+    cache = []
+
     if not font_data or not text:
-        cache = []
+        update()
         return
 
     var cursor: Vector2 = Vector2(0, 0)

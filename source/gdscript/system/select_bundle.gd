@@ -25,7 +25,6 @@ func get_character_definitions():
     var kernel = constants.container["kernel"]
     var result = []
     for character in data["characters"]:
-        print(character)
         var def_path = character["name"]
         if def_path.find("/") < 0:
             def_path = "%s/%s.def" % [def_path, def_path]
@@ -39,7 +38,6 @@ func get_stage_definitions():
     var result = []
     for def_path in get_included_stages():
         var path = "%s/%s" % [kernel.base_path, def_path]
-        print(path)
         var definition = stage_loader.load_definition(path)
         result.push_back(definition)
     return result

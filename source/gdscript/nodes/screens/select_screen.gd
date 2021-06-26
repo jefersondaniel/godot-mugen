@@ -27,7 +27,7 @@ var current_team: int = 1
 var current_input: int = 1
 var current_request = null
 var current_character = null
-var current_stage = null
+var current_stage_index: int = 0
 var face_sprites: Dictionary = {}
 var name_sprites: Dictionary = {}
 var face_layer = null
@@ -71,10 +71,10 @@ func pick_select_request() -> bool:
 
     return true
 
-func handle_selection():
+func handle_character_select():
     var store = constants.container["store"]
 
-    store.select_results.push_back({
+    store.character_select_result.push_back({
         "character": current_character,
         "team": current_request["team"],
         "role": current_request["role"]
@@ -90,6 +90,9 @@ func handle_selection():
     # Stage Selection
     remove_cursor_sprite()
     create_stage_label()
+
+func handle_stage_select():
+    store.stage_select_result = stages[current_stage_index]
 
 func get_cursor_input():
     if current_input == 1:
@@ -166,7 +169,6 @@ func load_characters():
 
 func load_stages():
     stages = select_bundle.get_stage_definitions()
-    current_stage = stages[0]
 
 func create_character_cells():
     var index = -1
@@ -236,14 +238,16 @@ func handle_cursor_input():
         cursor_position.x = min(select_info.columns - 1, cursor_position.x + 1)
         moved = true
 
-    if cursor_input.is_action_just_pressed("s") and is_valid_selection():
+    if cursor_input.is_select_just_pressed() and is_valid_selection():
         play_sound(cursor_done_snd)
-        handle_selection()
+        handle_character_select()
         return
 
     if moved:
         update_current_character()
         play_sound(cursor_move_snd)
+
+    update_cursor_position()
 
 func play_sound(sound_def):
     var kernel = constants.container["kernel"]
@@ -253,10 +257,30 @@ func play_sound(sound_def):
     if sound:
         audio_player.play_sound(sound)
 
+func handle_stage_input():
+    var moved: bool = false
+
+    if user_input.any.is_action_just_pressed("B"):
+        current_stage_index = max(0, current_stage_index - 1)
+        moved = true
+
+    if user_input.any.is_action_just_pressed("F"):
+        current_stage_index = min(stages.size() - 1, current_stage_index + 1)
+        moved = true
+
+    if moved:
+        stage_label.set_text(stages[current_stage_index].info_displayname)
+        play_sound(select_info.stage_move_snd)
+
+    if user_input.any.is_select_just_pressed():
+        play_sound(select_info.stage_done_snd)
+        return
+
 func _process(delta: float):
     if cursor_sprite != null:
         handle_cursor_input()
-        update_cursor_position()
+    elif stage_label != null:
+        handle_stage_input()
 
 func update_current_character():
     var index = get_cell_index(cursor_position)
@@ -292,6 +316,7 @@ func update_face():
         sprite.position.x -= texture_size.x * sprite.scale.x
     face_sprites[current_team] = sprite
     face_layer.add_child(sprite)
+    # TODO: Support face window
 
 func update_name():
     var player_info = get_player_info(current_team)
@@ -335,8 +360,9 @@ func create_stage_label():
 
     var name_font = kernel.get_font(stage_active_font)
     stage_label = UiLabel.new()
-    stage_label.set_text(current_stage.info_displayname)
+    stage_label.set_text(stages[current_stage_index].info_displayname)
     stage_label.set_font(name_font)
     stage_label.position = stage_pos * kernel.get_scale()
 
     add_child(stage_label)
+    # TODO: Support stage font blink
