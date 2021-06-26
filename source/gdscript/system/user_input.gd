@@ -13,6 +13,9 @@ class Controller:
     func is_action_just_released(action):
         return Input.is_action_just_released(prefix + action)
 
+    func is_select_just_pressed():
+        return is_action_just_pressed("s") or is_action_just_pressed("x")
+
 class MergedController:
     var controls: Array = []
 
@@ -36,6 +39,9 @@ class MergedController:
             if control.is_action_just_released(action):
                 return true
         return false
+
+    func is_select_just_pressed():
+        return is_action_just_pressed("s") or is_action_just_pressed("x")
 
 var p1 = Controller.new('P1_')
 var p2 = Controller.new('P2_')

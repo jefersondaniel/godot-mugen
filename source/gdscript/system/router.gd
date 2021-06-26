@@ -38,7 +38,8 @@ func show_select_screen(action):
     var store = constants.container["store"]
 
     store.select_requests = []
-    store.select_results = []
+    store.character_select_result = []
+    store.stage_select_result = []
 
     if action:
         store.fight_type = action.id
