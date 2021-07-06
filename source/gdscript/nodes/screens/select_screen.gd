@@ -108,8 +108,7 @@ func get_player_info(player: int):
 
 func create_background():
     var background_group = BackgroundGroup.new()
-    background_group.sprite_bundle = sprite_bundle
-    background_group.setup(background_definition)
+    background_group.setup(background_definition, sprite_bundle, animations)
 
     add_child(background_group)
 

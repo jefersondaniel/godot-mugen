@@ -9,10 +9,13 @@ var bgclearcolor: PoolIntArray = PoolIntArray([])
 var debugbg: int = 0
 # Custom Variables
 var sprite_bundle: Object
+var animations: Dictionary
 var texture: ImageTexture
 var custom_rect: Rect2
 
-func setup(definition):
+func setup(definition, sprite_bundle, animations):
+    self.sprite_bundle = sprite_bundle
+    self.animations = animations
     key = definition.key
     spr = definition.spr
     bgclearcolor = definition.bgclearcolor
@@ -23,7 +26,9 @@ func setup(definition):
     for item in definition.items:
         var background = Background.new()
         background.position = constants.get_screen_coordinate(item.start)
-        background.image = sprite_bundle.get_image(item.spriteno)
+        background.sprite_bundle = sprite_bundle
+        if item.actionno:
+            background.animation = animations[item.actionno]
         background.type = item.type
         background.positionlink = item.positionlink
         background.velocity = item.velocity

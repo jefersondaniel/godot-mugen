@@ -9,8 +9,8 @@ var element_switch_time = 0
 var element = null # Element object
 var is_foreign_animation: bool = false
 
-func _init(_animations):
-    animations = _animations
+func _init(animations):
+    self.animations = animations
 
 func set_local_animation(animation_number, element_index):
     animation = animations[animation_number]
@@ -30,9 +30,12 @@ func set_foreign_animation(animation_manager, animation_number: int, element_ind
     is_foreign_animation = true
     set_animation(animation, animation.elements[element_index])
 
-func set_animation(_animation, _element):
+func set_animation(_animation, _element = null):
     animation = _animation
-    element = _element
+    if _element:
+        element = _element
+    else:
+        element = animation.elements[0]
     animation_finished = false
     animation_in_loop = false
     animation_time = animation.get_element_start_time(element.id)
