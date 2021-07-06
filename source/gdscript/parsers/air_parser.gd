@@ -47,6 +47,11 @@ func read(path):
             continue
         elif line.begins_with('['):
             # Ignore files with mixed animations and other configurations
+            if current_animation:
+                if current_collision:
+                    current_animation['collisions'].append(current_collision)
+                if current_animation['elements'].size() != 0:
+                    animations[current_animation_key] = create_animation(current_animation)
             current_animation = null
 
         if not current_animation:
@@ -101,7 +106,7 @@ func read(path):
                 current_collision['default'] = false
             continue
 
-        line = line.replace(' ', '').replace(',,', '')
+        line = line.replace(' ', '')
         var parameters = line.split(',')
         var parameters_size = parameters.size()
         if parameters_size < 5:
