@@ -6,17 +6,17 @@ var Router = load('res://source/gdscript/system/router.gd')
 var Store = load('res://source/gdscript/system/store.gd')
 
 func _init():
-    var kernel = Kernel.new()
-    kernel.load()
-    constants.container["kernel"] = kernel
+	var kernel = Kernel.new()
+	kernel.load()
+	constants.container["kernel"] = kernel
 
-    var store = Store.new()
-    constants.container["store"] = store
+	var store = Store.new()
+	constants.container["store"] = store
 
-    var audio_player = AudioPlayer.new()
-    constants.container["audio_player"] = audio_player
-    add_child(audio_player)
+	var audio_player = AudioPlayer.new()
+	constants.container["audio_player"] = audio_player
+	add_child(audio_player)
 
-    var router = Router.new()
-    constants.container["router"] = router
-    add_child(router)
+	var router = Router.new()
+	constants.container["router"] = router
+	add_child(router)

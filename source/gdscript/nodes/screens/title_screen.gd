@@ -3,7 +3,7 @@ extends Node2D
 var UiMenu = load('res://source/gdscript/nodes/ui/menu.gd')
 var BackgroundGroup = load('res://source/gdscript/nodes/ui/background_group.gd')
 
-signal on_menu_action(action)
+signal menu_action(action)
 
 var title_info = null
 var menu_item_font = null
@@ -71,4 +71,4 @@ func setup_background():
     add_child(background_group)
 
 func dispatch_menu_action(action):
-    emit_signal("on_menu_action", action)
+    emit_signal("menu_action", action)

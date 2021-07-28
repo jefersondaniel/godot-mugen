@@ -7,15 +7,17 @@ var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
 var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
 var AnimationSprite = load("res://source/gdscript/nodes/sprite/animation_sprite.gd")
 
+signal done
+
 var setup: bool = false
-var kernel: Object
-var store: Object
+var kernel = null
+var store = null
 var animations: Dictionary
-var background_definition: Object
-var select_info: Object
+var background_definition = null
+var select_info = null
 var title_font = null
-var sprite_bundle: Object
-var select_bundle: Object
+var sprite_bundle = null
+var select_bundle = null
 var cell_slots: Array = []
 var characters: Array = []
 var stages: Array = []
@@ -48,7 +50,8 @@ func _ready():
     select_bundle = kernel.get_select_bundle()
     face_layer = Node2D.new()
 
-    pick_select_request()
+    if not pick_select_request():
+        printerr("Can't find selection data")
     load_characters()
     load_stages()
     create_background()
@@ -93,6 +96,7 @@ func handle_character_select():
 
 func handle_stage_select():
     store.stage_select_result = stages[current_stage_index]
+    emit_signal("done")
 
 func get_cursor_input():
     if current_input == 1:
@@ -273,6 +277,7 @@ func handle_stage_input():
 
     if user_input.any.is_select_just_pressed():
         play_sound(select_info.stage_done_snd)
+        handle_stage_select()
         return
 
 func _process(delta: float):

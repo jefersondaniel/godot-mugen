@@ -1,48 +1,13 @@
 extends ParallaxBackground
 
+var definition = null
+
+# Child Nodes
 var gravity = Vector2(0, 0.475)
 var backgrounds: Array = []
 var camera: Camera2D
 var camera_handle: Node2D
 var camera_offset: Vector2
-
-var info_name: String = ''
-var info_displayname: String = ''
-var info_mugenversion: String = ''
-var info_author: String = ''
-var camera_startx: int = 0
-var camera_starty: int = 0
-var camera_boundleft: int = 0
-var camera_boundright: int = 0
-var camera_boundhigh: int = 0
-var camera_boundlow: int = 0
-var camera_verticalfollow: float = 0
-var camera_floortension: float = 0
-var camera_tension: float = 0
-var player_p1startx: int = 0
-var player_p1starty: int = 0
-var player_p2startx: int = 0
-var player_p2starty: int = 0
-var player_p1facing: int = 0
-var player_p2facing: int = 0
-var player_leftbound: int = 0
-var player_rightbound: int = 0
-var bound_screenleft: int = 0
-var bound_screenright: int = 0
-var stageinfo_zoffset: int = 0
-var stageinfo_zoffsetlink: int = 0
-var stageinfo_autoturn: int = 1
-var stageinfo_resetbg: int = 0
-var stageinfo_localcoord: Vector2 = Vector2(320, 240)
-var stageinfo_xscale: int = 0
-var stageinfo_yscale: int = 0
-var shadow_intensity: int = 0
-var shadow_color: Array = []
-var shadow_yscale: int = 0
-var shadow_fade_range: Array = []
-var reflection_reflect: int = 0
-var music_bgmusic: String = ''
-var music_bgvolume: int = 0
 var player_layer: ParallaxLayer
 var players: Array = []
 
@@ -66,12 +31,12 @@ func setup():
     add_child(player_layer)
 
 func setup_camera():
-    var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
     camera_handle = Node2D.new()
     camera_offset = Vector2(0, constants.WINDOW_SIZE.y / 2)
 
-    set_camera_position(Vector2(camera_startx, camera_starty) * scale)
+    set_camera_position(Vector2(definition.camera_startx, definition.camera_starty) * scale)
 
     camera = Camera2D.new()
     # camera.offset = constants.WINDOW_SIZE / 2 * Vector2(0, 1)
@@ -80,24 +45,24 @@ func setup_camera():
     camera.make_current()
 
 func get_bound_left():
-    var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
-    return -(constants.WINDOW_SIZE.x / 2) + (camera_boundleft * scale.x)
+    return -(constants.WINDOW_SIZE.x / 2) + (definition.camera_boundleft * scale.x)
 
 func get_bound_right():
-    var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
-    return (constants.WINDOW_SIZE.x / 2) + (camera_boundright * scale.x)
+    return (constants.WINDOW_SIZE.x / 2) + (definition.camera_boundright * scale.x)
 
 func get_bound_top():
-    var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
-    return camera_boundhigh * scale.y
+    return definition.camera_boundhigh * scale.y
 
 func get_bound_bottom():
-    var scale: Vector2 = constants.get_scale(stageinfo_localcoord)
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
-    return constants.WINDOW_SIZE.y + (camera_boundlow * scale.x)
+    return constants.WINDOW_SIZE.y + (definition.camera_boundlow * scale.x)
 
 func set_camera_position(position: Vector2):
     camera_handle.position = position + camera_offset
@@ -119,7 +84,7 @@ func get_movement_area() -> Rect2:
 func get_position_offset():
     return Vector2(
         0,
-        stageinfo_zoffset + constants.WINDOW_SIZE.y / 2
+        definition.stageinfo_zoffset + constants.WINDOW_SIZE.y / 2
     )
 
 func get_starting_pos(team: int) -> Vector2:
@@ -127,14 +92,14 @@ func get_starting_pos(team: int) -> Vector2:
     var offset: Vector2 = get_position_offset()
 
     if team == 1:
-        pos = Vector2(player_p1startx + offset.x, player_p1starty + offset.y)
+        pos = Vector2(definition.player_p1startx + offset.x, definition.player_p1starty + offset.y)
     else:
-        pos = Vector2(player_p2startx + offset.x, player_p2starty + offset.y)
+        pos = Vector2(definition.player_p2startx + offset.x, definition.player_p2starty + offset.y)
 
     return pos
 
 func get_stage_scale() -> Vector2:
-    return constants.get_scale(stageinfo_localcoord)
+    return constants.get_scale(definition.stageinfo_localcoord)
 
 func add_player(player):
     players.append(player)
@@ -152,8 +117,8 @@ func update_camera():
     var camera_relative_position: Vector2 = get_camera_relative_position()
     var camera_left: float = camera_relative_position.x - constants.WINDOW_SIZE.x / 2
     var camera_right: float = camera_relative_position.x + constants.WINDOW_SIZE.x / 2
-    var drag_margin_left: float = camera_left + camera_tension * scale.x
-    var drag_margin_right: float = camera_right - camera_tension * scale.x
+    var drag_margin_left: float = camera_left + definition.camera_tension * scale.x
+    var drag_margin_right: float = camera_right - definition.camera_tension * scale.x
 
     for player in players:
         var player_left: float = player.get_left_position()

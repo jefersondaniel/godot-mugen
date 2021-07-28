@@ -3,9 +3,9 @@ extends Node2D
 var StateMachine = load('res://source/gdscript/system/state_machine.gd')
 var TitleScreen = load('res://source/gdscript/nodes/screens/title_screen.gd')
 var SelectScreen = load('res://source/gdscript/nodes/screens/select_screen.gd')
+var VsScreen = load('res://source/gdscript/nodes/screens/vs_screen.gd')
 var current_screen = null
 var state_machine = null
-var store = null
 
 func _ready():
     state_machine = StateMachine.new()
@@ -15,11 +15,17 @@ func _ready():
     var training_selection_state = state_machine.add_state("training_selection")
     title_state.add_transition(training_selection_state, constants.MENU_TRAINING)
 
+    var vs_state = state_machine.add_state("vs")
+    training_selection_state.add_transition(vs_state, "done")
+
     state_machine.connect("on_state", self, "on_state_change")
     state_machine.start(title_state)
 
-func on_title_menu_action(action):
+func handle_menu_action(action):
     state_machine.trigger(action.id, action)
+
+func handle_done():
+    state_machine.trigger("done")
 
 func on_state_change(state, payload = null):
     var store = constants.container["store"]
@@ -27,10 +33,14 @@ func on_state_change(state, payload = null):
     match state.name:
         "title":
             var screen = TitleScreen.new()
-            screen.connect("on_menu_action", self, "on_title_menu_action")
+            screen.connect("menu_action", self, "handle_menu_action")
             set_current_screen(screen)
         "training_selection":
             show_select_screen(payload)
+        "vs":
+            var screen = VsScreen.new()
+            screen.connect("done", self, "handle_done")
+            set_current_screen(screen)
         _:
             push_error("unhandled state: %s" % [state.name])
 
@@ -60,6 +70,7 @@ func show_select_screen(action):
             ]
 
     var screen = SelectScreen.new()
+    screen.connect("done", self, "handle_done")
     set_current_screen(screen)
 
 func set_current_screen(screen):

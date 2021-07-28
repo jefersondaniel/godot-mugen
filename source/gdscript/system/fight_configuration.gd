@@ -29,7 +29,7 @@ class Face:
     var bg_spr: Array = []
     var bg_facing: int = -1
     var face_spr: Array = []
-    var face_facing: Array = -1
+    var face_facing: int = -1
     var face_offset: Vector2 = Vector2(0, 0)
 
 class PlayerName:

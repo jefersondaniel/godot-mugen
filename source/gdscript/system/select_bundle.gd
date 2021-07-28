@@ -6,10 +6,10 @@ var data: Dictionary = {
     "extra_stages": [],
 }
 
-func _init(data):
-    if not data:
+func _init(initial_data):
+    if not initial_data:
         return
-    self.data = data
+    self.data = initial_data
 
 func get_included_stages():
     var result = []
