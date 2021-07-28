@@ -3,6 +3,7 @@ extends SceneTree
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 
 func _init():
+    pass
     # var metadata_v1 = sff_parser.read_metadata('res://data/chars/GORO/goro.sff')
     # print(metadata_v1)
 

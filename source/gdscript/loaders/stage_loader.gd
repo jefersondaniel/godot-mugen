@@ -1,4 +1,5 @@
 var Stage = load('res://source/gdscript/nodes/stage.gd')
+var Definition = load('res://source/gdscript/nodes/stage/definition.gd')
 var Background = load('res://source/gdscript/nodes/stage/background.gd')
 var parser_helper = load('res://source/gdscript/helpers/parser_helper.gd').new()
 var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
@@ -6,8 +7,9 @@ var def_parser = load('res://source/gdscript/parsers/def_parser.gd').new()
 var sff_parser = load('res://source/native/sff_parser.gdns').new()
 
 func load_definition(path: String):
-    var definition: Dictionary = def_parser.read(path)
-    return create_stage(definition)
+    var data: Dictionary = def_parser.read(path)
+
+    return create_definition(data)
 
 func load(path: String):
     var definition: Dictionary = def_parser.read(path)
@@ -27,95 +29,100 @@ func load(path: String):
     stage.setup()
     return stage
 
-func create_stage(definition: Dictionary):
+func create_stage(data: Dictionary):
     var stage = Stage.new()
-    var info: Dictionary = definition.get('info', {})
-    var camera: Dictionary = definition.get('camera', {})
-    var player: Dictionary = definition.get('playerinfo', {})
-    var bound: Dictionary = definition.get('bound', {})
-    var stageinfo: Dictionary = definition.get('stageinfo', {})
-    var shadow: Dictionary = definition.get('shadow', {})
-    var reflection: Dictionary = definition.get('reflection', {})
-    var music: Dictionary = definition.get('music', {})
+    stage.definition = create_definition(data)
+    return stage
+
+func create_definition(data: Dictionary):
+    var result = Definition.new()
+    var info: Dictionary = data.get('info', {})
+    var camera: Dictionary = data.get('camera', {})
+    var player: Dictionary = data.get('playerinfo', {})
+    var bound: Dictionary = data.get('bound', {})
+    var stageinfo: Dictionary = data.get('stageinfo', {})
+    var shadow: Dictionary = data.get('shadow', {})
+    var reflection: Dictionary = data.get('reflection', {})
+    var music: Dictionary = data.get('music', {})
 
     if 'name' in info:
-        stage.info_name = info['name']
+        result.info_name = info['name']
     if 'displayname' in info:
-        stage.info_displayname = info['displayname']
+        result.info_displayname = info['displayname']
     else:
-        stage.info_displayname = stage.info_name
+        result.info_displayname = result.info_name
     if 'mugenversion' in info:
-        stage.info_mugenversion = info['mugenversion']
+        result.info_mugenversion = info['mugenversion']
     if 'author' in info:
-        stage.info_author = info['author']
+        result.info_author = info['author']
     if 'startx' in camera:
-        stage.camera_startx = int(camera['startx'])
+        result.camera_startx = int(camera['startx'])
     if 'starty' in camera:
-        stage.camera_starty = int(camera['starty'])
+        result.camera_starty = int(camera['starty'])
     if 'boundleft' in camera:
-        stage.camera_boundleft = int(camera['boundleft'])
+        result.camera_boundleft = int(camera['boundleft'])
     if 'boundright' in camera:
-        stage.camera_boundright = int(camera['boundright'])
+        result.camera_boundright = int(camera['boundright'])
     if 'boundhigh' in camera:
-        stage.camera_boundhigh = int(camera['boundhigh'])
+        result.camera_boundhigh = int(camera['boundhigh'])
     if 'boundlow' in camera:
-        stage.camera_boundlow = int(camera['boundlow'])
+        result.camera_boundlow = int(camera['boundlow'])
     if 'verticalfollow' in camera:
-        stage.camera_verticalfollow = float(camera['verticalfollow'])
+        result.camera_verticalfollow = float(camera['verticalfollow'])
     if 'floortension' in camera:
-        stage.camera_floortension = float(camera['floortension'])
+        result.camera_floortension = float(camera['floortension'])
     if 'tension' in camera:
-        stage.camera_tension = float(camera['tension'])
+        result.camera_tension = float(camera['tension'])
     if 'p1startx' in player:
-        stage.player_p1startx = int(player['p1startx'])
+        result.player_p1startx = int(player['p1startx'])
     if 'p1starty' in player:
-        stage.player_p1starty = int(player['p1starty'])
+        result.player_p1starty = int(player['p1starty'])
     if 'p2startx' in player:
-        stage.player_p2startx = int(player['p2startx'])
+        result.player_p2startx = int(player['p2startx'])
     if 'p2starty' in player:
-        stage.player_p2starty = int(player['p2starty'])
+        result.player_p2starty = int(player['p2starty'])
     if 'p1facing' in player:
-        stage.player_p1facing = int(player['p1facing'])
+        result.player_p1facing = int(player['p1facing'])
     if 'p2facing' in player:
-        stage.player_p2facing = int(player['p2facing'])
+        result.player_p2facing = int(player['p2facing'])
     if 'leftbound' in player:
-        stage.player_leftbound = int(player['leftbound'])
+        result.player_leftbound = int(player['leftbound'])
     if 'rightbound' in player:
-        stage.player_rightbound = int(player['rightbound'])
+        result.player_rightbound = int(player['rightbound'])
     if 'screenleft' in bound:
-        stage.bound_screenleft = int(bound['screenleft'])
+        result.bound_screenleft = int(bound['screenleft'])
     if 'screenright' in bound:
-        stage.bound_screenright = int(bound['screenright'])
+        result.bound_screenright = int(bound['screenright'])
     if 'zoffset' in stageinfo:
-        stage.stageinfo_zoffset = int(stageinfo['zoffset'])
+        result.stageinfo_zoffset = int(stageinfo['zoffset'])
     if 'zoffsetlink' in stageinfo:
-        stage.stageinfo_zoffsetlink = int(stageinfo['zoffsetlink'])
+        result.stageinfo_zoffsetlink = int(stageinfo['zoffsetlink'])
     if 'autoturn' in stageinfo:
-        stage.stageinfo_autoturn = int(stageinfo['autoturn'])
+        result.stageinfo_autoturn = int(stageinfo['autoturn'])
     if 'resetbg' in stageinfo:
-        stage.stageinfo_resetbg = int(stageinfo['resetbg'])
+        result.stageinfo_resetbg = int(stageinfo['resetbg'])
     if 'localcoord' in stageinfo:
-        stage.stageinfo_localcoord = parser_helper.parse_vector(stageinfo['localcoord'])
+        result.stageinfo_localcoord = parser_helper.parse_vector(stageinfo['localcoord'])
     if 'xscale' in stageinfo:
-        stage.stageinfo_xscale = int(stageinfo['xscale'])
+        result.stageinfo_xscale = int(stageinfo['xscale'])
     if 'yscale' in stageinfo:
-        stage.stageinfo_yscale = int(stageinfo['yscale'])
+        result.stageinfo_yscale = int(stageinfo['yscale'])
     if 'intensity' in shadow:
-        stage.shadow_intensity = int(shadow['intensity'])
+        result.shadow_intensity = int(shadow['intensity'])
     if 'color' in shadow:
-        stage.shadow_color = parser_helper.parse_int_array(shadow['color'])
+        result.shadow_color = parser_helper.parse_int_array(shadow['color'])
     if 'yscale' in shadow:
-        stage.shadow_yscale = int(shadow['yscale'])
+        result.shadow_yscale = int(shadow['yscale'])
     if 'fade.range' in shadow:
-        stage.shadow_fade_range = parser_helper.parse_int_array(shadow['fade.range'])
+        result.shadow_fade_range = parser_helper.parse_int_array(shadow['fade.range'])
     if 'reflect' in reflection:
-        stage.reflection_reflect = int(reflection['reflect'])
+        result.reflection_reflect = int(reflection['reflect'])
     if 'bgmusic' in music:
-        stage.music_bgmusic = music['bgmusic']
+        result.music_bgmusic = music['bgmusic']
     if 'bgvolume' in music:
-        stage.music_bgvolume = int(music['bgvolume'])
+        result.music_bgvolume = int(music['bgvolume'])
 
-    return stage
+    return result
 
 func create_background(definition: Dictionary, images: Dictionary, animations: Dictionary):
     var background = Background.new()
