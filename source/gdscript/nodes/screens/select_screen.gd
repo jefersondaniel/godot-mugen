@@ -63,8 +63,6 @@ func _ready():
     update_current_character()
 
 func pick_select_request() -> bool:
-    var store = constants.container["store"]
-
     if store.select_requests.size() == 0:
         return false
 
@@ -75,8 +73,6 @@ func pick_select_request() -> bool:
     return true
 
 func handle_character_select():
-    var store = constants.container["store"]
-
     store.character_select_result.push_back({
         "character": current_character,
         "team": current_request["team"],
@@ -253,7 +249,6 @@ func handle_cursor_input():
     update_cursor_position()
 
 func play_sound(sound_def):
-    var kernel = constants.container["kernel"]
     var audio_player = constants.container["audio_player"]
     var sound = kernel.get_sound(sound_def)
 
@@ -280,7 +275,7 @@ func handle_stage_input():
         handle_stage_select()
         return
 
-func _process(delta: float):
+func _process(_delta: float):
     if cursor_sprite != null:
         handle_cursor_input()
     elif stage_label != null:
