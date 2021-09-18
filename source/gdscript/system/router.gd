@@ -4,6 +4,7 @@ var StateMachine = load('res://source/gdscript/system/state_machine.gd')
 var TitleScreen = load('res://source/gdscript/nodes/screens/title_screen.gd')
 var SelectScreen = load('res://source/gdscript/nodes/screens/select_screen.gd')
 var VsScreen = load('res://source/gdscript/nodes/screens/vs_screen.gd')
+var FightScreen = load('res://source/gdscript/nodes/screens/fight_screen.gd')
 var current_screen = null
 var state_machine = null
 
@@ -17,6 +18,9 @@ func _ready():
 
     var vs_state = state_machine.add_state("vs")
     training_selection_state.add_transition(vs_state, "done")
+
+    var fight_state = state_machine.add_state("fight")
+    vs_state.add_transition(fight_state, "done")
 
     state_machine.connect("on_state", self, "on_state_change")
     state_machine.start(title_state)
@@ -39,6 +43,10 @@ func on_state_change(state, payload = null):
             show_select_screen(payload)
         "vs":
             var screen = VsScreen.new()
+            screen.connect("done", self, "handle_done")
+            set_current_screen(screen)
+        "fight":
+            var screen = FightScreen.new()
             screen.connect("done", self, "handle_done")
             set_current_screen(screen)
         _:

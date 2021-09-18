@@ -9,6 +9,7 @@ var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
 var SelectBundle = load("res://source/gdscript/system/select_bundle.gd")
 var CoreConfiguration = load("res://source/gdscript/system/core_configuration.gd")
 var MotifConfiguration = load("res://source/gdscript/system/motif_configuration.gd")
+var FightConfiguration = load("res://source/gdscript/system/fight_configuration.gd")
 
 func load(base_path: String):
     var system_path = "%s/%s" % [base_path, "data"]
@@ -18,7 +19,11 @@ func load(base_path: String):
     var motif_path = "%s/%s" % [base_path, core_configuration.options.motif]
     var motif = load_motif_configuration(motif_path)
 
+    var fight_path = find_file_path(motif_path, motif.files.fight)
+    var fight = load_fight_configuration(fight_path)
+
     core_configuration.motif_configuration = motif
+    core_configuration.fight_configuration = fight
 
     return core_configuration
 
@@ -71,3 +76,40 @@ func find_file_path(referrer: String, name: String) -> String:
             return "%s/%s" % [base_path, name]
 
     return "%s/%s" % [base_path, name]
+
+func load_fight_configuration(path: String):
+    var sections = cfg_parser.read(path, false, true)
+    var result = FightConfiguration.new()
+    data_hydrator.hydrate_object(result, sections)
+
+    if result.files.snd:
+        var sound_path = find_file_path(path, result.files.snd)
+        var sounds = snd_parser.read_sounds(sound_path)
+        if sounds:
+            result.sounds = sounds
+
+    if result.files.sff:
+        var spr_path = find_file_path(path, result.files.sff)
+        var images = sff_parser.read_images(spr_path, null, null)
+        if images:
+            result.sprite_bundle = SpriteBundle.new(images)
+
+    if result.files.fightfx_sff:
+        var spr_path = find_file_path(path, result.files.fightfx_sff)
+        var images = sff_parser.read_images(spr_path, null, null)
+        if images:
+            result.fightfx_sprite_bundle = SpriteBundle.new(images)
+
+    if result.files.fightfx_air:
+        var air_path = find_file_path(path, result.files.fightfx_air)
+        var animations = air_parser.read(air_path)
+        if animations:
+            result.fightfx_animations = animations
+
+    if result.files.common_snd:
+        var sound_path = find_file_path(path, result.files.common_snd)
+        var sounds = snd_parser.read_sounds(sound_path)
+        if sounds:
+            result.common_sounds = sounds
+
+    return result

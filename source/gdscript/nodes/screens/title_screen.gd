@@ -27,8 +27,8 @@ func _ready():
     setup_menu()
 
 func setup_menu():
-    menu_item_font = kernel.get_font(title_info.menu_item_font)
-    menu_item_active_font = kernel.get_font(title_info.menu_item_active_font)
+    menu_item_font = kernel.get_motif_font(title_info.menu_item_font)
+    menu_item_active_font = kernel.get_motif_font(title_info.menu_item_active_font)
 
     var menu = UiMenu.new()
     menu.position = title_info.menu_pos * kernel.get_scale()

@@ -29,6 +29,14 @@ class Files:
     var font5_height: int = 0
     var font6: String = ""
     var font6_height: int = 0
+    var font7: String = ""
+    var font7_height: int = 0
+    var font8: String = ""
+    var font8_height: int = 0
+    var font9: String = ""
+    var font9_height: int = 0
+    var font10: String = ""
+    var font10_height: int = 0
 
     func get_font_reference(index: int) -> Array:
         if index == 1:
@@ -42,6 +50,14 @@ class Files:
         if index == 5:
             return [font5, font5_height]
         if index == 6:
+            return [font6, font6_height]
+        if index == 7:
+            return [font6, font6_height]
+        if index == 8:
+            return [font6, font6_height]
+        if index == 9:
+            return [font6, font6_height]
+        if index == 10:
             return [font6, font6_height]
         push_error("Invalid font index: %d" % [index])
         return []
@@ -261,11 +277,11 @@ var default_ending: DefaultEnding
 var end_credits: EndCredits
 var option_info: OptionInfo
 # Resources
-var animations: Dictionary = {}
-var backgrounds: Dictionary = {}
-var sounds: Dictionary = {}
-var sprite_bundle: Object = SpriteBundle.new(null)
-var select_bundle: Object = SelectBundle.new(null)
+var animations: Dictionary
+var backgrounds: Dictionary
+var sounds: Dictionary
+var sprite_bundle: Object
+var select_bundle: Object
 
 func _init():
     info = Info.new()
@@ -281,3 +297,9 @@ func _init():
     default_ending = DefaultEnding.new()
     end_credits = EndCredits.new()
     option_info = OptionInfo.new()
+    # Resources
+    animations = {}
+    backgrounds = {}
+    sounds = {}
+    sprite_bundle = SpriteBundle.new(null)
+    select_bundle = SelectBundle.new(null)

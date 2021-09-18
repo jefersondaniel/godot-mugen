@@ -14,6 +14,9 @@ func load():
 func get_motif():
     return core_configuration.motif_configuration
 
+func get_fight():
+    return core_configuration.fight_configuration
+
 func get_sound(sound_def: Array):
     var sounds = core_configuration.motif_configuration.sounds
     return sounds["%s-%s" % [sound_def[0], sound_def[1]]]
@@ -24,7 +27,13 @@ func get_sprite_bundle() -> Dictionary:
 func get_select_bundle() -> Dictionary:
     return core_configuration.motif_configuration.select_bundle
 
-func get_font(font_def: Array) -> Dictionary:
+func get_motif_font(font_def: Array):
+    return self.get_font(font_def, get_motif().files)
+
+func get_fight_font(font_def: Array):
+    return self.get_font(font_def, get_fight().files)
+
+func get_font(font_def: Array, files) -> Dictionary:
     var cache_key = PoolStringArray(font_def).join("-")
 
     if font_cache.has(cache_key):
@@ -37,7 +46,7 @@ func get_font(font_def: Array) -> Dictionary:
     var color_g: float = font_def[4] if font_def.size() >= 5 else 0
     var color_b: float = font_def[5] if font_def.size() >= 6 else 0
 
-    var ref = get_motif().files.get_font_reference(index)
+    var ref = files.get_font_reference(index)
     var path: String = ref[0]
     var size: int = ref[1]
     path = "%s/font/%s" % [base_path, path]
