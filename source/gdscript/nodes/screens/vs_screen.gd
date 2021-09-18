@@ -74,7 +74,7 @@ func setup_face(selection, versus_player, team):
 
 func setup_name(selection, versus_player):
     var label = UiLabel.new()
-    var name_font = kernel.get_font(versus_player.name_font)
+    var name_font = kernel.get_motif_font(versus_player.name_font)
     var character = selection["character"]
     var definition = character["definition"]
     label.set_text(definition.info.displayname)

@@ -1,123 +1,302 @@
+var SpriteBundle = load("res://source/gdscript/system/sprite_bundle.gd")
+var SelectBundle = load("res://source/gdscript/system/select_bundle.gd")
+
 class Files:
     var sff: String = ""
     var snd: String = ""
-    var font1: String = ""
-    var font2: String = ""
-    var font3: String = ""
     var fightfx_sff: String = ""
     var fightfx_air: String = ""
     var common_snd: String = ""
+    # Fonts
+    var font1: String = ""
+    var font1_height: int = 0
+    var font2: String = ""
+    var font2_height: int = 0
+    var font3: String = ""
+    var font3_height: int = 0
+    var font4: String = ""
+    var font4_height: int = 0
+    var font5: String = ""
+    var font5_height: int = 0
+    var font6: String = ""
+    var font6_height: int = 0
+    var font7: String = ""
+    var font7_height: int = 0
+    var font8: String = ""
+    var font8_height: int = 0
+    var font9: String = ""
+    var font9_height: int = 0
+    var font10: String = ""
+    var font10_height: int = 0
+
+    func get_font_reference(index: int) -> Array:
+        if index == 1:
+            return [font1, font1_height]
+        if index == 2:
+            return [font2, font2_height]
+        if index == 3:
+            return [font3, font3_height]
+        if index == 4:
+            return [font4, font4_height]
+        if index == 5:
+            return [font5, font5_height]
+        if index == 6:
+            return [font6, font6_height]
+        if index == 7:
+            return [font6, font6_height]
+        if index == 8:
+            return [font6, font6_height]
+        if index == 9:
+            return [font6, font6_height]
+        if index == 10:
+            return [font6, font6_height]
+        push_error("Invalid font index: %d" % [index])
+        return []
+
+class FightFx:
+    var scale: int = 1
+
+class Background:
+    var anim: int = -1
+    var offset: Vector2 = Vector2(0, 0)
+    var spr: PoolIntArray = PoolIntArray([])
+    var facing: int = 1
+    var scale: Vector2 = Vector2(1, 1)
+
+class LifebarPlayer:
+    var pos: Vector2 = Vector2(0, 0) # Example: 178,12
+    var bg0: Background = Background.new()
+    var bg1: Background = Background.new()
+    var mid: Background = Background.new()
+    var front: Background = Background.new()
+    var range_x: PoolIntArray = PoolIntArray([0, 0]) # Example: 0,127
 
 class Lifebar:
-    var pos: Vector2 = Vector2(0, 0)
-    var bg0_anim: int = 10
-    var bg0_facing: int = -1
-    var bg1_spr: Array = [11, 0]
-    var bg1_facing: int = -1
-    var mid_spr: Array = [12, 0]
-    var mid_facing: int = -1
-    var front_spr: Array = [13, 0]
-    var front_facing: int = -1
-    var range_x: Array = [0, 127]
+    var p1: LifebarPlayer = LifebarPlayer.new()
+    var p2: LifebarPlayer = LifebarPlayer.new()
 
-class Powerbar extends Lifebar:
+class SimulLifebar:
+    var p1: LifebarPlayer = LifebarPlayer.new()
+    var p2: LifebarPlayer = LifebarPlayer.new()
+    var p3: LifebarPlayer = LifebarPlayer.new()
+    var p4: LifebarPlayer = LifebarPlayer.new()
+
+class TurnsLifebar:
+    var p1: LifebarPlayer = LifebarPlayer.new()
+    var p2: LifebarPlayer = LifebarPlayer.new()
+
+class PowerbarPlayer:
+    var pos: Vector2 = Vector2(0, 0) # Example: 178,12
+    var bg0: Background = Background.new()
+    var bg1: Background = Background.new()
+    var mid: Background = Background.new()
+    var front: Background = Background.new()
+    var range_x: PoolIntArray = PoolIntArray([0, 0]) # Example: 0,127
     var counter_offset: Vector2 = Vector2(0, 0)
-    var counter_font: Array = []
+    var counter_font: PoolIntArray = PoolIntArray([0, 0, 0])
+
+class Powerbar:
+    var p1: PowerbarPlayer = PowerbarPlayer.new()
+    var p2: PowerbarPlayer = PowerbarPlayer.new()
+    var level1_snd: PoolIntArray = PoolIntArray([])
+    var level2_snd: PoolIntArray = PoolIntArray([])
+    var level3_snd: PoolIntArray = PoolIntArray([])
+
+class FacePlayer:
+    var pos: Vector2 = Vector2(0,0) # Example: 316,12
+    var bg0: Background = Background.new()
+    var bg1: Background = Background.new()
+    var ko: Background = Background.new()
+    var face: Background = Background.new()
 
 class Face:
-    var pos: Vector2 = Vector2(0, 0)
-    var bg_spr: Array = []
-    var bg_facing: int = -1
-    var face_spr: Array = []
-    var face_facing: int = -1
-    var face_offset: Vector2 = Vector2(0, 0)
+    var p1: FacePlayer = FacePlayer.new()
+    var p2: FacePlayer = FacePlayer.new()
 
-class PlayerName:
+class SimulFace:
+    var p1: FacePlayer = FacePlayer.new()
+    var p2: FacePlayer = FacePlayer.new()
+    var p3: FacePlayer = FacePlayer.new()
+    var p4: FacePlayer = FacePlayer.new()
+
+class TurnsFace:
+    var p1: FacePlayer = FacePlayer.new()
+    var p1_teammate: FacePlayer = FacePlayer.new()
+    var p2: FacePlayer = FacePlayer.new()
+    var p2_teammate: FacePlayer = FacePlayer.new()
+
+class NamePlayer:
     var pos: Vector2 = Vector2(0, 0)
-    var font: Array = []
+    var name_font: PoolIntArray = PoolIntArray([3, 0, 1])
+    # TODO: Support BG
+
+class Name:
+    var p1: NamePlayer = NamePlayer.new()
+    var p2: NamePlayer = NamePlayer.new()
+
+class SimulName:
+    var p1: NamePlayer = NamePlayer.new()
+    var p2: NamePlayer = NamePlayer.new()
+    var p3: NamePlayer = NamePlayer.new()
+    var p4: NamePlayer = NamePlayer.new()
+
+class TurnsName:
+    var p1: NamePlayer = NamePlayer.new()
+    var p2: NamePlayer = NamePlayer.new()
 
 class Time:
-    var pos: Vector2 = Vector2(0, 0)
-    var bg_spr: Array = []
+    var pos: Vector2 = Vector2(0 ,0) # Example: 160,23
+    var bg_spr: PoolIntArray = PoolIntArray([])
     var counter_offset: Vector2 = Vector2(0, 0)
-    var counter_font: Array = []
+    var counter_font: PoolIntArray = PoolIntArray([]) # Example: 2,0,0
     var framespercount: int = 60
 
-class Combo:
+class ComboTeam:
     var pos: Vector2 = Vector2(0, 0) # Coords to show
     var start_x: int = 0 # Starting x-coords
-    var counter_font: Array = []
+    var counter_font: PoolIntArray = PoolIntArray([])
     var counter_shake: int = 1 # Set to 1 to shake count on hit
-    var text_text: String = "Rush!" # You can use %i to show count in the text, eg "%i Hit!"
-    var text_font: Array = []
+    var text_text: String = "Rush!" # Can use %i to show count in the text, eg "%i Hit!"
+    var text_font: PoolIntArray = PoolIntArray([])
     var text_offset: Vector2 = Vector2(0, 0) # Offset of text
     var displaytime: int = 90 # Time to show text
 
-class LabelComponent:
+class Combo:
+    var team1: ComboTeam = ComboTeam.new()
+    var team2: ComboTeam = ComboTeam.new()
+
+class RoundConfiguration:
     var offset: Vector2 = Vector2(0, 0)
-    var font: Array = []
+    var font: PoolIntArray = PoolIntArray([])
+    var text: String = "Round %i"
+    var displaytime: int = 60
+    var anim: PoolIntArray = PoolIntArray([]) # Use "round.default.anim" for animation instead of text
+    var snd: PoolIntArray = PoolIntArray([]) # Sounds to play for each round
+    var scale: Vector2 = Vector2(1, 1)
+
+class RoundMessage:
+    var time: int = 0
+    var offset: Vector2 = Vector2(0, 0)
+    var anim: int = -1
+    var font: PoolIntArray = PoolIntArray([0, 0])
     var text: String = ""
+    var snd: PoolIntArray = PoolIntArray([0, 0])
+    var sndtime: int = 0
     var displaytime: int = 0
 
-class WinIcon:
-    var pos: Vector2 = Vector2(0, 0)
-    var iconoffset: Array = []
-    var counter_offset: Array = []
-    var counter_font: Array = []
-    var n_spr: Array = []
-    var s_spr: Array = []
-    var h_spr: Array = []
-    var throw_spr: Array = []
-    var c_spr: Array = []
-    var t_spr: Array = []
-    var suicide_spr: Array = []
-    var teammate_spr: Array = []
-    var perfect_spr: Array = []
+class Round:
+    var match_wins: int = 0 # Rounds needed to win a match
+    var match_maxdrawgames: int = -1 # Max number of drawgames allowed (-1 for infinite)
+    var start_waittime: int = 0 # Time to wait before starting intro
+    var pos: Vector2 = Vector2(0, 0) # Default position for all components
+    var round_time: int = 0 # Time to show round display
+    var round_sndtime: int = 0 # Time to play the sounds
+    var round_default: RoundConfiguration = RoundConfiguration.new()
+    # Rounds 1..9
+    var round1: RoundConfiguration = RoundConfiguration.new()
+    var round2: RoundConfiguration = RoundConfiguration.new()
+    var round3: RoundConfiguration = RoundConfiguration.new()
+    var round4: RoundConfiguration = RoundConfiguration.new()
+    var round5: RoundConfiguration = RoundConfiguration.new()
+    var round6: RoundConfiguration = RoundConfiguration.new()
+    var round7: RoundConfiguration = RoundConfiguration.new()
+    var round8: RoundConfiguration = RoundConfiguration.new()
+    var round9: RoundConfiguration = RoundConfiguration.new()
+    # Fight
+    var fight_time: int = 0 # Time to show FIGHT component
+    var fight_offset: Vector2 = Vector2(0, 0) # Component for FIGHT display
+    var fight_anim: int = -1
+    var fight_snd: PoolIntArray = PoolIntArray([]) # Sound to play
+    var fight_sndtime: int = 0 # Time to play sound
+    # Control
+    var ctrl_time: int = 30 # Time players get control after "Fight"
+    # Round Messages
+    var ko: RoundMessage = RoundMessage.new() # KO
+    var dko: RoundMessage = RoundMessage.new() # Double KO
+    var to: RoundMessage = RoundMessage.new() # Time Over
+    var slow_time: int = 0 # Time for KO slowdown (in ticks)
+    var over_waittime: int = 0 # Time to wait after KO before player control is stopped
+    var over_hittime: int = 0 # Time after KO that players can still damage each other (for double KO)
+    var over_wintime: int = 0 # Time to wait before players change to win states
+    var over_time: int = 0 # Time to wait before round ends
+    var win: RoundMessage = RoundMessage.new() 
+    var win2: RoundMessage = RoundMessage.new() # 2-player win text
+    var draw: RoundMessage = RoundMessage.new() # Draw text
 
-var animations: Array = []
-var fightfx_scale: int = 1
-var p1_lifebar = null
-var p2_lifebar = null
-var p1_powerbar = null
-var p2_powerbar = null
-var power_level1_sound: Array = []
-var power_level2_sound: Array = []
-var power_level3_sound: Array = []
-var p1_face = null
-var p2_face = null
-var p1_name = null
-var p2_name = null
-var team1_combo = null
-var team2_combo = null
-var match_wins: int = 2 # Rounds needed to win a match
-var match_maxdrawgames = 1 # Max number of drawgames allowed (-1 for infinite) *2001.11.01 NEW*
-var start_waittime = 30 # Time to wait before starting intro
-var default_pos: Vector2 = Vector2(0, 0)
-var ctrl_time: int = 30 # Time players get control after "Fight"
-var round_time: int = 0 # Time to show round display
-var round_component = null
-var round1_snd: Array = []
-var round2_snd: Array = []
-var round3_snd: Array = []
-var round_sndtime: int = 0
-var fight_time: int = 0
-var fight_component = null
-var ko_time: int = 0
-var ko_snd: Array = []
-var ko_component = null
-var dko_snd: Array = []
-var to_component = null
-var to_snd: Array = []
-var ko_sndtime: int = 0 # Time to play sound for KO, DKO and TO.
-var slow_time: int = 0 # Time for KO slowdown (in ticks)
-var over_waittime: int = 45 # Time to wait after KO before player control is stopped
-var over_hittime: int = 10 # Time after KO that players can still damage each other (for double KO)
-var over_wintime: int = 45 # Time to wait before players change to win states
-var over_time: int = 210 # Time to wait before round ends
-var win_time: int = 60 # Time to wait before showing win/draw message
-var win_component = null
-var win2_component = null
-var draw_component = null
-var winicon_useiconupto: int = 4
-var winicon_p1 = null
-var winicon_p2 = null
+class WinIconPlayer:
+    var pos: Vector2 = Vector2(0, 0)
+    var iconoffset: Vector2 = Vector2(0, 0) # Offset for next icon (x,y)
+    # Counter text font and offset for representing wins
+    var counter_font: PoolIntArray = PoolIntArray([])
+    var counter_offset: Vector2 = Vector2(0, 0)
+    var bg0: Background = Background.new()
+    var n: Background = Background.new() # Win by normal
+    var s: Background = Background.new() # Win by special
+    var h: Background = Background.new() # Win by hyper (super)
+    var throw: Background = Background.new() # Win by normal throw
+    var c: Background = Background.new() # Win by cheese
+    var t: Background = Background.new() # Win by time over
+    var suicide: Background = Background.new() # Win by suicide
+    var teammate: Background = Background.new() # Opponent beaten by his own teammate
+    var perfect: Background = Background.new() # Win by perfect (overlay icon)
+
+class WinIcon:
+    var p1: WinIconPlayer = WinIconPlayer.new()
+    var p2: WinIconPlayer = WinIconPlayer.new()
+    var useiconupto: int = 0 # Use icons up until this number of wins
+
+var files: Files
+var fightfx: FightFx
+var lifebar: Lifebar
+var simullifebar: SimulLifebar
+var turnslifebar: TurnsLifebar
+var powerbar: Powerbar
+var face: Face
+var simulface: SimulFace
+var turnsface: TurnsFace
+var name: Name
+var simulname: SimulName
+var turnsname: TurnsName
+var time: Time
+var combo: Combo
+var round_config: Round
+var winicon: WinIcon
+
+# Resources
+var animations: Dictionary
+var sounds: Dictionary
+var sprite_bundle: Object
+var select_bundle: Object
+var fightfx_sprite_bundle: Object
+var fightfx_animations: Dictionary
+var common_sounds: Dictionary
+
+var __SECTION_MAPPING__: Dictionary = {
+    "round_config": "round",
+}
+
+func _init():
+    files = Files.new()
+    fightfx = FightFx.new()
+    lifebar = Lifebar.new()
+    simullifebar = SimulLifebar.new()
+    turnslifebar = TurnsLifebar.new()
+    powerbar = Powerbar.new()
+    face = Face.new()
+    simulface = SimulFace.new()
+    turnsface = TurnsFace.new()
+    name = Name.new()
+    simulname = SimulName.new()
+    turnsname = TurnsName.new()
+    time = Time.new()
+    combo = Combo.new()
+    round_config = Round.new()
+    winicon = WinIcon.new()
+    # Resources
+    animations = {}
+    sounds = {}
+    sprite_bundle = SpriteBundle.new(null)
+    select_bundle = SelectBundle.new(null)
+    fightfx_sprite_bundle = SpriteBundle.new(null)
+    fightfx_animations = {}
+    common_sounds = {}

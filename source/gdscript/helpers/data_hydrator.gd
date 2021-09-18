@@ -6,12 +6,18 @@ func hydrate_object(result, data):
     if typeof(data) == TYPE_ARRAY:
         data = __map_sections(data)
 
+    var section_mapping = result.get("__SECTION_MAPPING__")
+    if not section_mapping:
+        section_mapping = {}
+
     for property in result.get_property_list():
-        if property["type"] == TYPE_OBJECT and data.has(property["name"]):
+        var mapped_section = section_mapping.get(property["name"], property["name"])
+
+        if property["type"] == TYPE_OBJECT and data.has(mapped_section):
             self.hydrate_object_section(
                 result.get(property["name"]),
-                data[property["name"]],
-                property["name"]
+                data[mapped_section],
+                mapped_section
             )
 
 func hydrate_object_section(result, data: Dictionary, parent_name: String):
@@ -32,15 +38,24 @@ func hydrate_object_section(result, data: Dictionary, parent_name: String):
         embedding_mapping = result.get("__EMBEDDING_MAPPING__")
 
     for embedding_key in embeddings:
+        var embed_data = {}
+        var embedding_prefix = embedding_mapping.get(embedding_key, embedding_key)
+        var key_prefix: String = "%s_" % [embedding_prefix]
+
         for key in data:
-            var embedding_prefix = embedding_mapping.get(embedding_key, embedding_key)
-            var key_prefix: String = "%s_" % [embedding_prefix]
             if not key.begins_with(key_prefix):
                 continue
             invalidated_keys.append(key)
             var target_key = key.substr(len(key_prefix))
-            var target = result.get(embedding_key)
-            hydrate_object_key(target, target_key, data[key], "%s.%s" % [parent_name, embedding_key])
+            embed_data[target_key] = data[key]
+
+        var target = result.get(embedding_key)
+
+        self.hydrate_object_section(
+            target,
+            embed_data,
+            "%s.%s" % [parent_name, embedding_key]
+        )
 
     for key in data:
         if invalidated_keys.has(key):

@@ -44,7 +44,7 @@ func _ready():
     store = constants.container["store"]
     select_info = kernel.get_motif().select_info
     animations = kernel.get_motif().animations
-    title_font = kernel.get_font(select_info.title_font)
+    title_font = kernel.get_motif_font(select_info.title_font)
     background_definition = kernel.get_motif().backgrounds["select"]
     sprite_bundle = kernel.get_sprite_bundle()
     select_bundle = kernel.get_select_bundle()
@@ -325,7 +325,7 @@ func update_name():
 
     var definition = current_character["definition"]
     var label = UiLabel.new()
-    var name_font = kernel.get_font(player_info.name_font)
+    var name_font = kernel.get_motif_font(player_info.name_font)
     label.set_text(definition.info.displayname)
     label.set_font(name_font)
     label.position = player_info.name_offset
@@ -357,7 +357,7 @@ func create_stage_label():
     if stage_label:
         stage_label.queue_free()
 
-    var name_font = kernel.get_font(stage_active_font)
+    var name_font = kernel.get_motif_font(stage_active_font)
     stage_label = UiLabel.new()
     stage_label.set_text(stages[current_stage_index].info_displayname)
     stage_label.set_font(name_font)
