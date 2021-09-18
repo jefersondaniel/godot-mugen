@@ -14,9 +14,12 @@ var vs_screen: Object
 var sprite_bundle: Object
 
 func _ready():
-    if setup:
-        return
+    if not setup:
+        setup()
+    var timeout_secs = vs_screen.time / constants.TARGET_FPS
+    get_tree().create_timer(timeout_secs).connect("timeout", self, "handle_timeout")
 
+func setup():
     setup = true
     kernel = constants.container["kernel"]
     store = constants.container["store"]
@@ -79,3 +82,6 @@ func setup_name(selection, versus_player):
     # TODO: Implement name_spacing
     label.position = versus_player.name_offset
     add_child(label)
+
+func handle_timeout():
+    emit_signal("done")
