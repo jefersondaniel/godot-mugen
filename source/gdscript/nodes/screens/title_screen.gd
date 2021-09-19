@@ -10,14 +10,9 @@ var menu_item_font = null
 var menu_item_active_font = null
 var background_definition = null
 var kernel = null
-var setup = false
 var animations: Dictionary
 
-func _ready():
-    if setup:
-        return
-
-    setup = true
+func _init():
     kernel = constants.container["kernel"]
     title_info = kernel.get_motif().title_info
     background_definition = kernel.get_motif().backgrounds["title"]

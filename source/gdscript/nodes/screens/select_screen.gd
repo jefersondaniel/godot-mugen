@@ -9,7 +9,6 @@ var AnimationSprite = load("res://source/gdscript/nodes/sprite/animation_sprite.
 
 signal done
 
-var setup: bool = false
 var kernel = null
 var store = null
 var animations: Dictionary
@@ -35,11 +34,7 @@ var name_sprites: Dictionary = {}
 var face_layer = null
 var stage_label = null
 
-func _ready():
-    if setup:
-        return
-
-    setup = true
+func _init():
     kernel = constants.container["kernel"]
     store = constants.container["store"]
     select_info = kernel.get_motif().select_info

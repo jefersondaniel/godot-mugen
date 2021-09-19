@@ -5,7 +5,6 @@ var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
 
 signal done
 
-var setup: bool = false
 var kernel: Object
 var store: Object
 var animations: Dictionary
@@ -14,13 +13,10 @@ var vs_screen: Object
 var sprite_bundle: Object
 
 func _ready():
-    if not setup:
-        setup()
     var timeout_secs = vs_screen.time / constants.TARGET_FPS
     get_tree().create_timer(timeout_secs).connect("timeout", self, "handle_timeout")
 
-func setup():
-    setup = true
+func _init():
     kernel = constants.container["kernel"]
     store = constants.container["store"]
     vs_screen = kernel.get_motif().vs_screen
