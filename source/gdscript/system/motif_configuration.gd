@@ -262,44 +262,23 @@ class OptionInfo:
     var cancel_snd: Array = []
 
 # General Configuration
-var info: Info
-var files: Files
-var music: Music
+var info: Info = Info.new()
+var files: Files = Files.new()
+var music: Music = Music.new()
 # Screens
-var title_info: TitleInfo
-var select_info: SelectInfo
-var vs_screen: VSScreen
-var continue_screen: ContinueScreen
-var game_over_screen: GameOverScreen
-var victory_screen: VictoryScreen
-var win_screen: WinScreen
-var default_ending: DefaultEnding
-var end_credits: EndCredits
-var option_info: OptionInfo
+var title_info: TitleInfo = TitleInfo.new()
+var select_info: SelectInfo = SelectInfo.new()
+var vs_screen: VSScreen = VSScreen.new()
+var continue_screen: ContinueScreen = ContinueScreen.new()
+var game_over_screen: GameOverScreen = GameOverScreen.new()
+var victory_screen: VictoryScreen = VictoryScreen.new()
+var win_screen: WinScreen = WinScreen.new()
+var default_ending: DefaultEnding = DefaultEnding.new()
+var end_credits: EndCredits = EndCredits.new()
+var option_info: OptionInfo = OptionInfo.new()
 # Resources
-var animations: Dictionary
-var backgrounds: Dictionary
-var sounds: Dictionary
-var sprite_bundle: Object
-var select_bundle: Object
-
-func _init():
-    info = Info.new()
-    files = Files.new()
-    music = Music.new()
-    title_info = TitleInfo.new()
-    select_info = SelectInfo.new()
-    vs_screen = VSScreen.new()
-    continue_screen = ContinueScreen.new()
-    game_over_screen = GameOverScreen.new()
-    victory_screen = VictoryScreen.new()
-    win_screen = WinScreen.new()
-    default_ending = DefaultEnding.new()
-    end_credits = EndCredits.new()
-    option_info = OptionInfo.new()
-    # Resources
-    animations = {}
-    backgrounds = {}
-    sounds = {}
-    sprite_bundle = SpriteBundle.new(null)
-    select_bundle = SelectBundle.new(null)
+var animations: Dictionary = {}
+var backgrounds: Dictionary = {}
+var sounds: Dictionary = {}
+var sprite_bundle: Object = SpriteBundle.new(null)
+var select_bundle: Object = SelectBundle.new(null)

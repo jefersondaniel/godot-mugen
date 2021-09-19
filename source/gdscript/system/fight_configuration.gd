@@ -245,58 +245,32 @@ class WinIcon:
     var p2: WinIconPlayer = WinIconPlayer.new()
     var useiconupto: int = 0 # Use icons up until this number of wins
 
-var files: Files
-var fightfx: FightFx
-var lifebar: Lifebar
-var simullifebar: SimulLifebar
-var turnslifebar: TurnsLifebar
-var powerbar: Powerbar
-var face: Face
-var simulface: SimulFace
-var turnsface: TurnsFace
-var name: Name
-var simulname: SimulName
-var turnsname: TurnsName
-var time: Time
-var combo: Combo
-var round_config: Round
-var winicon: WinIcon
+var files: Files = Files.new()
+var fightfx: FightFx = FightFx.new()
+var lifebar: Lifebar = Lifebar.new()
+var simullifebar: SimulLifebar = SimulLifebar.new()
+var turnslifebar: TurnsLifebar = TurnsLifebar.new()
+var powerbar: Powerbar = Powerbar.new()
+var face: Face = Face.new()
+var simulface: SimulFace = SimulFace.new()
+var turnsface: TurnsFace = TurnsFace.new()
+var name: Name = Name.new()
+var simulname: SimulName = SimulName.new()
+var turnsname: TurnsName = TurnsName.new()
+var time: Time = Time.new()
+var combo: Combo = Combo.new()
+var round_config: Round = Round.new()
+var winicon: WinIcon = WinIcon.new()
 
 # Resources
-var animations: Dictionary
-var sounds: Dictionary
-var sprite_bundle: Object
-var select_bundle: Object
+var animations: Dictionary = {}
+var sounds: Dictionary = {}
+var sprite_bundle: Object = SpriteBundle.new(null)
+var select_bundle: Object = SelectBundle.new(null)
 var fightfx_sprite_bundle: Object
-var fightfx_animations: Dictionary
-var common_sounds: Dictionary
+var fightfx_animations: Dictionary = {}
+var common_sounds: Dictionary = {}
 
 var __SECTION_MAPPING__: Dictionary = {
     "round_config": "round",
 }
-
-func _init():
-    files = Files.new()
-    fightfx = FightFx.new()
-    lifebar = Lifebar.new()
-    simullifebar = SimulLifebar.new()
-    turnslifebar = TurnsLifebar.new()
-    powerbar = Powerbar.new()
-    face = Face.new()
-    simulface = SimulFace.new()
-    turnsface = TurnsFace.new()
-    name = Name.new()
-    simulname = SimulName.new()
-    turnsname = TurnsName.new()
-    time = Time.new()
-    combo = Combo.new()
-    round_config = Round.new()
-    winicon = WinIcon.new()
-    # Resources
-    animations = {}
-    sounds = {}
-    sprite_bundle = SpriteBundle.new(null)
-    select_bundle = SelectBundle.new(null)
-    fightfx_sprite_bundle = SpriteBundle.new(null)
-    fightfx_animations = {}
-    common_sounds = {}
