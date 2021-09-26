@@ -26,11 +26,16 @@ func create_empty_texture():
     empty_texture.create_from_image(empty_image, 0)
     return empty_texture
 
-func create_sprite(path: Array):
+func create_sprite(path: Array, facing: int = 1):
     var image = self.get_image(path)
     var texture = self.create_texture(image)
     var sprite = Sprite.new()
     sprite.texture = texture
-    sprite.offset -= Vector2(image["x"], image["y"])
+    sprite.offset = Vector2(-image["x"], -image["y"])
+    sprite.centered = false
+
+    if facing == -1:
+        sprite.offset.x = -image["image"].get_size().x - sprite.offset.x
+        sprite.flip_h = true
 
     return sprite

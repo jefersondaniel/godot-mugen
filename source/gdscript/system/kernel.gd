@@ -14,7 +14,7 @@ func load():
 func get_motif():
     return core_configuration.motif_configuration
 
-func get_fight():
+func get_fight_configuration():
     return core_configuration.fight_configuration
 
 func get_sound(sound_def: Array):
@@ -31,7 +31,7 @@ func get_motif_font(font_def: Array):
     return self.get_font(font_def, get_motif().files)
 
 func get_fight_font(font_def: Array):
-    return self.get_font(font_def, get_fight().files)
+    return self.get_font(font_def, get_fight_configuration().files)
 
 func get_font(font_def: Array, files) -> Dictionary:
     var cache_key = PoolStringArray(font_def).join("-")

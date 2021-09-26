@@ -339,7 +339,6 @@ func create_done_sprite():
     var cell_index = get_cell_index(cursor_position)
     var sprite = sprite_bundle.create_sprite(player_info.cursor_done_spr)
     sprite.position = cell_slots[cell_index]
-    sprite.centered = false
     sprite.scale = kernel.get_scale()
     add_child(sprite)
 

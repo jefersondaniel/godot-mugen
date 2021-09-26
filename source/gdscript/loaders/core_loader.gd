@@ -82,6 +82,9 @@ func load_fight_configuration(path: String):
     var result = FightConfiguration.new()
     data_hydrator.hydrate_object(result, sections)
 
+    var animations = air_parser.read(path)
+    result.animations = animations
+
     if result.files.snd:
         var sound_path = find_file_path(path, result.files.snd)
         var sounds = snd_parser.read_sounds(sound_path)
@@ -102,9 +105,9 @@ func load_fight_configuration(path: String):
 
     if result.files.fightfx_air:
         var air_path = find_file_path(path, result.files.fightfx_air)
-        var animations = air_parser.read(air_path)
-        if animations:
-            result.fightfx_animations = animations
+        var fightfx_animations = air_parser.read(air_path)
+        if fightfx_animations:
+            result.fightfx_animations = fightfx_animations
 
     if result.files.common_snd:
         var sound_path = find_file_path(path, result.files.common_snd)
