@@ -51,6 +51,11 @@ func update_cache():
         cache_dimension.y = max(char_size.y, cache_dimension.y)
         cache_dimension.x = cursor.x
 
+    var color = font_data["color"]
+
+    if color:
+        set_modulate(color)
+
     update()
 
 func _draw():

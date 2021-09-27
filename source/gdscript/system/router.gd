@@ -23,7 +23,8 @@ func _ready():
     vs_state.add_transition(fight_state, "done")
 
     state_machine.connect("on_state", self, "on_state_change")
-    state_machine.start(title_state)
+    # state_machine.start(title_state)
+    state_machine.start(fight_state)
 
 func handle_menu_action(action):
     state_machine.trigger(action.id, action)

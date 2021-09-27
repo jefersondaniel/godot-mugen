@@ -45,6 +45,9 @@ func get_font(font_def: Array, files) -> Dictionary:
     var color_r: float = font_def[3] if font_def.size() >= 4 else 0
     var color_g: float = font_def[4] if font_def.size() >= 5 else 0
     var color_b: float = font_def[5] if font_def.size() >= 6 else 0
+    var color = null
+    if font_def.size() >= 6:
+        color = Color(color_r / 255.0, color_g / 255.0, color_b / 255.0, 1)
 
     var ref = files.get_font_reference(index)
     var path: String = ref[0]
@@ -52,12 +55,10 @@ func get_font(font_def: Array, files) -> Dictionary:
     path = "%s/font/%s" % [base_path, path]
     var font = FontLoader.load(path, color_bank)
 
-    # TODO: Implement color bank support
-
     font_cache[cache_key] = {
         'font': font,
         'alignment': alignment,
-        'color': Color(color_r / 255.0, color_g / 255.0, color_b / 255.0, 255)
+        'color': color
     }
 
     return font_cache[cache_key]

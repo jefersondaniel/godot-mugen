@@ -63,6 +63,12 @@ class Background:
     var facing: int = 1
     var scale: Vector2 = Vector2(1, 1)
 
+class LabelConfiguration:
+    var text: String = ""
+    var offset: Vector2 = Vector2(0, 0)
+    var font: PoolIntArray = PoolIntArray([0, 0, 0])
+    var shake: int = 0
+
 class LifebarPlayer:
     var pos: Vector2 = Vector2(0, 0) # Example: 178,12
     var bg0: Background = Background.new()
@@ -92,8 +98,7 @@ class PowerbarPlayer:
     var mid: Background = Background.new()
     var front: Background = Background.new()
     var range_x: PoolIntArray = PoolIntArray([0, 0]) # Example: 0,127
-    var counter_offset: Vector2 = Vector2(0, 0)
-    var counter_font: PoolIntArray = PoolIntArray([0, 0, 0])
+    var counter: LabelConfiguration = LabelConfiguration.new()
 
 class Powerbar:
     var p1: PowerbarPlayer = PowerbarPlayer.new()
@@ -127,7 +132,7 @@ class TurnsFace:
 
 class NamePlayer:
     var pos: Vector2 = Vector2(0, 0)
-    var name_font: PoolIntArray = PoolIntArray([3, 0, 1])
+    var name: LabelConfiguration = LabelConfiguration.new()
     # TODO: Support BG
 
 class Name:
@@ -147,8 +152,7 @@ class TurnsName:
 class Time:
     var pos: Vector2 = Vector2(0 ,0) # Example: 160,23
     var bg_spr: PoolIntArray = PoolIntArray([])
-    var counter_offset: Vector2 = Vector2(0, 0)
-    var counter_font: PoolIntArray = PoolIntArray([]) # Example: 2,0,0
+    var counter: LabelConfiguration = LabelConfiguration.new()
     var framespercount: int = 60
 
 class ComboTeam:
@@ -156,9 +160,7 @@ class ComboTeam:
     var start_x: int = 0 # Starting x-coords
     var counter_font: PoolIntArray = PoolIntArray([])
     var counter_shake: int = 1 # Set to 1 to shake count on hit
-    var text_text: String = "Rush!" # Can use %i to show count in the text, eg "%i Hit!"
-    var text_font: PoolIntArray = PoolIntArray([])
-    var text_offset: Vector2 = Vector2(0, 0) # Offset of text
+    var text: LabelConfiguration = LabelConfiguration.new()
     var displaytime: int = 90 # Time to show text
 
 class Combo:
@@ -227,8 +229,7 @@ class WinIconPlayer:
     var pos: Vector2 = Vector2(0, 0)
     var iconoffset: Vector2 = Vector2(0, 0) # Offset for next icon (x,y)
     # Counter text font and offset for representing wins
-    var counter_font: PoolIntArray = PoolIntArray([])
-    var counter_offset: Vector2 = Vector2(0, 0)
+    var counter: LabelConfiguration = LabelConfiguration.new()
     var bg0: Background = Background.new()
     var n: Background = Background.new() # Win by normal
     var s: Background = Background.new() # Win by special

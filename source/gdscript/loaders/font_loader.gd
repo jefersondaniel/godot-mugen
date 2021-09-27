@@ -43,7 +43,7 @@ func load_fnt_v2(path: String, color_bank: int):
 func load_sff_font(path: String, size: Vector2, color_bank: int):
     var font = BitmapFont.new()
     var palettes = sff_parser.read_palettes(path)
-    var palette = palettes[color_bank + 1]
+    var palette = palettes[color_bank]
     var data: Dictionary = sff_parser.read_images(path, palette, PoolIntArray([0]))
     var texture_id: int = 0
     for key in data.keys():
