@@ -11,22 +11,34 @@ var shaders = {
     "sub": """
     shader_type canvas_item;
     render_mode blend_sub;
+    """,
+    "mix_color": """
+    shader_type canvas_item;
+    uniform vec4 mix_color : hint_color;
+    void fragment(){
+        COLOR = texture(TEXTURE, UV);
+        COLOR.r = (COLOR.r + mix_color.r) / 2.0;
+        COLOR.g = (COLOR.g + mix_color.g) / 2.0;
+        COLOR.b = (COLOR.b + mix_color.b) / 2.0;
+    }
     """
 }
 
-var material_cache: Dictionary = {}
+var shader_cache: Dictionary = {}
 
 func get_shader_material(name: String):
-    if material_cache.has(name):
-        return material_cache[name]
-
     if not shaders.has(name):
         push_error("shader not found: %s" % [name])
         return null
 
-    var material = ShaderMaterial.new()
-    material.shader = Shader.new()
-    material.shader.code = shaders[name]
-    material_cache[name] = material
+    var shader = shader_cache.get(name, null)
 
-    return material_cache[name]
+    if not shader:
+        shader = Shader.new()
+        shader.code = shaders[name]
+        shader_cache[name] = shader
+
+    var material = ShaderMaterial.new()
+    material.shader = shader
+
+    return material
