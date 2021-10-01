@@ -155,11 +155,14 @@ class Time:
     var counter: LabelConfiguration = LabelConfiguration.new()
     var framespercount: int = 60
 
+class ComboCounter:
+    var font: PoolIntArray = PoolIntArray([])
+    var shake: int = 1 # Set to 1 to shake count on hit
+
 class ComboTeam:
     var pos: Vector2 = Vector2(0, 0) # Coords to show
     var start_x: int = 0 # Starting x-coords
-    var counter_font: PoolIntArray = PoolIntArray([])
-    var counter_shake: int = 1 # Set to 1 to shake count on hit
+    var counter: ComboCounter = ComboCounter.new()
     var text: LabelConfiguration = LabelConfiguration.new()
     var displaytime: int = 90 # Time to show text
 
@@ -205,11 +208,7 @@ class Round:
     var round8: RoundConfiguration = RoundConfiguration.new()
     var round9: RoundConfiguration = RoundConfiguration.new()
     # Fight
-    var fight_time: int = 0 # Time to show FIGHT component
-    var fight_offset: Vector2 = Vector2(0, 0) # Component for FIGHT display
-    var fight_anim: int = -1
-    var fight_snd: PoolIntArray = PoolIntArray([]) # Sound to play
-    var fight_sndtime: int = 0 # Time to play sound
+    var fight: RoundMessage = RoundMessage.new()
     # Control
     var ctrl_time: int = 30 # Time players get control after "Fight"
     # Round Messages
