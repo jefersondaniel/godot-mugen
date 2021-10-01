@@ -20,6 +20,7 @@ func setup():
   setup_face()
   setup_name()
   setup_time()
+  setup_combo()
 
 func setup_lifebar():
   setup_lifebar_player(fight_configuration.lifebar.p1)
@@ -82,6 +83,32 @@ func setup_name_player(name_data):
 
   add_child(name)
 
+func setup_combo():
+  setup_combo_team(fight_configuration.combo.team1)
+  setup_combo_team(fight_configuration.combo.team2)
+
+func setup_combo_team(combo):
+  var wrapper = Node2D.new()
+  wrapper.position = combo.pos
+
+  var counter_value = "1"
+  var combo_text = combo.text.text.replace("%i", counter_value)
+
+  if len(combo.counter.font):
+    var counter = UiLabel.new()
+    counter.set_text(counter_value)
+    counter.set_font(kernel.get_fight_font(combo.counter.font))
+    wrapper.add_child(counter)
+    var text = create_label(combo.text, counter.get_text_width())
+    text.set_text(combo_text)
+    wrapper.add_child(text)
+  else:
+    var text = create_label(combo.text)
+    text.set_text(combo_text)
+    wrapper.add_child(text)
+
+  add_child(wrapper)
+
 func setup_time():
   var time = Node2D.new()
   time.position = fight_configuration.time.pos
@@ -111,10 +138,18 @@ func create_background(bg_config):
 
   return sprite
 
-func create_label(label_data):
+func create_label(label_data, padding: int = 0):
   var label = UiLabel.new()
   var name_font = kernel.get_fight_font(label_data.font)
   label.set_text(label_data.text)
   label.set_font(name_font)
-  label.position = label_data.offset
+
+  var padding_multiplier = 1 if name_font["alignment"] == 1 else -1
+  if padding > 0:
+    # Padding multiplier was applied only here because combo text seems to need this, but powerbar counter does not. Consider creating a special label type that handles offsets and multiple fonts.
+    label.position = label_data.offset * padding_multiplier 
+    label.position.x += padding * padding_multiplier
+  else:
+    label.position = label_data.offset
+
   return label

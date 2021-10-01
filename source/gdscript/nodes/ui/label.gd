@@ -17,6 +17,9 @@ func set_text(text):
     self.text = text
     update_cache()
 
+func get_text_width():
+    return cache_dimension.x
+
 func update_cache():
     cache = []
 
@@ -36,8 +39,6 @@ func update_cache():
         var current_char = data[i]
         var next_char = data[i + 1] if data.size() > i + 1 else 0
         var char_size = font.get_char_size(current_char, next_char)
-
-        # char_size = font_data["font"]["size"]
 
         cache.append({
             'x': cursor.x,
