@@ -79,11 +79,11 @@ var back_width_override: float = 0.0
 var frontedge_width_override: float = 0.0
 var backedge_width_override: float = 0.0
 
-func setup(_definition, _data, _state_defs, images, animations, sounds, _command_manager):
+func setup(_definition, _data, _state_defs, sprite_bundle, animations, sounds, _command_manager):
     definition = _definition
     data = _data
     state_defs = _state_defs
-    character_sprite = AnimationSprite.new(images, animations)
+    character_sprite = AnimationSprite.new(sprite_bundle, animations)
     command_manager = _command_manager
     state_manager = StateManager.new(self)
     sound_manager = SoundManager.new(sounds)
@@ -559,7 +559,7 @@ func draw_debug_text():
 
     text += "commands: %s, facing_right: %s\n" % [command_manager.active_commands, is_facing_right]
 
-    get_node('/root/Node2D/hud/text').text = text
+    get_node('/root/Node2D/debug/text').text = text
 
 func cleanup():
     if hit_pause_time > 1:

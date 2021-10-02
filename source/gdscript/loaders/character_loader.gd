@@ -1,6 +1,7 @@
 var Character = load('res://source/gdscript/nodes/character.gd')
 var Data = load('res://source/gdscript/nodes/character/data.gd')
 var Definition = load('res://source/gdscript/nodes/character/definition.gd')
+var SpriteBundle = load('res://source/gdscript/system/sprite_bundle.gd')
 var air_parser = load('res://source/gdscript/parsers/air_parser.gd').new()
 var data_hydrator = load('res://source/gdscript/helpers/data_hydrator.gd').new()
 var cfg_parser = load('res://source/gdscript/parsers/cfg_parser.gd').new()
@@ -19,7 +20,7 @@ func load_definition(path: String):
 
     return definition
 
-func load(path: String, palette, command_manager):
+func load(path: String, palette_index, command_manager):
     var base_path = path.substr(0, path.find_last('/'))
 
     var definition = Definition.new()
@@ -30,10 +31,11 @@ func load(path: String, palette, command_manager):
     var animation_path: String = definition.get_animation_path()
     var command_path: String = definition.get_command_path()
     var sound_path: String = definition.get_sound_path()
-    var state_paths: String = definition.get_state_paths()
+    var state_paths: Array = definition.get_state_paths()
 
-    var images = sff_parser.get_images(sprite_path, palette)
-    var sounds = snd_parser.get_sounds(sound_path)
+    var palettes = sff_parser.read_palettes(sprite_path)
+    var images = sff_parser.read_images(sprite_path, palettes[palette_index], null)
+    var sounds = snd_parser.read_sounds(sound_path)
     var animations = air_parser.read(animation_path)
     var commands: Array =  cmd_parser.read(command_path)
     var all_constant_data: Dictionary = {
@@ -50,8 +52,10 @@ func load(path: String, palette, command_manager):
     var data = Data.new()
     data_hydrator.hydrate_object(data, all_constant_data)
 
+    var sprite_bundle = SpriteBundle.new(images)
+
     var character = Character.new()
-    character.setup(definition, data, state_defs, images, animations, sounds, command_manager)
+    character.setup(definition, data, state_defs, sprite_bundle, animations, sounds, command_manager)
     return character
 
 func merge_states(new_states, states):

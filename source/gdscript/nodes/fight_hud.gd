@@ -1,4 +1,4 @@
-extends Node2D
+extends CanvasLayer
 
 var AnimationSprite = load("res://source/gdscript/nodes/sprite/animation_sprite.gd")
 var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
@@ -6,6 +6,7 @@ var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
 var fight_configuration: Object
 var kernel: Object
 var sprite_bundle: Object
+var debug_text: RichTextLabel
 
 func _init(fight_configuration, kernel):
   self.fight_configuration = fight_configuration
