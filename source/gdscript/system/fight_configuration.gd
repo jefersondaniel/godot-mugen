@@ -179,8 +179,8 @@ class RoundConfiguration:
     var snd: PoolIntArray = PoolIntArray([]) # Sounds to play for each round
     var scale: Vector2 = Vector2(1, 1)
 
-class RoundMessage:
-    var time: int = 0
+class Component:
+    var time: int = 0 # Time to show
     var offset: Vector2 = Vector2(0, 0)
     var anim: int = -1
     var font: PoolIntArray = PoolIntArray([0, 0])
@@ -208,21 +208,21 @@ class Round:
     var round8: RoundConfiguration = RoundConfiguration.new()
     var round9: RoundConfiguration = RoundConfiguration.new()
     # Fight
-    var fight: RoundMessage = RoundMessage.new()
+    var fight: Component = Component.new()
     # Control
     var ctrl_time: int = 30 # Time players get control after "Fight"
     # Round Messages
-    var ko: RoundMessage = RoundMessage.new() # KO
-    var dko: RoundMessage = RoundMessage.new() # Double KO
-    var to: RoundMessage = RoundMessage.new() # Time Over
+    var ko: Component = Component.new() # KO
+    var dko: Component = Component.new() # Double KO
+    var to: Component = Component.new() # Time Over
     var slow_time: int = 0 # Time for KO slowdown (in ticks)
     var over_waittime: int = 0 # Time to wait after KO before player control is stopped
     var over_hittime: int = 0 # Time after KO that players can still damage each other (for double KO)
     var over_wintime: int = 0 # Time to wait before players change to win states
     var over_time: int = 0 # Time to wait before round ends
-    var win: RoundMessage = RoundMessage.new() 
-    var win2: RoundMessage = RoundMessage.new() # 2-player win text
-    var draw: RoundMessage = RoundMessage.new() # Draw text
+    var win: Component = Component.new()
+    var win2: Component = Component.new() # 2-player win text
+    var draw: Component = Component.new() # Draw text
 
 class WinIconPlayer:
     var pos: Vector2 = Vector2(0, 0)
