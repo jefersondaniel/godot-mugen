@@ -35,7 +35,7 @@ var st: SurfaceTool
 func setup(stage):
     st = SurfaceTool.new()
 
-    stage_scale = constants.get_scale(stage.stageinfo_localcoord)
+    stage_scale = constants.get_scale(stage.definition.stageinfo_localcoord)
     motion_scale = delta
     motion_offset = -(stage.camera_handle.position - (delta * stage.camera_handle.position))
     z_index = layerno

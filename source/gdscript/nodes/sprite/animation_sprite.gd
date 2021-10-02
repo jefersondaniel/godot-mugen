@@ -38,7 +38,9 @@ func load_sprite_frames(animations):
             var image_key = "%s-%s" % [element.groupno, element.imageno]
             if images.has(image_key):
                 continue
-            images[image_key] = sprite_bundle.get_image([element.groupno, element.imageno])
+            var image = sprite_bundle.get_image([element.groupno, element.imageno])
+            if image:
+                images[image_key] = image
 
     sprite_frames.add_frame("default", sprite_bundle.create_empty_texture())
 

@@ -1,5 +1,6 @@
-extends ParallaxBackground
+extends Node2D
 
+var root_background: ParallaxBackground
 var definition = null
 
 # Child Nodes
@@ -20,15 +21,18 @@ var envshake_phase: float = 0.0
 var envshake_offset: Vector2 = Vector2(0, 0)
 
 func setup():
+    root_background = ParallaxBackground.new()
+    add_child(root_background)
+
     setup_camera()
 
     for background in backgrounds:
         background.setup(self)
-        add_child(background)
+        root_background.add_child(background)
 
     player_layer = ParallaxLayer.new()
     player_layer.motion_scale = Vector2(1, 1)
-    add_child(player_layer)
+    root_background.add_child(player_layer)
 
 func setup_camera():
     var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
@@ -41,7 +45,7 @@ func setup_camera():
     camera = Camera2D.new()
     # camera.offset = constants.WINDOW_SIZE / 2 * Vector2(0, 1)
     camera_handle.add_child(camera)
-    add_child(camera_handle)
+    root_background.add_child(camera_handle)
     camera.make_current()
 
 func get_bound_left():
@@ -82,19 +86,22 @@ func get_movement_area() -> Rect2:
     )
 
 func get_position_offset():
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
+
     return Vector2(
         0,
-        definition.stageinfo_zoffset + constants.WINDOW_SIZE.y / 2
+        definition.stageinfo_zoffset * scale.y
     )
 
 func get_starting_pos(team: int) -> Vector2:
     var pos: Vector2
     var offset: Vector2 = get_position_offset()
+    var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)
 
     if team == 1:
-        pos = Vector2(definition.player_p1startx + offset.x, definition.player_p1starty + offset.y)
+        pos = Vector2(scale.x * definition.player_p1startx + offset.x, scale.y * definition.player_p1starty + offset.y)
     else:
-        pos = Vector2(definition.player_p2startx + offset.x, definition.player_p2starty + offset.y)
+        pos = Vector2(scale.y * definition.player_p2startx + offset.x, scale.y * definition.player_p2starty + offset.y)
 
     return pos
 
@@ -168,4 +175,3 @@ func setup_envshake(time: float, frequency: float, amplitude: float, phase: floa
     envshake_frequency = frequency
     envshake_amplitude = amplitude
     envshake_phase = phase
-

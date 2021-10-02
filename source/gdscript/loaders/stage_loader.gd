@@ -15,7 +15,7 @@ func load(path: String):
     var definition: Dictionary = def_parser.read(path)
     var folder: String = path.substr(0, path.find_last('/'))
     var sprite_path: String = '%s/%s' % [folder, definition['bgdef']['spr']]
-    var images = sff_parser.get_images(sprite_path, 0)
+    var images = sff_parser.read_images(sprite_path, null, null)
     var animations = air_parser.read(path)
     var backgrounds = []
 

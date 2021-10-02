@@ -161,8 +161,7 @@ func _init():
         REVERSE_FLAGS[value] = key
 
 func get_scale(localcoord: Vector2):
-    var scale: int  = WINDOW_SIZE.x / localcoord.x
-
+    var scale: int  = WINDOW_SIZE.y / localcoord.y
     return Vector2(scale, scale)
 
 func get_screen_coordinate(position: Vector2) -> Vector2:

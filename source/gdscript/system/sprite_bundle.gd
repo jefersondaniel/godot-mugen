@@ -9,7 +9,8 @@ func get_image(path: Array):
     var key = "%s-%s" % [path[0], path[1]]
 
     if not images.has(key):
-        push_error("Missing image: %s" % [key])
+        if path[0] >= 0:
+            push_error("Missing image: %s" % [key])
         return null
 
     return self.images[key]

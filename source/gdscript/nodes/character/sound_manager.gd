@@ -18,6 +18,7 @@ func play_sound(params: Dictionary):
     if not stream:
         return
 
+    # TODO: Support channel number
     var channel = channels[0]
     channel.stream = stream
     channel.play()
@@ -32,10 +33,5 @@ func make_stream(value):
         print("sound not found: %s" % [value])
         return null
 
-    var sound = sounds[key]
-    var stream = AudioStreamSample.new()
-    stream.format = AudioStreamSample.FORMAT_8_BITS if sound['bits_per_sample'] == 8 else AudioStreamSample.FORMAT_16_BITS
-    stream.data = sound['data']
-    stream.mix_rate = sound['sample_rate']
-    stream.stereo = false if sound['num_channels'] == 1 else true
-    return stream
+    return sounds[key]
+
