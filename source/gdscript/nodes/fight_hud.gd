@@ -21,6 +21,7 @@ func setup():
   setup_name()
   setup_time()
   setup_combo()
+  setup_component(fight_configuration.round_config.draw)
 
 func setup_lifebar():
   setup_lifebar_player(fight_configuration.lifebar.p1)
@@ -118,6 +119,23 @@ func setup_time():
   time.add_child(time_label)
 
   add_child(time)
+
+func setup_component(round_message):
+  # TODO: Handle spr, facing, vfacing, scale, layerno
+  var wrapper = Node2D.new()
+
+  if round_message.text:
+    var label = create_label(round_message)
+    wrapper.add_child(label)
+  elif round_message.anim >= 0:
+    var animations = {}
+    animations[round_message.anim] = fight_configuration.animations[round_message.anim]
+    var sprite = AnimationSprite.new(fight_configuration.sprite_bundle, animations)
+    sprite.change_anim(round_message.anim)
+    sprite.position = round_message.offset
+    add_child(sprite)
+
+  add_child(wrapper)
 
 func create_background(bg_config):
   if len(bg_config.spr) == 0 and bg_config.anim == -1:
