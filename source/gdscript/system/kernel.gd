@@ -28,13 +28,13 @@ func get_select_bundle() -> Dictionary:
     return core_configuration.motif_configuration.select_bundle
 
 func get_motif_font(font_def: Array):
-    return self.get_font(font_def, get_motif().files)
+    return self.get_font(font_def, "motif", get_motif().files)
 
 func get_fight_font(font_def: Array):
-    return self.get_font(font_def, get_fight_configuration().files)
+    return self.get_font(font_def, "fight", get_fight_configuration().files)
 
-func get_font(font_def: Array, files) -> Dictionary:
-    var cache_key = PoolStringArray(font_def).join("-")
+func get_font(font_def: Array, font_source: String, files) -> Dictionary:
+    var cache_key = "%s-%s" % [font_source, PoolStringArray(font_def).join("-")]
 
     if font_cache.has(cache_key):
         return font_cache[cache_key]

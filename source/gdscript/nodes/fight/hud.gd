@@ -21,8 +21,8 @@ func setup():
   setup_face()
   setup_name()
   setup_time()
-  setup_combo()
-  setup_component(fight_configuration.round_config.draw)
+  # setup_combo()
+  # setup_component(fight_configuration.round_info.draw)
 
 func setup_lifebar():
   setup_lifebar_player(fight_configuration.lifebar.p1)
