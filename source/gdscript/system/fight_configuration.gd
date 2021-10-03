@@ -259,7 +259,7 @@ var simulname: SimulName = SimulName.new()
 var turnsname: TurnsName = TurnsName.new()
 var time: Time = Time.new()
 var combo: Combo = Combo.new()
-var round_config: Round = Round.new()
+var round_info: Round = Round.new()
 var winicon: WinIcon = WinIcon.new()
 
 # Resources
@@ -272,5 +272,5 @@ var fightfx_animations: Dictionary = {}
 var common_sounds: Dictionary = {}
 
 var __SECTION_MAPPING__: Dictionary = {
-    "round_config": "round",
+    "round_info": "round",
 }

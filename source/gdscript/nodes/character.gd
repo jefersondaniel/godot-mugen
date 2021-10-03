@@ -89,9 +89,6 @@ func setup(_definition, _data, _state_defs, sprite_bundle, animations, sounds, _
     sound_manager = SoundManager.new(sounds)
     bind = Bind.new(self)
 
-    alive = 1
-    life = data.data.life
-    power = data.data.power
     info_localcoord = definition.info.localcoord
     velocity = Vector2(0, 0)
     acceleration = Vector2(0, 0)
@@ -139,6 +136,18 @@ func _ready():
     self.add_child(sound_manager)
     character_sprite.change_anim(0)
     character_sprite.set_process(false)
+
+func reset_state():
+    change_state(0)
+    character_sprite.change_anim(0)
+    ctrl = 0
+    alive = 1
+    life = data.data.life
+    power = data.data.power
+    hit_def = null
+    received_hit_def = null
+    remaining_juggle_points = 15
+    required_juggle_points = 0
 
 func get_const(fullname):
     if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':

@@ -1,41 +1,53 @@
 extends Node2D
 
-var StateMachine = load('res://source/gdscript/system/state_machine.gd')
 var TitleScreen = load('res://source/gdscript/nodes/screens/title_screen.gd')
 var SelectScreen = load('res://source/gdscript/nodes/screens/select_screen.gd')
 var VsScreen = load('res://source/gdscript/nodes/screens/vs_screen.gd')
 var FightScreen = load('res://source/gdscript/nodes/screens/fight_screen.gd')
 var current_screen = null
-var state_machine = null
+var routes: Dictionary = {}
+var current_route: Object
+
+signal on_route(route, payload)
+
+class Route:
+    var name: String
+    var transitions: Dictionary
+
+    func _init(name: String):
+        self.name = name
+        self.transitions = {}
+
+    func add_transition(route: Route, event: String):
+        if transitions.has(event):
+            push_error("transition already existis: %s" % [event])
+            return
+        transitions[event] = route
 
 func _ready():
-    state_machine = StateMachine.new()
+    var title_route = add_route("title")
+    var training_selection_route = add_route("training_selection")
+    var vs_route = add_route("vs")
+    var fight_route = add_route("fight")
 
-    var title_state = state_machine.add_state("title")
+    vs_route.add_transition(fight_route, "done")
+    title_route.add_transition(training_selection_route, constants.MENU_TRAINING)
+    training_selection_route.add_transition(vs_route, "done")  
 
-    var training_selection_state = state_machine.add_state("training_selection")
-    title_state.add_transition(training_selection_state, constants.MENU_TRAINING)
-
-    var vs_state = state_machine.add_state("vs")
-    training_selection_state.add_transition(vs_state, "done")
-
-    var fight_state = state_machine.add_state("fight")
-    vs_state.add_transition(fight_state, "done")
-
-    state_machine.connect("on_state", self, "on_state_change")
-    # state_machine.start(title_state)
-    state_machine.start(fight_state)
+    connect("on_route", self, "on_route_change")
+    # start(title_route)
+    start(fight_route)
 
 func handle_menu_action(action):
-    state_machine.trigger(action.id, action)
+    trigger(action.id, action)
 
 func handle_done():
-    state_machine.trigger("done")
+    trigger("done")
 
-func on_state_change(state, payload = null):
+func on_route_change(route, payload = null):
     var store = constants.container["store"]
 
-    match state.name:
+    match route.name:
         "title":
             var screen = TitleScreen.new()
             screen.connect("menu_action", self, "handle_menu_action")
@@ -51,7 +63,7 @@ func on_state_change(state, payload = null):
             screen.connect("done", self, "handle_done")
             set_current_screen(screen)
         _:
-            push_error("unhandled state: %s" % [state.name])
+            push_error("unhandled route: %s" % [route.name])
 
 func show_select_screen(action):
     var store = constants.container["store"]
@@ -88,3 +100,27 @@ func set_current_screen(screen):
         current_screen.queue_free()
     current_screen = screen
     add_child(screen)
+
+func start(initial_route: Route, payload = null):
+    set_route(initial_route, payload)
+
+func add_route(name: String) -> Route:
+    if routes.has(name):
+        push_warning("route already exists: %s" % [name])
+
+    var route = Route.new(name)
+    routes[name] = route
+    return route
+
+func trigger(event: String, payload = null):
+    var new_route = current_route.transitions.get(event, null)
+
+    if not new_route:
+        push_error("invalid route transition: %s, route: %s" % [event, current_route.name])
+        return
+
+    set_route(new_route, payload)
+
+func set_route(route, payload = null):
+    current_route = route
+    emit_signal("on_route", current_route, payload)

@@ -1,5 +1,6 @@
 extends Node
 
+var ROUND_TIME = 99
 var TARGET_FPS: int = 60
 var WINDOW_SIZE = Vector2(1280, 720)
 var container: Dictionary = {} # Dependency container

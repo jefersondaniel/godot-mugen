@@ -1,5 +1,9 @@
 extends Node2D
 
+var StateMachine = load("res://source/gdscript/system/state_machine.gd")
+var FightHud = load("res://source/gdscript/nodes/fight/hud.gd")
+var BoostrapState = load("res://source/gdscript/nodes/fight/states/bootstrap.gd")
+
 const CONTACT_HIT: int = 1 # This order is important for priority check
 const CONTACT_BLOCK: int = 2
 const CONTACT_MISS_BLOCK: int = 3
@@ -10,6 +14,20 @@ var characters = []
 var stage = null
 var contacts = []
 var cancelled_contacts = []
+var kernel = null
+var state_machine = null
+var configuration = null
+var hud = null
+var remaining_time: int = constants.ROUND_TIME
+
+func _init():
+    kernel = constants.container["kernel"]
+    state_machine = StateMachine.new(BoostrapState.new(self))
+
+func _ready():
+  configuration = kernel.get_fight_configuration()
+  hud = FightHud.new(configuration, kernel)
+  add_child(hud)
 
 func set_stage(_stage):
     if self.stage:
@@ -27,6 +45,10 @@ func add_character(character, team: int):
     teams[team].append(character)
     characters.append(character)
     stage.add_player(character)
+    if character.team == 1:
+        character.set_facing_right(stage.definition.player_p1facing == 1)
+    else:
+        character.set_facing_right(stage.definition.player_p2facing == 1)
 
 func get_nearest_enemy(character):
     var nearest_enemy = null
@@ -56,7 +78,20 @@ func get_enemies(character):
 
     return results
 
+func get_active_characters():
+    # TODO: Exclude inactive characters on turn combats
+
+    var results: Array = []
+
+    for team_id in teams:
+        for character in teams[team_id]:
+            results.push_back(character)
+
+    return results
+
 func update_tick():
+    state_machine.update_tick()
+    stage.update_tick()
     self.update_characters()
     self.update_combat()
 
