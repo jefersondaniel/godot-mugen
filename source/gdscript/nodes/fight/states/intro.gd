@@ -14,10 +14,10 @@ func activate():
 
   var fight = fight_ref.get_ref()
 
+  fight.roundstate = constants.ROUND_STATE_INTRO
+
   for character in fight.get_active_characters():
     character.ctrl = 0
-    character.reset_state()
-    character.change_anim(constants.STATE_STANDING)
 
 func update_tick():
   var fight = fight_ref.get_ref()
@@ -28,5 +28,7 @@ func update_tick():
   ticks += 1
 
 func should_skip_intro():
-  # TODO: Implement skip intro
+  var fight = fight_ref.get_ref()
+  if not fight.check_assert_special(constants.ASSERTION_INTRO):
+    return true
   return false

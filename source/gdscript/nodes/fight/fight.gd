@@ -2,13 +2,14 @@ extends Node2D
 
 var StateMachine = load("res://source/gdscript/system/state_machine.gd")
 var FightHud = load("res://source/gdscript/nodes/fight/hud.gd")
-var BoostrapState = load("res://source/gdscript/nodes/fight/states/bootstrap.gd")
+var PreIntroState = load("res://source/gdscript/nodes/fight/states/pre_intro.gd")
 
 const CONTACT_HIT: int = 1 # This order is important for priority check
 const CONTACT_BLOCK: int = 2
 const CONTACT_MISS_BLOCK: int = 3
 
-var roundstate: int = 2 # 0: Pre-intro - screen fades in 1: Intro 2: Fight - players do battle 3: Pre-over - just a round is won or lost 4: Over - win poses
+var roundstate: int = constants.ROUND_STATE_PRE_INTRO
+var roundno: int = 0
 var teams = {}
 var characters = []
 var stage = null
@@ -19,15 +20,32 @@ var state_machine = null
 var configuration = null
 var hud = null
 var remaining_time: int = constants.ROUND_TIME
+var special_flags = {}
 
 func _init():
     kernel = constants.container["kernel"]
-    state_machine = StateMachine.new(BoostrapState.new(self))
+    state_machine = StateMachine.new(PreIntroState.new(self))
+    reset_state()
 
 func _ready():
   configuration = kernel.get_fight_configuration()
   hud = FightHud.new(configuration, kernel)
   add_child(hud)
+
+func reset_state():
+    roundno = 1
+
+func assert_special(key: String):
+    key = key.to_lower()
+    special_flags[key] = 1
+
+func check_assert_special(key: String) -> bool:
+    key = key.to_lower()
+    return special_flags.has(key) && special_flags[key] > 0
+
+func reset_assert_special():
+    for key in special_flags:
+        special_flags[key] = special_flags[key] - 1
 
 func set_stage(_stage):
     if self.stage:
@@ -91,6 +109,8 @@ func get_active_characters():
 
 func update_tick():
     state_machine.update_tick()
+    hud.update_tick()
+    reset_assert_special()
     stage.update_tick()
     self.update_characters()
     self.update_combat()

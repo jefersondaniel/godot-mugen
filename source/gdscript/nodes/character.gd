@@ -61,7 +61,7 @@ var posfreeze: int = 0
 var clipboard: Array = []
 
 # Public variables (will be available in expressions)
-var fight_variables: Array = ['roundstate']
+var fight_variables: Array = ['roundstate', 'roundno']
 var state_variables: Array = []
 var power: float = 0
 var life: float = 0
@@ -74,6 +74,7 @@ var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
 var ctrl: int = 1
 var team: int = 0
+var roundsexisted: int = 0
 var front_width_override: float = 0.0
 var back_width_override: float = 0.0
 var frontedge_width_override: float = 0.0
@@ -137,9 +138,8 @@ func _ready():
     character_sprite.change_anim(0)
     character_sprite.set_process(false)
 
-func reset_state():
-    change_state(0)
-    character_sprite.change_anim(0)
+func reset_round_state():
+    # Meant to reset state between rounds
     ctrl = 0
     alive = 1
     life = data.data.life
@@ -466,8 +466,12 @@ func change_state(value: int):
 func play_sound(parameters: Dictionary):
     sound_manager.play_sound(parameters)
 
-func assert_special(flag: String):
-    special_flags[flag.to_lower()] = 1
+func assert_special(key: String):
+    key = key.to_lower()
+    if key in constants.FIGHT_ASSERTIONS:
+        fight.assert_special(key)
+        return
+    special_flags[key] = 1
 
 func reset_assert_special():
     for key in special_flags:
@@ -475,6 +479,8 @@ func reset_assert_special():
 
 func check_assert_special(key):
     key = key.to_lower()
+    if key in constants.FIGHT_ASSERTIONS:
+        return fight.check_assert_special(key)
     return special_flags.has(key) && special_flags[key] > 0
 
 func set_facing_right(value: bool):

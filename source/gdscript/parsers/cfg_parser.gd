@@ -59,8 +59,9 @@ func read_string(text: String, allow_lines=false, replace_key_dots=false):
             current_section[key].append(value)
             continue
 
-        if value.begins_with('"'):
-            value = value.lstrip('"').rstrip('"')
+        # Commented because broke string expressions
+        # if value.begins_with('"'):
+        #    value = value.lstrip('"').rstrip('"')
 
         current_section[key] = value
 

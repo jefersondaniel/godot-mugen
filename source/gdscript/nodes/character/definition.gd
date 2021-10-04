@@ -96,16 +96,16 @@ func get_state_paths():
     var results: Array = []
     var data_path = constants.container["kernel"].base_path
 
-    if files.stcommon:
-        results.push_back("%s/%s/%s" % [data_path, "data", files.stcommon])
-
     if files.cmd:
         results.push_back("%s/%s" % [base_path, files.cmd])
 
     for state in files.states:
         results.push_back("%s/%s" % [base_path, state])
 
-    results.push_back("res://internal.cns")
+    if files.stcommon:
+        results.push_back("%s/%s/%s" % [data_path, "data", files.stcommon])
+
+    results.push_back(constants.INTERNAL_STATE_PATH)
 
     return results
 
