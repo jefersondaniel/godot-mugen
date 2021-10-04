@@ -8,7 +8,7 @@ var component = null
 var text_replace = null
 var label = null
 var animation_sprite = null
-var ticks: int = 0
+var tick: int = 0
 
 func _init(fight_configuration, component, text_replace):
   self.fight_configuration = fight_configuration
@@ -22,7 +22,7 @@ func _ready():
 func setup():
   # TODO: Handle spr, facing, vfacing, scale, layerno
 
-  ticks = component.displaytime
+  tick = 0
 
   if component.text:
     label = HudText.new()
@@ -40,10 +40,27 @@ func setup():
 func update_tick():
   if animation_sprite:
     animation_sprite.handle_tick()
-  ticks = ticks - 1
+
+  var sndtime = 0
+  if component.sndtime > 0:
+    # Ensure that sndtime is greater than 0 because its -1 if undefined
+    sndtime = component.sndtime
+
+  if component.snd and tick == sndtime:
+    play_sound(component.snd)
+
+  tick = tick + 1
 
 func is_finished():
   if animation_sprite and component.displaytime <= 0:
     return animation_sprite.get_time_from_the_end() >= 0
 
-  return ticks <= 0
+  return tick >= component.displaytime
+
+func play_sound(sound_def):
+  var kernel = constants.container["kernel"]
+  var audio_player = constants.container["audio_player"]
+  var sound = kernel.get_fight_sound(sound_def)
+
+  if sound:
+      audio_player.play_sound(sound)

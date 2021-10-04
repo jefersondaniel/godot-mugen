@@ -17,9 +17,29 @@ func get_motif():
 func get_fight_configuration():
     return core_configuration.fight_configuration
 
-func get_sound(sound_def: Array):
+func get_motif_sound(sound_def: Array):
     var sounds = core_configuration.motif_configuration.sounds
-    return sounds["%s-%s" % [sound_def[0], sound_def[1]]]
+    var key = "%s-%s" % [sound_def[0], sound_def[1]]
+    if not sounds.has(key):
+        push_warning("Motif sound not found: %s" % [key])
+        return null
+    return sounds[key]
+
+func get_fight_sound(sound_def: Array):
+    var sounds = core_configuration.fight_configuration.sounds
+    var key = "%s-%s" % [sound_def[0], sound_def[1]]
+    if not sounds.has(key):
+        push_warning("Fight sound not found: %s" % [key])
+        return null
+    return sounds[key]
+
+func get_common_sound(sound_def: Array):
+    var sounds = core_configuration.fight_configuration.common_sounds
+    var key = "%s-%s" % [sound_def[0], sound_def[1]]
+    if not sounds.has(key):
+        push_warning("Common sound not found: %s" % [key])
+        return null
+    return sounds[key]
 
 func get_sprite_bundle() -> Dictionary:
     return core_configuration.motif_configuration.sprite_bundle

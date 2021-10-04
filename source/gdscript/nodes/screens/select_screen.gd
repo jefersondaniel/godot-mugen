@@ -245,7 +245,7 @@ func handle_cursor_input():
 
 func play_sound(sound_def):
     var audio_player = constants.container["audio_player"]
-    var sound = kernel.get_sound(sound_def)
+    var sound = kernel.get_motif_sound(sound_def)
 
     if sound:
         audio_player.play_sound(sound)
