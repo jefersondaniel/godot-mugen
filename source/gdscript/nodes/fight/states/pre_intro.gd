@@ -13,9 +13,10 @@ func activate():
   var stage_definition = fight.stage.definition
 
   fight.remaining_time = constants.ROUND_TIME
+  fight.roundstate = constants.ROUND_STATE_PRE_INTRO
 
   for character in fight.get_active_characters():
-    character.reset_state()
+    character.reset_round_state()
 
     if character.team == 1:
       character.set_facing_right(stage_definition.player_p1facing == 1)
@@ -30,4 +31,4 @@ func update_tick():
   ticks += 1
 
   if ticks > fight.configuration.round_info.start_waittime:
-    return IntroState.new(fight)
+   return IntroState.new(fight)

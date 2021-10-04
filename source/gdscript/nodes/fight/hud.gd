@@ -1,12 +1,15 @@
 extends CanvasLayer
 
 var AnimationSprite = load("res://source/gdscript/nodes/sprite/animation_sprite.gd")
+var HudComponent = load("res://source/gdscript/nodes/fight/hud_component.gd")
+var HudText = load("res://source/gdscript/nodes/fight/hud_text.gd")
 var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
 
 var fight_configuration: Object
 var kernel: Object
 var sprite_bundle: Object
 var debug_text: RichTextLabel
+var round_components = {}
 
 func _init(fight_configuration, kernel):
   self.fight_configuration = fight_configuration
@@ -121,22 +124,41 @@ func setup_time():
 
   add_child(time)
 
-func setup_component(round_message):
-  # TODO: Handle spr, facing, vfacing, scale, layerno
-  var wrapper = Node2D.new()
+func show_round_component(key: String):
+  var definition = fight_configuration.round_info.get(key)
+  var node = create_component(definition)
 
-  if round_message.text:
-    var label = create_label(round_message)
-    wrapper.add_child(label)
-  elif round_message.anim >= 0:
-    var animations = {}
-    animations[round_message.anim] = fight_configuration.animations[round_message.anim]
-    var sprite = AnimationSprite.new(fight_configuration.sprite_bundle, animations)
-    sprite.change_anim(round_message.anim)
-    sprite.position = round_message.offset
-    add_child(sprite)
+  if key in round_components:
+    round_components[key]["node"].queue_free()
 
-  add_child(wrapper)
+  round_components[key] = {
+    "node": node,
+    "definition": definition,
+    "ticks": definition.displaytime
+  }
+
+  add_child(node)
+
+func show_round_number(roundno: int):
+  var key = "round"
+  var definition = fight_configuration.round_info.get_round_component(roundno)
+  var node = create_component(definition, String(roundno))
+
+  if key in round_components:
+    round_components[key]["node"].queue_free()
+
+  round_components[key] = {
+    "node": node,
+    "definition": definition,
+    "ticks": definition.displaytime
+  }
+
+  add_child(node)
+
+func create_component(component, text_replace = null):
+  var node = HudComponent.new(fight_configuration, component, text_replace)
+  node.setup()
+  return node
 
 func create_background(bg_config):
   if len(bg_config.spr) == 0 and bg_config.anim == -1:
@@ -157,18 +179,23 @@ func create_background(bg_config):
 
   return sprite
 
-func create_label(label_data, padding: int = 0):
-  var label = UiLabel.new()
-  var name_font = kernel.get_fight_font(label_data.font)
-  label.set_text(label_data.text)
-  label.set_font(name_font)
+func create_label(label_data, padding: int = 0, text_replace = null):
+  var node = HudText.new()
+  node.setup(label_data, padding, text_replace)
+  return node
 
-  var padding_multiplier = 1 if name_font["alignment"] == 1 else -1
-  if padding > 0:
-    # Padding multiplier was applied only here because combo text seems to need this, but powerbar counter does not. Consider creating a special label type that handles offsets and multiple fonts.
-    label.position = label_data.offset * padding_multiplier 
-    label.position.x += padding * padding_multiplier
-  else:
-    label.position = label_data.offset
+func update_tick():
+  var timeout_keys: Array = []
 
-  return label
+  for key in round_components:
+    var component: Dictionary = round_components[key]
+    component["node"].update_tick()
+    if component["node"].is_finished():
+      timeout_keys.append(key)
+
+  for key in timeout_keys:
+    round_components[key]["node"].queue_free()
+    round_components.erase(key)
+
+func is_element_active(key: String):
+  return round_components.has(key)

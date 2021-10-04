@@ -152,6 +152,38 @@ var MENU_EXIT: String = "exit"
 
 var FIGHT_TYPE_TRAINING = "training"
 
+var ROUND_STATE_PRE_INTRO = 0
+var ROUND_STATE_INTRO = 1
+var ROUND_STATE_FIGHT = 2
+var ROUND_STATE_PRE_OVER = 3
+var ROUND_STATE_OVER = 4
+
+var ASSERTION_INTRO = "intro"
+var ASSERTION_WINPOSE = "winpose"
+var ASSERTION_NOBARDISPLAY = "nobardisplay"
+var ASSERTION_NOBACKLAYER = "nobacklayer"
+var ASSERTION_NOFRONTLAYER = "nofrontlayer"
+var ASSERTION_NOKOSOUND = "nokosound"
+var ASSERTION_NOKOSLOW = "nokoslow"
+var ASSERTION_NOGLOBALSHADOW = "noglobalshadow"
+var ASSERTION_NOMUSIC = "nomusic"
+var ASSERTION_TIMERFREEZE = "timerfreeze"
+
+var FIGHT_ASSERTIONS = [
+    ASSERTION_INTRO,
+    ASSERTION_WINPOSE,
+    ASSERTION_NOBARDISPLAY,
+    ASSERTION_NOBACKLAYER,
+    ASSERTION_NOFRONTLAYER,
+    ASSERTION_NOKOSOUND,
+    ASSERTION_NOKOSLOW,
+    ASSERTION_NOGLOBALSHADOW,
+    ASSERTION_NOMUSIC,
+    ASSERTION_TIMERFREEZE
+]
+
+var INTERNAL_STATE_PATH = "res://internal.cns"
+
 func _init():
     for p in get_property_list():
         if not p['name'].begins_with('FLAG_'):

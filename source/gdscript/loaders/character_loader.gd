@@ -44,7 +44,7 @@ func load(path: String, palette_index, command_manager):
 
     for path in state_paths:
         var new_states = cns_parser.read(path)
-        merge_states(new_states, all_constant_data)
+        merge_states(new_states, all_constant_data, path)
 
     command_manager.set_commands(commands)
 
@@ -58,16 +58,17 @@ func load(path: String, palette_index, command_manager):
     character.setup(definition, data, state_defs, sprite_bundle, animations, sounds, command_manager)
     return character
 
-func merge_states(new_states, states):
+func merge_states(new_states, states, path):
     for parent_key in states.keys():
         for child_key in new_states[parent_key]:
             if parent_key == 'states':
                 if child_key in states['states']:
-                    states['states'][child_key]['controllers'] += new_states['states'][child_key]['controllers']
-                    for attr_key in new_states['states'][child_key]:
-                        if attr_key == 'controllers':
-                            continue
-                        states['states'][child_key][attr_key] = new_states['states'][child_key][attr_key]
+                    if int(child_key) < 0 or path == constants.INTERNAL_STATE_PATH:
+                        states['states'][child_key]['controllers'] += new_states['states'][child_key]['controllers']
+                        for attr_key in new_states['states'][child_key]:
+                            if attr_key == 'controllers':
+                                continue
+                            states['states'][child_key][attr_key] = new_states['states'][child_key][attr_key]
                 else:
                     states[parent_key][child_key] = new_states[parent_key][child_key]
             else:

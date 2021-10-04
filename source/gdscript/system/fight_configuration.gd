@@ -170,24 +170,36 @@ class Combo:
     var team1: ComboTeam = ComboTeam.new()
     var team2: ComboTeam = ComboTeam.new()
 
-class RoundConfiguration:
-    var offset: Vector2 = Vector2(0, 0)
-    var font: PoolIntArray = PoolIntArray([])
-    var text: String = "Round %i"
-    var displaytime: int = 60
-    var anim: PoolIntArray = PoolIntArray([]) # Use "round.default.anim" for animation instead of text
-    var snd: PoolIntArray = PoolIntArray([]) # Sounds to play for each round
-    var scale: Vector2 = Vector2(1, 1)
-
 class Component:
-    var time: int = 0 # Time to show
-    var offset: Vector2 = Vector2(0, 0)
+    var time: int = -1 # Time to show
+    var offset: Vector2 = Vector2(-1, -1)
     var anim: int = -1
-    var font: PoolIntArray = PoolIntArray([0, 0])
+    var font: PoolIntArray = PoolIntArray([])
     var text: String = ""
-    var snd: PoolIntArray = PoolIntArray([0, 0])
-    var sndtime: int = 0
-    var displaytime: int = 0
+    var snd: PoolIntArray = PoolIntArray([])
+    var sndtime: int = -1
+    var displaytime: int = -1
+    var scale: Vector2 = Vector2(-1, -1)
+
+    func merge_defaults(defaults):
+        if time == -1:
+            time = defaults.time
+        if offset == Vector2(-1, -1):
+            offset = defaults.offset
+        if anim == -1:
+            anim = defaults.anim
+        if len(font) == 0:
+            font = defaults.font
+        if len(text) == 0:
+            text = defaults.text
+        if len(snd) == 0:
+            snd = defaults.snd
+        if sndtime == -1:
+            sndtime = defaults.sndtime
+        if displaytime == -1:
+            displaytime = defaults.displaytime
+        if scale == Vector2(-1 , -1):
+            scale = defaults.scale
 
 class Round:
     var match_wins: int = 0 # Rounds needed to win a match
@@ -196,17 +208,17 @@ class Round:
     var pos: Vector2 = Vector2(0, 0) # Default position for all components
     var round_time: int = 0 # Time to show round display
     var round_sndtime: int = 0 # Time to play the sounds
-    var round_default: RoundConfiguration = RoundConfiguration.new()
+    var round_default: Component = Component.new()
     # Rounds 1..9
-    var round1: RoundConfiguration = RoundConfiguration.new()
-    var round2: RoundConfiguration = RoundConfiguration.new()
-    var round3: RoundConfiguration = RoundConfiguration.new()
-    var round4: RoundConfiguration = RoundConfiguration.new()
-    var round5: RoundConfiguration = RoundConfiguration.new()
-    var round6: RoundConfiguration = RoundConfiguration.new()
-    var round7: RoundConfiguration = RoundConfiguration.new()
-    var round8: RoundConfiguration = RoundConfiguration.new()
-    var round9: RoundConfiguration = RoundConfiguration.new()
+    var round1: Component = Component.new()
+    var round2: Component = Component.new()
+    var round3: Component = Component.new()
+    var round4: Component = Component.new()
+    var round5: Component = Component.new()
+    var round6: Component = Component.new()
+    var round7: Component = Component.new()
+    var round8: Component = Component.new()
+    var round9: Component = Component.new()
     # Fight
     var fight: Component = Component.new()
     # Control
@@ -223,6 +235,14 @@ class Round:
     var win: Component = Component.new()
     var win2: Component = Component.new() # 2-player win text
     var draw: Component = Component.new() # Draw text
+
+    func get_round_component(roundno: int):
+        if roundno < 0 or roundno > 9:
+            return round_default
+
+        var round_data = self.get("round%s" % [roundno])
+        round_data.merge_defaults(round_default)
+        return round_data
 
 class WinIconPlayer:
     var pos: Vector2 = Vector2(0, 0)

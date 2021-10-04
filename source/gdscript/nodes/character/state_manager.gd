@@ -329,6 +329,22 @@ func handle_varset(controller):
     elif type == 'sysfvar':
         character.sys_float_vars[number] = value
 
+func handle_varrangeset(controller):
+    var character = get_character()
+    var first: int = evaluate_parameter(controller, 'first', 0)
+    var last: int = evaluate_parameter(controller, 'last', 59)
+
+    if "value" in controller:
+        var value = controller["value"].execute(character)
+        for i in range(first, last + 1):
+            character.int_vars[i] = value
+
+    if "fvalue" in controller:
+        var fvalue = controller["fvalue"].execute(character)
+        for i in range(first, last + 1):
+            character.float_vars[i] = fvalue
+
+
 func handle_ctrlset(controller):
     var character = get_character()
     character.ctrl = controller['value'].execute(character)
@@ -817,4 +833,8 @@ func handle_explod(controller):
 
 func handle_forcefeedback(controller):
     # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#forcefeedback
+    pass
+
+func handle_remappal(controller):
+    # TODO: http://www.elecbyte.com/mugendocs/sctrls.html#remappal
     pass
