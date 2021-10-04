@@ -9,7 +9,7 @@ func _init(_sounds: Dictionary):
 func _ready():
     channels = []
     for i in range(16):
-        channels.append(AudioStreamPlayer2D.new())
+        channels.append(AudioStreamPlayer.new())
         add_child(channels[i])
 
 func play_sound(params: Dictionary):
@@ -24,13 +24,16 @@ func play_sound(params: Dictionary):
     channel.play()
 
 func make_stream(value):
-    # TODO: Support value like F3
-    var groupno = value[0]
-    var soundno = value[1]
+    var kernel = constants.container["kernel"]
+    var groupno = String(value[0])
+    var soundno = String(value[1])
     var key = "%s-%s" % [groupno, soundno]
 
+    if groupno.find("f") == 0:
+        return kernel.get_common_sound([groupno.substr(1), soundno])
+
     if not sounds.has(key):
-        print("sound not found: %s" % [value])
+        push_warning("character sound not found: %s" % [value])
         return null
 
     return sounds[key]
