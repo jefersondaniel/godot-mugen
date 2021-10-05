@@ -184,6 +184,8 @@ var FIGHT_ASSERTIONS = [
 
 var INTERNAL_STATE_PATH = "res://internal.cns"
 
+var DEFAULT_VOLUME_DB = -20 # TODO: Adapt this
+
 func _init():
     for p in get_property_list():
         if not p['name'].begins_with('FLAG_'):
