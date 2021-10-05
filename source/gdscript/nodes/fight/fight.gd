@@ -114,6 +114,10 @@ func update_tick():
     stage.update_tick()
     self.update_characters()
     self.update_combat()
+    self.update_hud()
+
+func decrease_remaining_time():
+    self.remaining_time = remaining_time - 1
 
 func update_combat():
     self.contacts = []
@@ -137,6 +141,9 @@ func update_characters():
 
     for character in self.characters:
         character.update_physics()
+
+func update_hud():
+    hud.set_time_text(String(remaining_time))
 
 func run_character_contacts():
     for attack in self.contacts:

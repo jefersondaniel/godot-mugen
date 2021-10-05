@@ -1,7 +1,7 @@
 extends "res://source/gdscript/system/state.gd"
 
 var fight_ref: WeakRef
-var ticks: int = 0
+var tick: int = 0
 
 func _init(fight):
   self.fight_ref = weakref(fight)
@@ -13,4 +13,9 @@ func activate():
     character.ctrl = 1
 
 func update_tick():
-  ticks += 1
+  var fight = fight_ref.get_ref()
+
+  if tick % constants.TARGET_FPS == 0:
+    fight.decrease_remaining_time()
+
+  tick += 1
