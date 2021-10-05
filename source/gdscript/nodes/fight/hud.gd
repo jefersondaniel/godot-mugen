@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 var AnimationSprite = load("res://source/gdscript/nodes/sprite/animation_sprite.gd")
+var ClipNode = load("res://source/gdscript/nodes/ui/clip_node.gd")
 var HudComponent = load("res://source/gdscript/nodes/fight/hud_component.gd")
 var HudText = load("res://source/gdscript/nodes/fight/hud_text.gd")
 var UiLabel = load("res://source/gdscript/nodes/ui/label.gd")
@@ -10,6 +11,7 @@ var kernel: Object
 var sprite_bundle: Object
 var debug_text: RichTextLabel
 var round_components = {}
+var time_label = null
 
 func _init(fight_configuration, kernel):
   self.fight_configuration = fight_configuration
@@ -32,15 +34,24 @@ func setup_lifebar():
   setup_lifebar_player(fight_configuration.lifebar.p2)
 
 func setup_lifebar_player(lifebar_data):
-  var lifebar = Node2D.new()
-  lifebar.position = lifebar_data.pos
+  var wrapper = Node2D.new()
+  wrapper.position = lifebar_data.pos
 
-  lifebar.add_child(create_background(lifebar_data.bg0))
-  lifebar.add_child(create_background(lifebar_data.bg1))
-  lifebar.add_child(create_background(lifebar_data.mid))
-  lifebar.add_child(create_background(lifebar_data.front))
+  var bg0 = create_background(lifebar_data.bg0)
+  wrapper.add_child(bg0)
 
-  add_child(lifebar)
+  var bg1 = create_background(lifebar_data.bg1)
+  wrapper.add_child(bg1)
+
+  var mid = create_background(lifebar_data.mid)
+  update_range(wrapper, mid, lifebar_data.range_x)
+  wrapper.add_child(mid)
+
+  var front = create_background(lifebar_data.front)
+  update_range(wrapper, front, lifebar_data.range_x)
+  wrapper.add_child(front)
+
+  add_child(wrapper)
 
 func setup_powerbar():
   setup_powerbar_player(fight_configuration.powerbar.p1)
@@ -115,14 +126,14 @@ func setup_combo_team(combo):
   add_child(wrapper)
 
 func setup_time():
-  var time = Node2D.new()
-  time.position = fight_configuration.time.pos
+  var wrapper = Node2D.new()
+  wrapper.position = fight_configuration.time.pos
 
-  var time_label = create_label(fight_configuration.time.counter)
+  time_label = create_label(fight_configuration.time.counter)
   time_label.set_text("99")
-  time.add_child(time_label)
+  wrapper.add_child(time_label)
 
-  add_child(time)
+  add_child(wrapper)
 
 func show_round_component(key: String):
   var definition = fight_configuration.round_info.get(key)
@@ -162,8 +173,9 @@ func create_component(component, text_replace = null):
 
 func create_background(bg_config):
   if len(bg_config.spr) == 0 and bg_config.anim == -1:
-    return Node2D.new()
+    return ClipNode.new()
 
+  var wrapper = ClipNode.new()
   var sprite 
  
   if bg_config.anim >= 0:
@@ -176,8 +188,9 @@ func create_background(bg_config):
     sprite = fight_configuration.sprite_bundle.create_sprite(bg_config.spr, bg_config.facing)
 
   sprite.position = bg_config.offset
+  wrapper.add_child(sprite)
 
-  return sprite
+  return wrapper
 
 func create_label(label_data, padding: int = 0, text_replace = null):
   var node = HudText.new()
@@ -199,3 +212,24 @@ func update_tick():
 
 func is_element_active(key: String):
   return round_components.has(key)
+
+func set_time_text(value: String):
+  time_label.set_text(value)
+
+func update_range(wrapper: Node2D, node: Node2D, range_value: PoolIntArray, percent: float = 1.0):
+  var range_start: int = range_value[0]
+  var range_end: int = range_value[1]
+  var max_height: int = constants.WINDOW_SIZE.x
+
+  if range_start < range_end:
+    node.custom_rect = Rect2(
+      Vector2(range_start, -max_height / 2),
+      Vector2((range_end - range_start) * percent, max_height)
+    )
+  else:
+    var full_size = range_start - range_end
+    var expected_size = full_size * percent
+    node.custom_rect = Rect2(
+      Vector2(range_end + full_size - expected_size, -max_height / 2),
+      Vector2(expected_size, max_height)
+    )

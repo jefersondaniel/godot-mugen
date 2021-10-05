@@ -1,4 +1,4 @@
-extends Node2D
+extends "res://source/gdscript/nodes/ui/clip_node.gd"
 
 signal on_action(action)
 
@@ -20,7 +20,6 @@ var label_map: Dictionary = {}
 var cursor = null
 var cursor_texture = null
 var selected_action_index: int = 0
-var custom_rect = null
 var scroller = null
 var action_timestamp: int = 0
 
@@ -154,7 +153,3 @@ func get_cursor_top_edge():
 
 func get_cursor_bottom_edge():
     return get_cursor_top_edge() + cursor_box.size.y
-
-func _draw():
-    VisualServer.canvas_item_set_custom_rect(get_canvas_item(), true, custom_rect)
-    VisualServer.canvas_item_set_clip(get_canvas_item(), true)
