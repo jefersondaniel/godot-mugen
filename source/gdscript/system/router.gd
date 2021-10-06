@@ -32,7 +32,7 @@ func _ready():
 
     vs_route.add_transition(fight_route, "done")
     title_route.add_transition(training_selection_route, constants.MENU_TRAINING)
-    training_selection_route.add_transition(vs_route, "done")  
+    training_selection_route.add_transition(vs_route, "done")
 
     connect("on_route", self, "on_route_change")
     # start(title_route)

@@ -138,6 +138,9 @@ func _ready():
     character_sprite.change_anim(0)
     character_sprite.set_process(false)
 
+func get_max_life():
+    return data.data.life
+
 func reset_round_state():
     # Meant to reset state between rounds
     ctrl = 0
