@@ -1,6 +1,14 @@
 extends Node2D
 
-var custom_rect = null
+var custom_rect setget set_custom_rect, get_custom_rect
+
+func get_custom_rect():
+  return custom_rect
+
+func set_custom_rect(value: Rect2):
+  if custom_rect != value:
+    custom_rect = value
+    update()
 
 func _draw():
   if custom_rect:

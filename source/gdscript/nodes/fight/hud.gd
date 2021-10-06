@@ -12,6 +12,8 @@ var sprite_bundle: Object
 var debug_text: RichTextLabel
 var round_components = {}
 var time_label = null
+var lifebar_range_map: Dictionary = {}
+var powerbar_range_map: Dictionary = {}
 
 func _init(fight_configuration, kernel):
   self.fight_configuration = fight_configuration
@@ -30,34 +32,41 @@ func setup():
   # setup_component(fight_configuration.round_info.draw)
 
 func setup_lifebar():
-  setup_lifebar_player(fight_configuration.lifebar.p1)
-  setup_lifebar_player(fight_configuration.lifebar.p2)
+  setup_lifebar_player(fight_configuration.lifebar.p1, 1)
+  setup_lifebar_player(fight_configuration.lifebar.p2, 2)
 
-func setup_lifebar_player(lifebar_data):
+func setup_lifebar_player(lifebar_data, playerno: int):
   var wrapper = Node2D.new()
+
   wrapper.position = lifebar_data.pos
-
-  var bg0 = create_background(lifebar_data.bg0)
-  wrapper.add_child(bg0)
-
-  var bg1 = create_background(lifebar_data.bg1)
-  wrapper.add_child(bg1)
+  wrapper.add_child(create_background(lifebar_data.bg0))
+  wrapper.add_child(create_background(lifebar_data.bg1))
 
   var mid = create_background(lifebar_data.mid)
-  update_range(wrapper, mid, lifebar_data.range_x)
   wrapper.add_child(mid)
 
   var front = create_background(lifebar_data.front)
-  update_range(wrapper, front, lifebar_data.range_x)
   wrapper.add_child(front)
+
+  lifebar_range_map[playerno] = {
+    'range_x': lifebar_data.range_x,
+    'mid': {
+      'node': mid,
+      'percent': 1.0,
+    },
+    'front': {
+      'node': front,
+      'percent': 1.0,
+    },
+  }
 
   add_child(wrapper)
 
 func setup_powerbar():
-  setup_powerbar_player(fight_configuration.powerbar.p1)
-  setup_powerbar_player(fight_configuration.powerbar.p2)
+  setup_powerbar_player(fight_configuration.powerbar.p1, 1)
+  setup_powerbar_player(fight_configuration.powerbar.p2, 2)
 
-func setup_powerbar_player(powerbar_data):
+func setup_powerbar_player(powerbar_data, playerno: int):
   var powerbar = Node2D.new()
   powerbar.position = powerbar_data.pos
 
@@ -66,9 +75,25 @@ func setup_powerbar_player(powerbar_data):
 
   powerbar.add_child(create_background(powerbar_data.bg0))
   powerbar.add_child(create_background(powerbar_data.bg1))
-  powerbar.add_child(create_background(powerbar_data.mid))
-  powerbar.add_child(create_background(powerbar_data.front))
+  var mid = create_background(powerbar_data.mid)
+  powerbar.add_child(mid)
+  var front = create_background(powerbar_data.front)
+  powerbar.add_child(front)
+  var counter = counter_label
   powerbar.add_child(counter_label)
+
+  powerbar_range_map[playerno] = {
+    'counter': counter,
+    'range_x': powerbar_data.range_x,
+    'mid': {
+      'node': mid,
+      'percent': 0.5,
+    },
+    'front': {
+      'node': front,
+      'percent': 0.2,
+    },
+  }
 
   add_child(powerbar)
 
@@ -210,16 +235,49 @@ func update_tick():
     round_components[key]["node"].queue_free()
     round_components.erase(key)
 
+  for playerno in lifebar_range_map:
+    var data = lifebar_range_map[playerno]
+    var range_x = data["range_x"]
+
+    lifebar_range_map[playerno]["mid"]["percent"] = lerp(
+      lifebar_range_map[playerno]["mid"]["percent"],
+      lifebar_range_map[playerno]["front"]["percent"],
+      0.1
+    )
+
+    update_range(data["front"]["node"], range_x, data["front"]["percent"])
+    update_range(data["mid"]["node"], range_x, data["mid"]["percent"])
+
+  for playerno in powerbar_range_map:
+    var data = powerbar_range_map[playerno]
+    var range_x = data["range_x"]
+
+    powerbar_range_map[playerno]["mid"]["percent"] = lerp(
+      powerbar_range_map[playerno]["mid"]["percent"],
+      powerbar_range_map[playerno]["front"]["percent"],
+      0.1
+    )
+
+    update_range(data["front"]["node"], range_x, data["front"]["percent"])
+    update_range(data["mid"]["node"], range_x, data["mid"]["percent"])
+
 func is_element_active(key: String):
   return round_components.has(key)
 
 func set_time_text(value: String):
   time_label.set_text(value)
 
-func update_range(wrapper: Node2D, node: Node2D, range_value: PoolIntArray, percent: float = 1.0):
+func set_lifebar_percent(playerno: int, percent: float):
+  lifebar_range_map[playerno]["front"]["percent"] = percent
+
+func update_range(node: Node2D, range_value: PoolIntArray, percent: float = 1.0):
   var range_start: int = range_value[0]
   var range_end: int = range_value[1]
   var max_height: int = constants.WINDOW_SIZE.x
+  
+  if percent <= 0:
+    node.custom_rect = Rect2(-1, -1, 0, 0)
+    return
 
   if range_start < range_end:
     node.custom_rect = Rect2(

@@ -145,6 +145,13 @@ func update_characters():
 func update_hud():
     hud.set_time_text(String(remaining_time))
 
+    for playerno in range(1, len(self.characters) + 1):
+        var character = self.characters[playerno - 1]
+        var max_life = character.get_max_life()
+        var life = character.life
+        var percent = life / max_life
+        hud.set_lifebar_percent(playerno, percent)
+
 func run_character_contacts():
     for attack in self.contacts:
         if attack['type'] == CONTACT_HIT:
