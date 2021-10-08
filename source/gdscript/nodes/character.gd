@@ -141,12 +141,15 @@ func _ready():
 func get_max_life():
     return data.data.life
 
+func get_max_power():
+    return data.data.power
+
 func reset_round_state():
     # Meant to reset state between rounds
     ctrl = 0
     alive = 1
     life = data.data.life
-    power = data.data.power
+    power = 0
     hit_def = null
     received_hit_def = null
     remaining_juggle_points = 15
@@ -520,8 +523,8 @@ func get_hit_velocity() -> Vector2:
 
     return hit_velocity
 
-func add_power(_power):
-    power = power + _power
+func add_power(power):
+    self.power = min(self.power + power, get_max_power())
 
 func get_attack_power() -> float:
     var result = get_const('data.attack')

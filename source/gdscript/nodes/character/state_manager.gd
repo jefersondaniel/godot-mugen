@@ -781,7 +781,7 @@ func handle_powerset(controller):
 func handle_poweradd(controller):
     var character = get_character()
     var value = evaluate_parameter(controller, 'value', 0) # Specifies amount of life that the player will have after execution.
-    character.power += value
+    character.add_power(value)
 
 func handle_movehitreset(controller):
     var character = get_character()

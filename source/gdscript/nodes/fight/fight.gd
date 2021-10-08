@@ -147,10 +147,16 @@ func update_hud():
 
     for playerno in range(1, len(self.characters) + 1):
         var character = self.characters[playerno - 1]
+
         var max_life = character.get_max_life()
         var life = character.life
-        var percent = life / max_life
-        hud.set_lifebar_percent(playerno, percent)
+        var life_percent = life / max(max_life, 1)
+        hud.set_lifebar_percent(playerno, life_percent)
+
+        var max_power = character.get_max_power()
+        var power = character.power
+        var power_percent = power / max(max_power, 1)
+        hud.set_powerbar_percent(playerno, power_percent)
 
 func run_character_contacts():
     for attack in self.contacts:

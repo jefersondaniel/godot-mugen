@@ -71,7 +71,7 @@ func setup_powerbar_player(powerbar_data, playerno: int):
   powerbar.position = powerbar_data.pos
 
   var counter_label = create_label(powerbar_data.counter)
-  counter_label.set_text("3")
+  counter_label.set_text("0")
 
   powerbar.add_child(create_background(powerbar_data.bg0))
   powerbar.add_child(create_background(powerbar_data.bg1))
@@ -87,11 +87,11 @@ func setup_powerbar_player(powerbar_data, playerno: int):
     'range_x': powerbar_data.range_x,
     'mid': {
       'node': mid,
-      'percent': 0.5,
+      'percent': 0,
     },
     'front': {
       'node': front,
-      'percent': 0.2,
+      'percent': 0,
     },
   }
 
@@ -251,12 +251,16 @@ func update_tick():
   for playerno in powerbar_range_map:
     var data = powerbar_range_map[playerno]
     var range_x = data["range_x"]
+    var power_percent = powerbar_range_map[playerno]["front"]["percent"]
 
     powerbar_range_map[playerno]["mid"]["percent"] = lerp(
-      powerbar_range_map[playerno]["mid"]["percent"],
-      powerbar_range_map[playerno]["front"]["percent"],
+      data["mid"]["percent"],
+      power_percent,
       0.1
     )
+
+    var gauges = floor(power_percent * 3)
+    data["counter"].set_text(String(gauges))
 
     update_range(data["front"]["node"], range_x, data["front"]["percent"])
     update_range(data["mid"]["node"], range_x, data["mid"]["percent"])
@@ -269,6 +273,9 @@ func set_time_text(value: String):
 
 func set_lifebar_percent(playerno: int, percent: float):
   lifebar_range_map[playerno]["front"]["percent"] = percent
+
+func set_powerbar_percent(playerno: int, percent: float):
+  powerbar_range_map[playerno]["front"]["percent"] = percent
 
 func update_range(node: Node2D, range_value: PoolIntArray, percent: float = 1.0):
   var range_start: int = range_value[0]
