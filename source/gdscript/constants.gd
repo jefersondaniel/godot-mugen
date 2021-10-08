@@ -182,9 +182,13 @@ var FIGHT_ASSERTIONS = [
     ASSERTION_TIMERFREEZE
 ]
 
-var INTERNAL_STATE_PATH = "res://internal.cns"
+var INTERNAL_STATE_PATH = 'res://internal.cns'
 
 var DEFAULT_VOLUME_DB = -20 # TODO: Adapt this
+
+var TEAM_SIDE_LEFT = 'left'
+
+var TEAM_SIDE_RIGHT = 'right'
 
 func _init():
     for p in get_property_list():
