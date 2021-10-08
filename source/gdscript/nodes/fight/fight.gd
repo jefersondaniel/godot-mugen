@@ -412,13 +412,11 @@ func on_attack_block(attacker, target, hit_def):
         constants.FLAG_C:
             target.change_state(constants.STATE_CROUCHING_GUARD_HIT_SHAKING)
 
-func apply_damage(attacker, target, amount, cankill):
+func apply_damage(attacker, target, amount, kill):
     var offensive_multiplier = attacker.attack_multiplier * (attacker.get_attack_power() / 100.0)
     var defensive_multiplier = target.defense_multiplier * (target.get_defence_power() / 100.0)
     amount = int(amount * offensive_multiplier / defensive_multiplier)
-    target.life -= amount
-    if target.life == 0 and not cankill:
-        target.life = 1
+    target.add_life(-amount, kill)
 
 func set_facing(attacker, target, hit_def):
     if hit_def.p1facing == -1:
