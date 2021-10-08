@@ -1,6 +1,6 @@
 class Data:
     var life: float = 1000.0 # amount of life to start with
-    var power: float = 0.0
+    var power: float = 3000.0
     var attack: float = 100.0 # attack power (more is stronger)
     var defence: float = 100.0 # defensive power (more is stronger)
     var fall_defence_up: float = 50.0 # percentage to increase defense everytime player is knocked down
