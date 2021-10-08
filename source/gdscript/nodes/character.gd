@@ -524,7 +524,12 @@ func get_hit_velocity() -> Vector2:
     return hit_velocity
 
 func add_power(power):
-    self.power = min(self.power + power, get_max_power())
+    self.power = max(0, min(self.power + power, get_max_power()))
+
+func add_life(life: int, kill: bool = true):
+    self.life = max(0, min(self.life + life, get_max_life()))
+    if not kill and self.life == 0:
+        self.life = 1
 
 func get_attack_power() -> float:
     var result = get_const('data.attack')

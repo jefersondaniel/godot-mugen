@@ -673,9 +673,7 @@ func handle_targetlifeadd(controller):
         if not absolute and new_value < 0:
             new_value = int(new_value * character.attack_multiplier)
             new_value = int(new_value / target.defense_multiplier)
-        target.life += new_value
-        if target.life < 0 and not kill:
-            target.life = 1
+        target.add_life(new_value, kill)
 
 func handle_targetpoweradd(controller):
     var character = get_character()
@@ -763,15 +761,12 @@ func handle_lifeadd(controller):
     if not absolute:
         value = int(value / character.defense_multiplier)
 
-    character.life += value
-
-    if character.life <= 0 and not kill:
-        character.life = 1
+    character.add_life(value, kill)
 
 func handle_lifeset(controller):
     var character = get_character()
     var value = evaluate_parameter(controller, 'value', 0) # Specifies amount of life that the player will have after execution.
-    character.life = value
+    character.life = max(0, min(value, character.get_max_life()))
 
 func handle_powerset(controller):
     var character = get_character()
