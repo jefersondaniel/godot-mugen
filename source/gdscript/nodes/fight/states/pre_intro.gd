@@ -18,7 +18,7 @@ func activate():
   for character in fight.get_active_characters():
     character.reset_round_state()
 
-    if character.team == 1:
+    if character.team_number == 1:
       character.set_facing_right(stage_definition.player_p1facing == 1)
     else:
       character.set_facing_right(stage_definition.player_p2facing == 1)
@@ -31,4 +31,4 @@ func update_tick():
   ticks += 1
 
   if ticks > fight.configuration.round_info.start_waittime:
-   return IntroState.new(fight)
+    return IntroState.new(fight)

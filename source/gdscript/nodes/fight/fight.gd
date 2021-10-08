@@ -11,7 +11,7 @@ const CONTACT_MISS_BLOCK: int = 3
 var roundstate: int = constants.ROUND_STATE_PRE_INTRO
 var roundno: int = 0
 var teams = {}
-var characters = []
+var active_characters setget ,get_active_characters
 var stage = null
 var contacts = []
 var cancelled_contacts = []
@@ -54,29 +54,19 @@ func set_stage(_stage):
     self.stage = _stage
     self.add_child(self.stage)
 
-func add_character(character, team: int):
-    character.position = stage.get_starting_pos(team)
-    character.team = team
-    character.fight = self
-    if teams.has(team) == false:
-        teams[team] = []
-    teams[team].append(character)
-    characters.append(character)
-    stage.add_player(character)
-    if character.team == 1:
-        character.set_facing_right(stage.definition.player_p1facing == 1)
-    else:
-        character.set_facing_right(stage.definition.player_p2facing == 1)
+func set_team(team_number: int, team):
+    team.setup(self)
+    teams[team_number] = team
 
 func get_nearest_enemy(character):
     var nearest_enemy = null
     var nearest_enemy_distance = 9999
 
-    for team_id in teams:
-        if team_id == character.team:
+    for team in teams.values():
+        if team.team_number == character.team_number:
             continue
 
-        for other in teams[team_id]:
+        for other in team.characters:
             var distance: int = other.position.distance_to(character.position)
             if distance < nearest_enemy_distance:
                 nearest_enemy_distance = distance
@@ -87,22 +77,20 @@ func get_nearest_enemy(character):
 func get_enemies(character):
     var results: Array = []
 
-    for team_id in teams:
-        if team_id == character.team:
+    for team in teams.values():
+        if team.team_number == character.team_number:
             continue
 
-        for other in teams[team_id]:
+        for other in team.characters:
             results.push_back(other)
 
     return results
 
 func get_active_characters():
-    # TODO: Exclude inactive characters on turn combats
-
     var results: Array = []
 
-    for team_id in teams:
-        for character in teams[team_id]:
+    for team in teams.values():
+        for character in team.active_characters:
             results.push_back(character)
 
     return results
@@ -127,26 +115,26 @@ func update_combat():
     self.run_character_contacts()
 
 func update_characters():
-    for character in self.characters:
+    for character in self.active_characters:
         character.cleanup()
 
-    for character in self.characters:
+    for character in self.active_characters:
         character.update_input()
 
-    for character in self.characters:
+    for character in self.active_characters:
         character.update_animation()
 
-    for character in self.characters:
+    for character in self.active_characters:
         character.update_state()
 
-    for character in self.characters:
+    for character in self.active_characters:
         character.update_physics()
 
 func update_hud():
     hud.set_time_text(String(remaining_time))
 
-    for playerno in range(1, len(self.characters) + 1):
-        var character = self.characters[playerno - 1]
+    for playerno in range(1, len(self.active_characters) + 1):
+        var character = self.active_characters[playerno - 1]
 
         var max_life = character.get_max_life()
         var life = character.life
@@ -170,7 +158,7 @@ func run_character_contacts():
                 continue
         self.run_character_attack(attack)
 
-    for character in self.characters:
+    for character in self.active_characters:
         var hit_count: int = count_contacts(character, CONTACT_HIT)
         var block_count: int = count_contacts(character, CONTACT_BLOCK)
         if hit_count:
@@ -221,10 +209,10 @@ func priority_check(a, b):
             self.cancelled_contacts.append(a)
 
 func check_move_contacts():
-    for attacker in self.characters:
+    for attacker in self.active_characters:
         if attacker.in_hit_pause or not attacker.is_hit_def_active:
             continue
-        for target in self.characters:
+        for target in self.active_characters:
             if attacker == target:
                 continue
             self.check_move_contact(attacker, target)
@@ -258,9 +246,9 @@ func can_block(attacker, target, collision_check: bool) -> bool:
 
     if collision_check and not attacker.check_attack_collision(target):
         return false
-    if attacker.hit_def.affectteam == 'e' and target.team == attacker.team:
+    if attacker.hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
         return false
-    if attacker.hit_def.affectteam == 'f' and target.team != attacker.team:
+    if attacker.hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
         return false
     if not target.check_command('holdback'):
         return false
@@ -283,9 +271,9 @@ func can_hit(attacker, target) -> bool:
 
     if not attacker.check_attack_collision(target):
         return false
-    if attacker.hit_def.affectteam == 'e' and target.team == attacker.team:
+    if attacker.hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
         return false
-    if attacker.hit_def.affectteam == 'f' and target.team != attacker.team:
+    if attacker.hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
         return false
     if target.statetype == constants.FLAG_S and not hit_def.allow_hit_high():
         return false
@@ -357,8 +345,6 @@ func on_character_attack(attacker, target, hit_def, blocked):
             on_attack_block(attacker, target, received_hit_def)
 
 func on_attack_hit(attacker, target, hit_def):
-    print("On Attack, attackerstate: %s" % [attacker.stateno])
-
     apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
 
     if target.life == 0:

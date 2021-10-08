@@ -1,6 +1,7 @@
 extends Node2D
 
 var Fight = load("res://source/gdscript/nodes/fight/fight.gd")
+var Team = load("res://source/gdscript/nodes/fight/team.gd")
 var UserCommandManager = load("res://source/gdscript/nodes/character/user_command_manager.gd")
 var AiCommandManager = load("res://source/gdscript/nodes/character/ai_command_manager.gd")
 var CharacterLoader = load("res://source/gdscript/loaders/character_loader.gd").new()
@@ -24,9 +25,10 @@ func setup_fight():
   fight.set_stage(stage)
 
   var character1 = load_character(1, "res://data/chars/kfm/kfm.def", 0)
-  fight.add_character(character1, 1)
+  fight.set_team(1, Team.new(constants.TEAM_SIDE_LEFT, character1))
+
   var character2 = load_ai("res://data/chars/kfm/kfm.def", 3)
-  fight.add_character(character2, 2)
+  fight.set_team(2, Team.new(constants.TEAM_SIDE_RIGHT, character2))
 
   add_child(fight)
 

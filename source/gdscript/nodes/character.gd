@@ -13,7 +13,8 @@ var character_sprite = null
 var command_manager = null
 var state_manager = null
 var sound_manager = null
-var fight = null
+var fight setget set_fight,get_fight
+var fight_ref: WeakRef
 
 # Private variables
 var definition = null
@@ -73,7 +74,7 @@ var statetype: int = constants.FLAG_S
 var physics: int = constants.FLAG_S
 var movetype: int = constants.FLAG_I
 var ctrl: int = 1
-var team: int = 0
+var team_number: int = 0
 var roundsexisted: int = 0
 var front_width_override: float = 0.0
 var back_width_override: float = 0.0
@@ -245,13 +246,13 @@ func get_hit_var(key):
             return null
 
 func get_relative_position():
-    return Vector2(position.x, position.y - fight.stage.get_position_offset().y) / global_scale
+    return Vector2(position.x, position.y - self.fight.stage.get_position_offset().y) / global_scale
 
 func set_relative_position(newpos):
     newpos *= global_scale
 
     position.x = newpos.x if is_facing_right else newpos.x
-    position.y = newpos.y + fight.stage.get_position_offset().y
+    position.y = newpos.y + self.fight.stage.get_position_offset().y
 
 func add_relative_position(vector):
     var newpos = get_relative_position()
@@ -369,7 +370,7 @@ func get_context_variable(key):
     if key in state_variables:
         return get(key)
     if key in fight_variables:
-        return fight.get(key)
+        return self.fight.get(key)
     if key in constants.FLAGS:
         return constants.FLAGS[key]
     if key == "statetime":
@@ -475,7 +476,7 @@ func play_sound(parameters: Dictionary):
 func assert_special(key: String):
     key = key.to_lower()
     if key in constants.FIGHT_ASSERTIONS:
-        fight.assert_special(key)
+        self.fight.assert_special(key)
         return
     special_flags[key] = 1
 
@@ -486,7 +487,7 @@ func reset_assert_special():
 func check_assert_special(key):
     key = key.to_lower()
     if key in constants.FIGHT_ASSERTIONS:
-        return fight.check_assert_special(key)
+        return self.fight.check_assert_special(key)
     return special_flags.has(key) && special_flags[key] > 0
 
 func set_facing_right(value: bool):
@@ -559,7 +560,7 @@ func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():
-    if team != 1:
+    if team_number != 1:
         return
 
     var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, time: %s, animtime: %s, fps: %s\n" % [
@@ -677,7 +678,7 @@ func handle_movement():
     velocity += absolute_acceleration
 
 func handle_movement_restriction():
-    var stage = fight.stage
+    var stage = self.fight.stage
     var viewport: Rect2 = stage.get_movement_area()
     var min_x: float = viewport.position.x
     var max_x: float = viewport.position.x + viewport.size.x
@@ -701,7 +702,7 @@ func get_right_position() -> float:
     return position.x + (get_back_width() + get_front_width()) / 2
 
 func get_enemy_body_dist(axis: String):
-    var enemy = fight.get_nearest_enemy(self)
+    var enemy = self.fight.get_nearest_enemy(self)
 
     if not enemy:
         return null
@@ -723,7 +724,7 @@ func get_enemy_body_dist(axis: String):
     return null
 
 func get_enemy_statetype():
-    var enemy = fight.get_nearest_enemy(self)
+    var enemy = self.fight.get_nearest_enemy(self)
 
     if not enemy:
         return null
@@ -731,7 +732,7 @@ func get_enemy_statetype():
     return enemy.statetype
 
 func get_enemy_stateno():
-    var enemy = fight.get_nearest_enemy(self)
+    var enemy = self.fight.get_nearest_enemy(self)
 
     if not enemy:
         return null
@@ -739,7 +740,7 @@ func get_enemy_stateno():
     return enemy.stateno
 
 func get_enemy_movetype():
-    var enemy = fight.get_nearest_enemy(self)
+    var enemy = self.fight.get_nearest_enemy(self)
 
     if not enemy:
         return null
@@ -750,10 +751,7 @@ func update_z_index(new_index):
     z_index = base_z_index  + new_index
 
 func get_stage():
-    return fight.stage
-
-func get_fight():
-    return fight
+    return self.fight.stage
 
 func handle_physics():
     var ground_friction: float = 0
@@ -770,13 +768,13 @@ func handle_physics():
 
     if physics == constants.FLAG_A:
         if relative_position.y < 0:
-            velocity += fight.stage.gravity
+            velocity += self.fight.stage.gravity
 
 func handle_facing():
     if not ctrl:
         return
 
-    var enemy = fight.get_nearest_enemy(self)
+    var enemy = self.fight.get_nearest_enemy(self)
 
     if not enemy:
         return
@@ -807,7 +805,7 @@ func handle_pushing():
     if not push_flag:
         return
 
-    var enemies = fight.get_enemies(self)
+    var enemies = self.fight.get_enemies(self)
 
     for enemy in enemies:
         if not enemy.push_flag:
@@ -905,3 +903,9 @@ func find_hit_override(hit_def):
             continue
         return hit_override
     return null
+
+func set_fight(fight):
+    fight_ref = weakref(fight)
+
+func get_fight():
+    return fight_ref.get_ref()
