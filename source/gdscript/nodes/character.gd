@@ -60,13 +60,14 @@ var string_variable_regex: RegEx
 var base_z_index = 100
 var posfreeze: int = 0
 var clipboard: Array = []
+var max_life setget ,get_max_life
 
 # Public variables (will be available in expressions)
-var fight_variables: Array = ['roundstate', 'roundno']
+var fight_variables: Array = ['roundstate', 'roundno', 'matchover']
 var state_variables: Array = []
 var power: float = 0
 var life: float = 0
-var alive: int = 0
+var alive setget ,get_alive
 var time: int = 0
 var prevstateno: int = -1
 var stateno: int = 0
@@ -139,7 +140,7 @@ func _ready():
     character_sprite.change_anim(0)
     character_sprite.set_process(false)
 
-func get_max_life():
+func get_max_life() -> int:
     return data.data.life
 
 func get_max_power():
@@ -148,7 +149,6 @@ func get_max_power():
 func reset_round_state():
     # Meant to reset state between rounds
     ctrl = 0
-    alive = 1
     life = data.data.life
     power = 0
     hit_def = null
@@ -560,7 +560,7 @@ func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():
-    if team_number != 1:
+    if team_number != 2:
         return
 
     var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, time: %s, animtime: %s, fps: %s\n" % [
@@ -909,3 +909,6 @@ func set_fight(fight):
 
 func get_fight():
     return fight_ref.get_ref()
+
+func get_alive():
+    return self.life > 0

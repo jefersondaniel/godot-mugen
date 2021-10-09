@@ -10,6 +10,7 @@ const CONTACT_MISS_BLOCK: int = 3
 
 var roundstate: int = constants.ROUND_STATE_PRE_INTRO
 var roundno: int = 0
+var matchover: bool = false
 var teams = {}
 var active_characters setget ,get_active_characters
 var stage = null
@@ -21,6 +22,10 @@ var configuration = null
 var hud = null
 var remaining_time: int = constants.ROUND_TIME
 var special_flags = {}
+var team_1 setget ,get_team_1
+var team_2 setget ,get_team_2
+var is_slow_mode: bool = false
+var real_ticks: int = 0 # Get real ticks independent of slow mode
 
 func _init():
     kernel = constants.container["kernel"]
@@ -55,8 +60,22 @@ func set_stage(_stage):
     self.add_child(self.stage)
 
 func set_team(team_number: int, team):
-    team.setup(self)
     teams[team_number] = team
+
+    if team_number != 1 and teams.has(1):
+        teams[1].enemy_team = team
+        team.enemy_team = teams[1]
+    elif team_number != 2 and teams.has(2):
+        teams[2].enemy_team = team
+        team.enemy_team = teams[2]
+
+    team.setup(self)
+
+func get_team_1():
+    return teams[1]
+
+func get_team_2():
+    return teams[2]
 
 func get_nearest_enemy(character):
     var nearest_enemy = null
@@ -96,6 +115,12 @@ func get_active_characters():
     return results
 
 func update_tick():
+    real_ticks += 1
+
+    if is_slow_mode and real_ticks % 3 != 0:
+        # TODO: Review slow mode fps
+        return
+
     state_machine.update_tick()
     hud.update_tick()
     reset_assert_special()
@@ -105,7 +130,7 @@ func update_tick():
     self.update_hud()
 
 func decrease_remaining_time():
-    self.remaining_time = remaining_time - 1
+    self.remaining_time = max(0, remaining_time - 1)
 
 func update_combat():
     self.contacts = []
