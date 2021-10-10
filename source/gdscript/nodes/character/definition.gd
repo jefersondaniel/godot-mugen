@@ -8,8 +8,8 @@ class Info extends "res://source/gdscript/helpers/parser_helper.gd":
     var localcoord: Vector2 = Vector2(320, 240)
 
     func parse(data: Dictionary):
-        name = data.get("name", "")
-        displayname = data.get("displayname", "")
+        name = data.get("name", "").lstrip('"').rstrip('"')
+        displayname = data.get("displayname", "").lstrip('"').rstrip('"')
         versiondate = data.get("versiondate", "")
         mugenversion = data.get("mugenversion", "")
         author = data.get("author", "")
@@ -67,6 +67,7 @@ var files = null
 var arcade = null
 var palette_keymap: Dictionary = {}
 var base_path: String = ""
+var display_name setget ,get_display_name
 
 func parse(user_data: Dictionary):
     info = Info.new()
@@ -122,4 +123,8 @@ func get_scale() -> Vector2:
 
     return motif_scale * kernel.get_scale()
 
+func get_display_name():
+    if self.info.displayname:
+        return self.info.displayname
 
+    return self.info.name

@@ -15,6 +15,7 @@ func setup(label_data, padding: int = 0, text_replace = null):
 
   if text_replace:
     text = text.replace("%i", text_replace)
+    text = text.replace("%s", text_replace)
 
   label.set_text(text)
   label.set_font(name_font)

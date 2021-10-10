@@ -118,11 +118,10 @@ func update_tick():
     real_ticks += 1
 
     if is_slow_mode and real_ticks % 3 != 0:
-        # TODO: Review slow mode fps
-        return
+       return
 
-    state_machine.update_tick()
     hud.update_tick()
+    state_machine.update_tick()
     reset_assert_special()
     stage.update_tick()
     self.update_characters()

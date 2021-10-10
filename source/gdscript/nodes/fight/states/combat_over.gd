@@ -64,4 +64,4 @@ func is_finished():
     if character.stateno != constants.STATE_HIT_LIE_DEAD or character.velocity != Vector2(0, 0):
       return false
 
-  return ticks - configuration.round_info.over_waittime > configuration.round_info.over_wintime
+  return ticks - configuration.round_info.over_waittime > configuration.round_info.win.time
