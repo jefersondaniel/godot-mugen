@@ -14,6 +14,8 @@ var is_lose setget ,get_is_lose
 var is_win_ko setget ,get_is_win_ko
 var is_win_time setget ,get_is_win_time
 var is_win setget ,get_is_win
+var is_win_perfect setget ,get_is_win_perfect
+var win_history: Array = []
 
 func _init(team_side: String, main_character):
   self.team_side = team_side

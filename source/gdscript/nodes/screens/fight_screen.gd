@@ -27,7 +27,7 @@ func setup_fight():
   var character1 = load_character(1, "res://data/chars/kfm/kfm.def", 0)
   fight.set_team(1, Team.new(constants.TEAM_SIDE_LEFT, character1))
 
-  var character2 = load_ai("res://data/chars/kfm/kfm.def", 3)
+  var character2 = load_character(2, "res://data/chars/kfm/kfm.def", 3)
   fight.set_team(2, Team.new(constants.TEAM_SIDE_RIGHT, character2))
 
   add_child(fight)

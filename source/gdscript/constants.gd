@@ -182,13 +182,21 @@ var FIGHT_ASSERTIONS = [
     ASSERTION_TIMERFREEZE
 ]
 
-var INTERNAL_STATE_PATH = 'res://internal.cns'
+var INTERNAL_STATE_PATH = "res://internal.cns"
 
 var DEFAULT_VOLUME_DB = -20 # TODO: Adapt this
 
-var TEAM_SIDE_LEFT = 'left'
+var TEAM_SIDE_LEFT = "left"
+var TEAM_SIDE_RIGHT = "right"
 
-var TEAM_SIDE_RIGHT = 'right'
+var VICTORY_TYPE_NORMAL = "normal"
+var VICTORY_TYPE_SPECIAL = "special"
+var VICTORY_TYPE_HYPER = "hyper"
+var VICTORY_TYPE_NORMAL_THROW = "normal_throw"
+var VICTORY_TYPE_CHEESE = "cheese"
+var VICTORY_TYPE_TIME = "time"
+var VICTORY_TYPE_SUICIDE = "suicide"
+var VICTORY_TYPE_TEAM_KILL = "team_kill"
 
 func _init():
     for p in get_property_list():

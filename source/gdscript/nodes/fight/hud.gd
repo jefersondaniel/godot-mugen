@@ -160,9 +160,9 @@ func setup_time():
 
   add_child(wrapper)
 
-func show_round_component(key: String):
+func show_round_component(key: String, text_replace = null):
   var definition = fight_configuration.round_info.get(key)
-  var node = create_component(definition)
+  var node = create_component(definition, text_replace)
 
   if key in round_components:
     round_components[key]["node"].queue_free()

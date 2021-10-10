@@ -560,7 +560,7 @@ func _process(_delta):
     draw_debug_text()
 
 func draw_debug_text():
-    if team_number != 2:
+    if team_number != 1:
         return
 
     var text = "stateno: %s, prevstateno: %s, anim: %s, animelem: %s, time: %s, animtime: %s, fps: %s\n" % [
