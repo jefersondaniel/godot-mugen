@@ -482,13 +482,13 @@ func evaluate_expression(text, context):
     return expression.execute(context)
 
 func allow_guard_air() -> bool:
-    return bool(guardflag & constants.FLAGS_A)
+    return bool(guardflag & constants.FLAG_A)
 
 func allow_guard_high() -> bool:
-    return bool(guardflag & constants.FLAGS_H)
+    return bool(guardflag & constants.FLAG_H)
 
 func allow_guard_low() -> bool:
-    return bool(guardflag & constants.FLAGS_L)
+    return bool(guardflag & constants.FLAG_L)
 
 func allow_hit_high() -> bool:
     return bool(hitflag & constants.FLAG_H)
