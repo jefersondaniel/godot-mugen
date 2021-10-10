@@ -46,11 +46,10 @@ func assert_special(key: String):
 
 func check_assert_special(key: String) -> bool:
     key = key.to_lower()
-    return special_flags.has(key) && special_flags[key] > 0
+    return special_flags.has(key)
 
 func reset_assert_special():
-    for key in special_flags:
-        special_flags[key] = special_flags[key] - 1
+    special_flags.clear()
 
 func set_stage(_stage):
     if self.stage:
@@ -117,10 +116,12 @@ func get_active_characters():
 func update_tick():
     real_ticks += 1
 
-    if is_slow_mode and real_ticks % 3 != 0:
+    # Hud animation is not affected by slow
+    hud.update_tick()
+
+    if is_slow_mode and real_ticks % 4 != 0:
        return
 
-    hud.update_tick()
     state_machine.update_tick()
     reset_assert_special()
     stage.update_tick()
@@ -372,7 +373,6 @@ func on_attack_hit(attacker, target, hit_def):
     apply_damage(attacker, target, hit_def.hit_damage, hit_def.kill)
 
     if target.life == 0:
-        target.killed = true
         hit_def.fall = 1
 
     match target.hit_state_type:

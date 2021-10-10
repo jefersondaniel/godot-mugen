@@ -155,6 +155,7 @@ func reset_round_state():
     received_hit_def = null
     remaining_juggle_points = 15
     required_juggle_points = 0
+    special_flags.clear()
 
 func get_const(fullname):
     if fullname == 'default.gethit.lifetopowermul' or fullname == 'default.attack.lifetopowermul':
@@ -481,14 +482,13 @@ func assert_special(key: String):
     special_flags[key] = 1
 
 func reset_assert_special():
-    for key in special_flags:
-        special_flags[key] = special_flags[key] - 1
+    special_flags.clear()
 
 func check_assert_special(key):
     key = key.to_lower()
     if key in constants.FIGHT_ASSERTIONS:
         return self.fight.check_assert_special(key)
-    return special_flags.has(key) && special_flags[key] > 0
+    return special_flags.has(key)
 
 func set_facing_right(value: bool):
     if is_facing_right == value:
@@ -621,6 +621,7 @@ func update_state():
 
     if not in_hit_pause:
         update_hit_state()
+        update_ko_state()
 
 func update_hit_state():
     if move_contact > 0:
@@ -657,6 +658,13 @@ func update_hit_state():
 
     for hit_override in hit_overrides:
         hit_override.handle_tick()
+
+func update_ko_state():
+    if life > 0 or killed or assert_special(constants.ASSERTION_NOKO):
+        return
+    if not assert_special(constants.ASSERTION_NOKOSOUND):
+        play_sound({"value": [11, 0]})
+    killed = true
 
 func update_physics():
     if in_hit_pause or hit_shake_time > 0:
