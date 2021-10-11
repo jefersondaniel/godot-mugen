@@ -16,6 +16,7 @@ var is_win_time setget ,get_is_win_time
 var is_win setget ,get_is_win
 var is_win_perfect setget ,get_is_win_perfect
 var win_history: Array = []
+var win_count setget ,get_win_count
 
 func _init(team_side: String, main_character):
   self.team_side = team_side
@@ -98,3 +99,6 @@ func get_is_win_perfect() -> bool:
     return false
   # TODO: Add support to teammate
   return self.main_character.life == self.main_character.max_life
+
+func get_win_count() -> int:
+  return len(self.win_history)

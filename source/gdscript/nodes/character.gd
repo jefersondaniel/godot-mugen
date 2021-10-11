@@ -150,7 +150,6 @@ func reset_round_state():
     # Meant to reset state between rounds
     ctrl = 0
     life = data.data.life
-    power = 0
     hit_def = null
     received_hit_def = null
     remaining_juggle_points = 15

@@ -40,13 +40,19 @@ func setup_camera():
     camera_handle = Node2D.new()
     camera_offset = Vector2(0, constants.WINDOW_SIZE.y / 2)
 
-    set_camera_position(Vector2(definition.camera_startx, definition.camera_starty) * scale)
+    reset_camera_position()
 
     camera = Camera2D.new()
     # camera.offset = constants.WINDOW_SIZE / 2 * Vector2(0, 1)
     camera_handle.add_child(camera)
     root_background.add_child(camera_handle)
     camera.make_current()
+
+func reset_camera_position():
+    set_camera_position(Vector2(definition.camera_startx, definition.camera_starty) * scale)
+
+func reset():
+    reset_camera_position()
 
 func get_bound_left():
     var scale: Vector2 = constants.get_scale(definition.stageinfo_localcoord)

@@ -42,17 +42,17 @@ func setup_menu():
         title_info.menu_boxcursor_coords[3] - title_info.menu_boxcursor_coords[1]
     )
     menu.actions = [
-        {"id": constants.MENU_ARCADE, "text": title_info.menu_itemname_arcade},
-        {"id": constants.MENU_VERSUS, "text": title_info.menu_itemname_versus},
-        {"id": constants.MENU_TEAMARCADE, "text": title_info.menu_itemname_teamarcade},
-        {"id": constants.MENU_TEAMVERSUS, "text": title_info.menu_itemname_teamversus},
-        {"id": constants.MENU_TEAMCOOP, "text": title_info.menu_itemname_teamcoop},
-        {"id": constants.MENU_SURVIVAL, "text": title_info.menu_itemname_survival},
-        {"id": constants.MENU_SURVIVALCOOP, "text": title_info.menu_itemname_survivalcoop},
+        # {"id": constants.MENU_ARCADE, "text": title_info.menu_itemname_arcade},
+        # {"id": constants.MENU_VERSUS, "text": title_info.menu_itemname_versus},
+        # {"id": constants.MENU_TEAMARCADE, "text": title_info.menu_itemname_teamarcade},
+        # {"id": constants.MENU_TEAMVERSUS, "text": title_info.menu_itemname_teamversus},
+        # {"id": constants.MENU_TEAMCOOP, "text": title_info.menu_itemname_teamcoop},
+        # {"id": constants.MENU_SURVIVAL, "text": title_info.menu_itemname_survival},
+        # {"id": constants.MENU_SURVIVALCOOP, "text": title_info.menu_itemname_survivalcoop},
         {"id": constants.MENU_TRAINING, "text": title_info.menu_itemname_training},
-        {"id": constants.MENU_WATCH, "text": title_info.menu_itemname_watch},
+        # {"id": constants.MENU_WATCH, "text": title_info.menu_itemname_watch},
         {"id": constants.MENU_OPTIONS, "text": title_info.menu_itemname_options},
-        {"id": constants.MENU_EXIT, "text": title_info.menu_itemname_exit},
+        # {"id": constants.MENU_EXIT, "text": title_info.menu_itemname_exit},
     ]
     menu.setup()
     menu.connect("on_action", self, "dispatch_menu_action")

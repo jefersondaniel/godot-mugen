@@ -40,6 +40,9 @@ func _ready():
 func reset_state():
     roundno = 1
 
+func increase_round():
+    roundno += 1
+
 func assert_special(key: String):
     key = key.to_lower()
     special_flags[key] = 1
