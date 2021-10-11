@@ -33,10 +33,10 @@ func _ready():
     vs_route.add_transition(fight_route, "done")
     title_route.add_transition(training_selection_route, constants.MENU_TRAINING)
     training_selection_route.add_transition(vs_route, "done")
+    fight_route.add_transition(title_route, "done")
 
     connect("on_route", self, "on_route_change")
-    # start(title_route)
-    start(fight_route)
+    start(title_route)
 
 func handle_menu_action(action):
     trigger(action.id, action)
@@ -96,7 +96,6 @@ func show_select_screen(action):
 
 func set_current_screen(screen):
     if current_screen:
-        remove_child(current_screen)
         current_screen.queue_free()
     current_screen = screen
     add_child(screen)

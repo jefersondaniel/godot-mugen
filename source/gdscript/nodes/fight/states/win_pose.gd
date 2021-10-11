@@ -1,5 +1,7 @@
 extends "res://source/gdscript/system/state.gd"
 
+var RoundEndState = load("res://source/gdscript/nodes/fight/states/round_end.gd")
+
 var fight_ref: WeakRef
 var fight setget ,get_fight
 var winner_team setget ,get_winner_team
@@ -51,7 +53,7 @@ func show_lose_time_over_pose(team):
 func update_tick():
   ticks += 1
   if is_finished():
-    pass
+    return RoundEndState.new(self.fight)
 
 func is_finished():
   var configuration = self.fight.configuration

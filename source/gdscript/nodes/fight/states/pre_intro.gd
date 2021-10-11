@@ -14,6 +14,10 @@ func activate():
 
   fight.remaining_time = constants.ROUND_TIME
   fight.roundstate = constants.ROUND_STATE_PRE_INTRO
+  fight.hud.clear_round_elements()
+  fight.team_1.reset_characters()
+  fight.team_2.reset_characters()
+  fight.stage.reset()
 
   for character in fight.get_active_characters():
     character.reset_round_state()

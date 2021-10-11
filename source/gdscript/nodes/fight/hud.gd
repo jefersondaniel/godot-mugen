@@ -265,6 +265,11 @@ func update_tick():
     update_range(data["front"]["node"], range_x, data["front"]["percent"])
     update_range(data["mid"]["node"], range_x, data["mid"]["percent"])
 
+func clear_round_elements():
+  for key in round_components.keys():
+    round_components[key]["node"].queue_free()
+    round_components.erase(key)
+
 func is_element_active(key: String):
   return round_components.has(key)
 
