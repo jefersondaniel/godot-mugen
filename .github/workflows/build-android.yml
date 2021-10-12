@@ -1,6 +1,6 @@
 name: Build for Android
 
-on: workflow_dispatch
+on: push
 
 env:
   GODOT_VERSION: 3.3.4
