@@ -3,7 +3,7 @@ name: Deploy
 on: push
 
 env:
-  GODOT_VERSION: 3.3
+  GODOT_VERSION: 3.3.3
   EXPORT_NAME: neomugen
   CARGO_TERM_COLOR: always
   JAVA_VERSION: 1.8
@@ -20,7 +20,7 @@ jobs:
   #   name: Windows export
   #   runs-on: ubuntu-latest
   #   container:
-  #     image: barichello/godot-ci:3.3
+  #     image: barichello/godot-ci:3.3.3
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -62,7 +62,7 @@ jobs:
   #   name: Linux export
   #   runs-on: ubuntu-latest
   #   container:
-  #     image: barichello/godot-ci:3.3
+  #     image: barichello/godot-ci:3.3.3
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -103,7 +103,7 @@ jobs:
   #   name: MacOSX export
   #   runs-on: ubuntu-latest
   #   container:
-  #     image: barichello/godot-ci:3.3
+  #     image: barichello/godot-ci:3.3.3
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -173,7 +173,7 @@ jobs:
   #   name: Android export
   #   runs-on: ubuntu-latest
   #   container:
-  #     image: barichello/godot-ci:3.3
+  #     image: barichello/godot-ci:3.3.3
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -285,7 +285,7 @@ jobs:
     name: HTML5 export
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:3.3
+      image: barichello/godot-ci:3.3.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2

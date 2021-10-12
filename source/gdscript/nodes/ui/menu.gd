@@ -75,16 +75,17 @@ func _process(delta: float):
     update()
 
 func is_action_just_pressed(action: String):
-    var result = user_input.any.is_action_pressed(action)
+    return user_input.any.is_action_just_pressed(action)
+    # var result = user_input.any.is_action_pressed(action)
 
-    if user_input.any.is_action_just_released(action):
-        action_timestamp = 0
+    # if user_input.any.is_action_just_released(action):
+    #     action_timestamp = 0
 
-    if result and 200 < OS.get_system_time_msecs() - action_timestamp:
-        action_timestamp = OS.get_system_time_msecs()
-        return true
+    # if result and 200 < OS.get_system_time_msecs() - action_timestamp:
+    #     action_timestamp = OS.get_system_time_msecs()
+    #     return true
 
-    return false
+    # return false
 
 func update_selected_action_index():
     var old_selected_action_index = selected_action_index
