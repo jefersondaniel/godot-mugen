@@ -290,6 +290,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Get mugen data
+        run: |
+          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+
       - name: Setup godot templates
         run: |
           mkdir -v -p ~/.local/share/godot/templates
