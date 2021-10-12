@@ -27,7 +27,7 @@ unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
 
 ```sh
 cd source/native
-cargo build
+cargo build --target x86_64-unknown-linux-gnu --release
 ```
 
 ## Running
