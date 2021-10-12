@@ -1,0 +1,55 @@
+name: Build for Linux
+
+on: workflow_dispatch
+
+env:
+  GODOT_VERSION: 3.3.4
+  EXPORT_NAME: neomugen
+  CARGO_TERM_COLOR: always
+
+jobs:
+  export-linux:
+    name: Linux export
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+      credentials:
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup godot templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Install linux rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-unknown-linux-gnu
+          profile: minimal
+
+      - name: Install build essentials
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang
+
+      - name: Compile native lib for linux
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target x86_64-unknown-linux-gnu --release
+        env:
+          CARGO_TARGET_DIR: source/native/target
+      - name: Build
+        env:
+          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+        run: |
+          mkdir -v -p exports/linux
+          godot -v --export "Linux" exports/linux/${EXPORT_NAME}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux build
+          path: exports/linux
+          retention-days: 7

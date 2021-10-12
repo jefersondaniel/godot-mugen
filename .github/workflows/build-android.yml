@@ -1,0 +1,130 @@
+name: Build for Android
+
+on: workflow_dispatch
+
+env:
+  GODOT_VERSION: 3.3.4
+  EXPORT_NAME: neomugen
+  CARGO_TERM_COLOR: always
+  JAVA_VERSION: 1.8
+  ANDROID_VERSION: 30
+  ANDROID_NDK_VERSION: 22.1.7171670
+  ANDROID_BUILD_TOOLS_VERSION: 30.0.3
+
+jobs:
+  export-android:
+    name: Android export
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+      credentials:
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup godot templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Install aarch64 android rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-linux-android
+          profile: minimal
+      - name: Install x86_64 android rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-linux-android
+          profile: minimal
+      - name: Install armv7 android rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: armv7-linux-androideabi
+          profile: minimal
+      - name: Install i686 android rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: i686-linux-android
+          profile: minimal
+
+      - name: Setup JDK ${{env.JAVA_VERSION}}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{env.JAVA_VERSION}}
+
+      - name: Cache android toolchain and packages
+        id: android-cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.android
+          key: ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-${{env.ANDROID_NDK_VERSION}}
+          restore-keys: |
+            ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-
+            ${{runner.os}}-android-
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+      - name: Install Android build tools
+        run: |
+          sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+          sdkmanager "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Install build essentials
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev g++-multilib gcc-multilib libc6-dev libc6-dev-arm64-cross
+
+      - name: Compile native lib for aarch64 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target aarch64-linux-android --release
+        env:
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
+      - name: Compile native lib for x86_64 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
+        env:
+          CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
+      - name: Compile native lib for armv7 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target armv7-linux-androideabi --release
+        env:
+          CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
+      - name: Compile native lib for i686 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
+        env:
+          CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
+      - name: Build
+        env:
+          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+        run: |
+          godot -e -q
+          echo 'export/android/android_sdk_path = "'${ANDROID_SDK_ROOT}'"' >> ~/.config/godot/editor_settings-3.tres
+          echo 'export/android/debug_keystore = "/root/debug.keystore"' >> ~/.config/godot/editor_settings-3.tres
+          echo 'export/android/debug_keystore_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-3.tres
+          echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/editor_settings-3.tres
+          echo 'export/android/force_system_user = false' >> ~/.config/godot/editor_settings-3.tres
+          echo 'export/android/shutdown_adb_on_exit = true' >> ~/.config/godot/editor_settings-3.tres
+          mkdir -v -p exports/android
+          godot -v --export "Android" exports/android/${EXPORT_NAME}.apk
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Android APK
+          path: exports/android
+          retention-days: 7
