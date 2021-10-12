@@ -343,8 +343,7 @@ jobs:
           SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
         run: |
           mkdir -v -p exports/web
-          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g" export_presets.cfg
-          ls ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g" export_presets.cfg
           godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
 
       - name: Upload Artifact
