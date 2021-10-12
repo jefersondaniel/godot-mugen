@@ -337,6 +337,7 @@ jobs:
 
       - name: Build
         run: |
+          find source/native/target
           mkdir -v -p exports/web
           godot -v --export-debug "HTML5" exports/web/${EXPORT_NAME}.html
 
