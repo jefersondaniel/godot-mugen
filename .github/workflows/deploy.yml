@@ -16,52 +16,52 @@ env:
   EMSDK_VERSION: 2.0.17
 
 jobs:
-  export-windows:
-    name: Windows export
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
-      credentials:
-        username: jefersondaniel
-        password: ${{ secrets.GHCR_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup godot templates
-        run: |
-          mkdir -v -p ~/.local/share/godot/templates
-          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+  # export-windows:
+  #   name: Windows export
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+  #     credentials:
+  #       username: jefersondaniel
+  #       password: ${{ secrets.GHCR_TOKEN }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Setup godot templates
+  #       run: |
+  #         mkdir -v -p ~/.local/share/godot/templates
+  #         mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
 
-      - name: Install windows rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-pc-windows-gnu
-          profile: minimal
+  #     - name: Install windows rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: x86_64-pc-windows-gnu
+  #         profile: minimal
 
-      - name: Install build essentials
-        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev mingw-w64
+  #     - name: Install build essentials
+  #       run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev mingw-w64
 
-      - name: Compile native lib for windows
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target x86_64-pc-windows-gnu --release
-        env:
-          CC: x86_64-w64-mingw32-gcc
-          CARGO_TARGET_DIR: source/native/target
-      - name: Build
-        env:
-          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
-        run: |
-          mkdir -v -p exports/windows
-          godot -v --export "Windows" exports/windows/${EXPORT_NAME}.exe
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: Windows build
-          path: exports/windows
-          retention-days: 7
+  #     - name: Compile native lib for windows
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target x86_64-pc-windows-gnu --release
+  #       env:
+  #         CC: x86_64-w64-mingw32-gcc
+  #         CARGO_TARGET_DIR: source/native/target
+  #     - name: Build
+  #       env:
+  #         SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+  #       run: |
+  #         mkdir -v -p exports/windows
+  #         godot -v --export "Windows" exports/windows/${EXPORT_NAME}.exe
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: Windows build
+  #         path: exports/windows
+  #         retention-days: 7
 
   export-linux:
     name: Linux export
@@ -184,190 +184,190 @@ jobs:
   #         path: exports/mac
   #         retention-days: 7
 
-  export-android:
-    name: Android export
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
-      credentials:
-        username: jefersondaniel
-        password: ${{ secrets.GHCR_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup godot templates
-        run: |
-          mkdir -v -p ~/.local/share/godot/templates
-          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+  # export-android:
+  #   name: Android export
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+  #     credentials:
+  #       username: jefersondaniel
+  #       password: ${{ secrets.GHCR_TOKEN }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Setup godot templates
+  #       run: |
+  #         mkdir -v -p ~/.local/share/godot/templates
+  #         mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
 
-      - name: Install aarch64 android rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: aarch64-linux-android
-          profile: minimal
-      - name: Install x86_64 android rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-linux-android
-          profile: minimal
-      - name: Install armv7 android rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: armv7-linux-androideabi
-          profile: minimal
-      - name: Install i686 android rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: i686-linux-android
-          profile: minimal
+  #     - name: Install aarch64 android rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: aarch64-linux-android
+  #         profile: minimal
+  #     - name: Install x86_64 android rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: x86_64-linux-android
+  #         profile: minimal
+  #     - name: Install armv7 android rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: armv7-linux-androideabi
+  #         profile: minimal
+  #     - name: Install i686 android rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: i686-linux-android
+  #         profile: minimal
 
-      - name: Setup JDK ${{env.JAVA_VERSION}}
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{env.JAVA_VERSION}}
+  #     - name: Setup JDK ${{env.JAVA_VERSION}}
+  #       uses: actions/setup-java@v1
+  #       with:
+  #         java-version: ${{env.JAVA_VERSION}}
 
-      - name: Cache android toolchain and packages
-        id: android-cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.android
-          key: ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-${{env.ANDROID_NDK_VERSION}}
-          restore-keys: |
-            ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-
-            ${{runner.os}}-android-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-      - name: Install Android build tools
-        run: |
-          sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
-          sdkmanager "ndk;${ANDROID_NDK_VERSION}"
+  #     - name: Cache android toolchain and packages
+  #       id: android-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ~/.android
+  #         key: ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-${{env.ANDROID_NDK_VERSION}}
+  #         restore-keys: |
+  #           ${{runner.os}}-android-${{env.ANDROID_BUILD_TOOLS_VERSION}}-
+  #           ${{runner.os}}-android-
+  #     - name: Setup Android SDK
+  #       uses: android-actions/setup-android@v2
+  #     - name: Install Android build tools
+  #       run: |
+  #         sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+  #         sdkmanager "ndk;${ANDROID_NDK_VERSION}"
 
-      - name: Install build essentials
-        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev g++-multilib gcc-multilib libc6-dev libc6-dev-arm64-cross
+  #     - name: Install build essentials
+  #       run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev g++-multilib gcc-multilib libc6-dev libc6-dev-arm64-cross
 
-      - name: Compile native lib for aarch64 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target aarch64-linux-android --release
-        env:
-          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
-      - name: Compile native lib for x86_64 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
-        env:
-          CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
-      - name: Compile native lib for armv7 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target armv7-linux-androideabi --release
-        env:
-          CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
-      - name: Compile native lib for i686 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
-        env:
-          CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
-      - name: Build
-        env:
-          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
-        run: |
-          godot -e -q
-          echo 'export/android/android_sdk_path = "'${ANDROID_SDK_ROOT}'"' >> ~/.config/godot/editor_settings-3.tres
-          echo 'export/android/debug_keystore = "/root/debug.keystore"' >> ~/.config/godot/editor_settings-3.tres
-          echo 'export/android/debug_keystore_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-3.tres
-          echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/editor_settings-3.tres
-          echo 'export/android/force_system_user = false' >> ~/.config/godot/editor_settings-3.tres
-          echo 'export/android/shutdown_adb_on_exit = true' >> ~/.config/godot/editor_settings-3.tres
-          mkdir -v -p exports/android
-          godot -v --export "Android" exports/android/${EXPORT_NAME}.apk
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: Android APK
-          path: exports/android
-          retention-days: 7
+  #     - name: Compile native lib for aarch64 android
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target aarch64-linux-android --release
+  #       env:
+  #         CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
+  #         CARGO_TARGET_DIR: source/native/target
+  #     - name: Compile native lib for x86_64 android
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
+  #       env:
+  #         CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
+  #         CARGO_TARGET_DIR: source/native/target
+  #     - name: Compile native lib for armv7 android
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target armv7-linux-androideabi --release
+  #       env:
+  #         CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
+  #         CARGO_TARGET_DIR: source/native/target
+  #     - name: Compile native lib for i686 android
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
+  #       env:
+  #         CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
+  #         CARGO_TARGET_DIR: source/native/target
+  #     - name: Build
+  #       env:
+  #         SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+  #       run: |
+  #         godot -e -q
+  #         echo 'export/android/android_sdk_path = "'${ANDROID_SDK_ROOT}'"' >> ~/.config/godot/editor_settings-3.tres
+  #         echo 'export/android/debug_keystore = "/root/debug.keystore"' >> ~/.config/godot/editor_settings-3.tres
+  #         echo 'export/android/debug_keystore_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-3.tres
+  #         echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/editor_settings-3.tres
+  #         echo 'export/android/force_system_user = false' >> ~/.config/godot/editor_settings-3.tres
+  #         echo 'export/android/shutdown_adb_on_exit = true' >> ~/.config/godot/editor_settings-3.tres
+  #         mkdir -v -p exports/android
+  #         godot -v --export "Android" exports/android/${EXPORT_NAME}.apk
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: Android APK
+  #         path: exports/android
+  #         retention-days: 7
 
-  export-html:
-    name: HTML5 export
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
-      credentials:
-        username: jefersondaniel
-        password: ${{ secrets.GHCR_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # export-html:
+  #   name: HTML5 export
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+  #     credentials:
+  #       username: jefersondaniel
+  #       password: ${{ secrets.GHCR_TOKEN }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Get mugen data
-        run: |
-          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
-          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+  #     - name: Get mugen data
+  #       run: |
+  #         wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+  #         unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
 
-      - name: Setup godot templates
-        run: |
-          mkdir -v -p ~/.local/share/godot/templates
-          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+  #     - name: Setup godot templates
+  #       run: |
+  #         mkdir -v -p ~/.local/share/godot/templates
+  #         mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
 
-      - name: Install emscripten rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-emscripten
-          profile: minimal
+  #     - name: Install emscripten rust toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         target: wasm32-unknown-emscripten
+  #         profile: minimal
 
-      - name: Install build essentials
-        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang python3 xz-utils
+  #     - name: Install build essentials
+  #       run: apt-get update && apt-get install -y --no-install-recommends build-essential clang python3 xz-utils
 
-      - name: Setup emscripten sdk
-        uses: mymindstorm/setup-emsdk@v10
-        with:
-          version: ${{env.EMSDK_VERSION}}
+  #     - name: Setup emscripten sdk
+  #       uses: mymindstorm/setup-emsdk@v10
+  #       with:
+  #         version: ${{env.EMSDK_VERSION}}
 
-      - name: Compile native lib for wasm
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target wasm32-unknown-emscripten --release
-        env:
-          RUSTFLAGS: -C link-args=-fPIC -C relocation-model=pic -C target-feature=+mutable-globals
-          EMMAKEN_CFLAGS: -s SIDE_MODULE=1 -shared -Os
-          C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
-          CARGO_TARGET_DIR: source/native/target
-          # Optimize for size
-          CARGO_PROFILE_RELEASE_OPT_LEVEL: s
-          # No overflow check / assertions
-          CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS: false
-          CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS: false
-          # Don't unwind the stack
-          CARGO_PROFILE_RELEASE_PANIC: abort
-          # Use my wrapper to extract the rlib
-          CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_LINKER: ${{github.workspace}}/source/native/emcc/emcc-test
+  #     - name: Compile native lib for wasm
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: build
+  #         args: --manifest-path source/native/Cargo.toml --target wasm32-unknown-emscripten --release
+  #       env:
+  #         RUSTFLAGS: -C link-args=-fPIC -C relocation-model=pic -C target-feature=+mutable-globals
+  #         EMMAKEN_CFLAGS: -s SIDE_MODULE=1 -shared -Os
+  #         C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
+  #         CARGO_TARGET_DIR: source/native/target
+  #         # Optimize for size
+  #         CARGO_PROFILE_RELEASE_OPT_LEVEL: s
+  #         # No overflow check / assertions
+  #         CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS: false
+  #         CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS: false
+  #         # Don't unwind the stack
+  #         CARGO_PROFILE_RELEASE_PANIC: abort
+  #         # Use my wrapper to extract the rlib
+  #         CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_LINKER: ${{github.workspace}}/source/native/emcc/emcc-test
 
-      - name: Build
-        env:
-          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
-        run: |
-          mkdir -v -p exports/web
-          godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
+  #     - name: Build
+  #       env:
+  #         SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+  #       run: |
+  #         mkdir -v -p exports/web
+  #         godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: HTML5
-          path: exports/web
-          retention-days: 7
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: HTML5
+  #         path: exports/web
+  #         retention-days: 7
