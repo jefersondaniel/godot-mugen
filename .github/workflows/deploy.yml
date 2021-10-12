@@ -46,7 +46,7 @@ jobs:
   #         args: --manifest-path native/src/Cargo.toml --target x86_64-pc-windows-gnu --release
   #       env:
   #         CC: x86_64-w64-mingw32-gcc
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Build
   #       run: |
   #         mkdir -v -p exports/win
@@ -87,7 +87,7 @@ jobs:
   #         command: build
   #         args: --manifest-path native/src/Cargo.toml --target x86_64-unknown-linux-gnu --release
   #       env:
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Build
   #       run: |
   #         mkdir -v -p exports/lin
@@ -156,7 +156,7 @@ jobs:
   #         CXX: /osxcross/bin/x86_64-apple-darwin14-c++
   #         C_INCLUDE_PATH: /osxcross/SDK/MacOSX10.10.sdk/usr/include
   #         CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER: /osxcross/bin/x86_64-apple-darwin14-cc
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #         CARGO_PROFILE_RELEASE_SPLIT_DEBUGINFO: off
   #     - name: Build
   #       run: |
@@ -238,7 +238,7 @@ jobs:
   #         args: --manifest-path native/src/Cargo.toml --target aarch64-linux-android --release
   #       env:
   #         CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Compile native lib for x86_64 android
   #       uses: actions-rs/cargo@v1
   #       with:
@@ -246,7 +246,7 @@ jobs:
   #         args: --manifest-path native/src/Cargo.toml --target x86_64-linux-android --release
   #       env:
   #         CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Compile native lib for armv7 android
   #       uses: actions-rs/cargo@v1
   #       with:
@@ -254,7 +254,7 @@ jobs:
   #         args: --manifest-path native/src/Cargo.toml --target armv7-linux-androideabi --release
   #       env:
   #         CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Compile native lib for i686 android
   #       uses: actions-rs/cargo@v1
   #       with:
@@ -262,7 +262,7 @@ jobs:
   #         args: --manifest-path native/src/Cargo.toml --target i686-linux-android --release
   #       env:
   #         CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
-  #         CARGO_TARGET_DIR: native/target
+  #         CARGO_TARGET_DIR: source/native/target
   #     - name: Build
   #       run: |
   #         godot -e -q
@@ -324,7 +324,7 @@ jobs:
           RUSTFLAGS: -C link-args=-fPIC -C relocation-model=pic -C target-feature=+mutable-globals
           EMMAKEN_CFLAGS: -s SIDE_MODULE=1 -shared -Os
           C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
-          CARGO_TARGET_DIR: native/target
+          CARGO_TARGET_DIR: source/native/target
           # Optimize for size
           CARGO_PROFILE_RELEASE_OPT_LEVEL: s
           # No overflow check / assertions
@@ -337,7 +337,6 @@ jobs:
 
       - name: Build
         run: |
-          find source/native/target
           mkdir -v -p exports/web
           godot -v --export-debug "HTML5" exports/web/${EXPORT_NAME}.html
 
