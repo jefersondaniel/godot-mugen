@@ -287,8 +287,8 @@ jobs:
     container:
       image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
       credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
