@@ -46,7 +46,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target x86_64-pc-windows-gnu --release
+          args: --manifest-path source/native/Cargo.toml --target x86_64-pc-windows-gnu --release
         env:
           CC: x86_64-w64-mingw32-gcc
           CARGO_TARGET_DIR: source/native/target
@@ -94,7 +94,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target x86_64-unknown-linux-gnu --release
+          args: --manifest-path source/native/Cargo.toml --target x86_64-unknown-linux-gnu --release
         env:
           CARGO_TARGET_DIR: source/native/target
       - name: Build
@@ -165,7 +165,7 @@ jobs:
   #       uses: actions-rs/cargo@v1
   #       with:
   #         command: build
-  #         args: --manifest-path native/src/Cargo.toml --target x86_64-apple-darwin --release
+  #         args: --manifest-path source/native/Cargo.toml --target x86_64-apple-darwin --release
   #       env:
   #         CC: /osxcross/bin/x86_64-apple-darwin14-cc
   #         CXX: /osxcross/bin/x86_64-apple-darwin14-c++
@@ -256,7 +256,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target aarch64-linux-android --release
+          args: --manifest-path source/native/Cargo.toml --target aarch64-linux-android --release
         env:
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
@@ -264,7 +264,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target x86_64-linux-android --release
+          args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
         env:
           CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
@@ -272,7 +272,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target armv7-linux-androideabi --release
+          args: --manifest-path source/native/Cargo.toml --target armv7-linux-androideabi --release
         env:
           CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
@@ -280,7 +280,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path native/src/Cargo.toml --target i686-linux-android --release
+          args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
         env:
           CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
