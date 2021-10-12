@@ -273,7 +273,7 @@ jobs:
   #         echo 'export/android/force_system_user = false' >> ~/.config/godot/editor_settings-3.tres
   #         echo 'export/android/shutdown_adb_on_exit = true' >> ~/.config/godot/editor_settings-3.tres
   #         mkdir -v -p exports/android
-  #         godot -v --export-debug "Android" exports/android/${EXPORT_NAME}.apk
+  #         godot -v --export "Android" exports/android/${EXPORT_NAME}.apk
   #     - name: Upload Artifact
   #       uses: actions/upload-artifact@v2
   #       with:
@@ -344,8 +344,8 @@ jobs:
         run: |
           mkdir -v -p exports/web
           sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g" export_presets.cfg
-          cat export_presets.cfg
-          godot -v --export-debug "HTML5" exports/web/${EXPORT_NAME}.html
+          ls ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+          godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
