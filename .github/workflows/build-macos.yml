@@ -77,6 +77,7 @@ jobs:
         env:
           SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
         run: |
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g" export_presets.cfg
           mkdir -v -p exports/mac
           godot -v --export "Mac" exports/mac/${EXPORT_NAME}
       - name: Upload Artifact

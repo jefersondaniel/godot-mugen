@@ -1,6 +1,6 @@
 name: Build for Android
 
-on: workflow_dispatch
+on: push
 
 env:
   GODOT_VERSION: 3.3.4
@@ -10,6 +10,9 @@ env:
   ANDROID_VERSION: 30
   ANDROID_NDK_VERSION: 22.1.7171670
   ANDROID_BUILD_TOOLS_VERSION: 30.0.3
+  ANDROID_KEYSTORE_PATH: /root/production.jks
+  ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+  ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 
 jobs:
   export-android:
@@ -27,6 +30,11 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/templates
           mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Setup Keystore
+        run: |
+          echo ${{ secrets.ANDROID_KEYSTORE_FILE }} | base64 --decode > ${{ env.ANDROID_KEYSTORE_PATH }}
+          cat ${{ env.ANDROID_KEYSTORE_PATH }}
 
       - name: Install aarch64 android rust toolchain
         uses: actions-rs/toolchain@v1
@@ -85,14 +93,14 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
-      - name: Compile native lib for x86_64 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
-        env:
-          CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
+      # - name: Compile native lib for x86_64 android
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
+      #   env:
+      #     CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
+      #     CARGO_TARGET_DIR: source/native/target
       - name: Compile native lib for armv7 android
         uses: actions-rs/cargo@v1
         with:
@@ -101,18 +109,20 @@ jobs:
         env:
           CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
-      - name: Compile native lib for i686 android
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
-        env:
-          CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
-          CARGO_TARGET_DIR: source/native/target
+      # - name: Compile native lib for i686 android
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
+      #   env:
+      #     CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
+      #     CARGO_TARGET_DIR: source/native/target
       - name: Build
         env:
           SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+          KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE }}
         run: |
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g; s@keystore\/release=\"\"@keystore\/release=\"${ANDROID_KEYSTORE_PATH}\"@g; s@keystore\/release_user=\"\"@keystore\/release_user=\"${ANDROID_KEYSTORE_ALIAS}\"@g; s@keystore\/release_password=\"\"@keystore\/release_password=\"${ANDROID_KEYSTORE_PASSWORD}\"@g" export_presets.cfg
           godot -e -q
           echo 'export/android/android_sdk_path = "'${ANDROID_SDK_ROOT}'"' >> ~/.config/godot/editor_settings-3.tres
           echo 'export/android/debug_keystore = "/root/debug.keystore"' >> ~/.config/godot/editor_settings-3.tres

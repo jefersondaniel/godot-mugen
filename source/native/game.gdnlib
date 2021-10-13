@@ -4,10 +4,10 @@ X11.64="res://source/native/target/x86_64-unknown-linux-gnu/release/libgame.so"
 OSX.64="res://source/native/target/x86_64-apple-darwin/release/libgame.dylib"
 Windows.64="res://source/native/target/x86_64-pc-windows-gnu/release/game.dll"
 Android.arm64-v8a="res://source/native/target/aarch64-linux-android/release/libgame.so"
-Android.x86_64="res://source/native/target/x86_64-linux-android/release/libgame.so"
+;Android.x86_64="res://source/native/target/x86_64-linux-android/release/libgame.so"
 HTML5.wasm32="res://source/native/target/wasm32-unknown-emscripten/release/game.wasm"
 Android.armeabi-v7a="res://source/native/target/armv7-linux-androideabi/release/libgame.so"
-Android.x86="res://source/native/target/i686-linux-android/release/libgame.so"
+;Android.x86="res://source/native/target/i686-linux-android/release/libgame.so"
 
 [dependencies]
 
