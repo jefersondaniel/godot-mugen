@@ -33,7 +33,7 @@ jobs:
 
       - name: Setup Keystore
         run: |
-          echo ${{ secrets.ANDROID_KEYSTORE_FILE }} | base64 --decode > ${{ env.ANDROID_KEYSTORE_PATH }}
+          echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > ${{ env.ANDROID_KEYSTORE_PATH }}
           cat ${{ env.ANDROID_KEYSTORE_PATH }}
 
       - name: Install aarch64 android rust toolchain
