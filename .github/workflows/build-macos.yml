@@ -1,0 +1,94 @@
+name: Build for MacOS
+
+on: workflow_dispatch
+
+env:
+  GODOT_VERSION: 3.3.4
+  EXPORT_NAME: neomugen
+  CARGO_TERM_COLOR: always
+  MACOS_SDK_TAR: https://s3.dockerproject.org/darwin/v2/MacOSX10.10.sdk.tar.xz
+  MACOS_SDK_VERSION: 10.10
+  MACOS_OSXCROSS_VERSION: 8a716a43a72dab1db9630d7824ee0af3730cb8f9
+
+jobs:
+  export-mac:
+    name: MacOSX export
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+      credentials:
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get mugen data
+        run: |
+          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+
+      - name: Setup godot templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Install mac rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-apple-darwin
+          profile: minimal
+
+      - name: Install build essentials
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang cmake libxml2-dev libz-dev libssl-dev
+
+      - name: Cache osxcross
+        id: osxcross-cache
+        uses: actions/cache@v2
+        with:
+          path: /osxcross
+          key: ${{runner.os}}-osxcross-${{env.MACOS_SDK_VERSION}}-${{env.MACOS_OSXCROSS_VERSION}}
+      - name: Clone osxcross
+        if: steps.osxcross-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: 'tpoechtrager/osxcross'
+          path: './osxcross'
+          ref: ${{env.MACOS_OSXCROSS_VERSION}}
+      - name: Get Macos SDK
+        if: steps.osxcross-cache.outputs.cache-hit != 'true'
+        run: wget -P osxcross/tarballs/ -nc ${{env.MACOS_SDK_TAR}}
+      - name: Setup cross compiler
+        if: steps.osxcross-cache.outputs.cache-hit != 'true'
+        run: ./osxcross/build.sh
+        env:
+          TARGET_DIR: /osxcross
+          OSX_VERSION_MIN: 10.7
+          UNATTENDED: yes
+
+      - name: Compile native lib for mac
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target x86_64-apple-darwin --release
+        env:
+          CC: /osxcross/bin/x86_64-apple-darwin14-cc
+          CXX: /osxcross/bin/x86_64-apple-darwin14-c++
+          C_INCLUDE_PATH: /osxcross/SDK/MacOSX10.10.sdk/usr/include
+          CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER: /osxcross/bin/x86_64-apple-darwin14-cc
+          CARGO_TARGET_DIR: source/native/target
+          CARGO_PROFILE_RELEASE_SPLIT_DEBUGINFO: off
+      - name: Build
+        env:
+          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+        run: |
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g" export_presets.cfg
+          mkdir -v -p exports/mac
+          godot -v --export "Mac" exports/mac/${EXPORT_NAME}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: MacOSX build
+          path: exports/mac
+          retention-days: 7

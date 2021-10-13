@@ -1,0 +1,82 @@
+name: Build for HTML5
+
+on: workflow_dispatch
+
+env:
+  GODOT_VERSION: 3.3.4
+  EXPORT_NAME: neomugen
+  CARGO_TERM_COLOR: always
+  EMSDK_VERSION: 2.0.17
+
+jobs:
+  export-html:
+    name: HTML5 export
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+      credentials:
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get mugen data
+        run: |
+          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+
+      - name: Setup godot templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Install emscripten rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-emscripten
+          profile: minimal
+
+      - name: Install build essentials
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang python3 xz-utils
+
+      - name: Setup emscripten sdk
+        uses: mymindstorm/setup-emsdk@v10
+        with:
+          version: ${{env.EMSDK_VERSION}}
+
+      - name: Compile native lib for wasm
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target wasm32-unknown-emscripten --release
+        env:
+          RUSTFLAGS: -C link-args=-fPIC -C relocation-model=pic -C target-feature=+mutable-globals
+          EMMAKEN_CFLAGS: -s SIDE_MODULE=1 -shared -Os
+          C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
+          CARGO_TARGET_DIR: source/native/target
+          # Optimize for size
+          CARGO_PROFILE_RELEASE_OPT_LEVEL: s
+          # No overflow check / assertions
+          CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS: false
+          CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS: false
+          # Don't unwind the stack
+          CARGO_PROFILE_RELEASE_PANIC: abort
+          # Use my wrapper to extract the rlib
+          CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_LINKER: ${{github.workspace}}/source/native/emcc/emcc-test
+
+      - name: Build
+        env:
+          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+        run: |
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g" export_presets.cfg
+          mkdir -v -p exports/web
+          godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: HTML5
+          path: exports/web
+          retention-days: 7

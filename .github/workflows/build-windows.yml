@@ -1,0 +1,63 @@
+name: Build for Windows
+
+on: workflow_dispatch
+
+env:
+  GODOT_VERSION: 3.3.4
+  EXPORT_NAME: neomugen
+  CARGO_TERM_COLOR: always
+
+jobs:
+  export-windows:
+    name: Windows export
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jefersondaniel/neo-mugen-ci:3.3.4
+      credentials:
+        username: jefersondaniel
+        password: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get mugen data
+        run: |
+          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
+          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+
+      - name: Setup godot templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/templates
+          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+
+      - name: Install windows rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-pc-windows-gnu
+          profile: minimal
+
+      - name: Install build essentials
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential clang llvm-dev libclang-dev mingw-w64
+
+      - name: Compile native lib for windows
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target x86_64-pc-windows-gnu --release
+        env:
+          CC: x86_64-w64-mingw32-gcc
+          CARGO_TARGET_DIR: source/native/target
+      - name: Build
+        env:
+          SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
+        run: |
+          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g" export_presets.cfg
+          mkdir -v -p exports/windows
+          godot -v --export "Windows" exports/windows/${EXPORT_NAME}.exe
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows build
+          path: exports/windows
+          retention-days: 7
