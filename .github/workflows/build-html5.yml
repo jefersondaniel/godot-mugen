@@ -1,6 +1,6 @@
 name: Build for HTML5
 
-on: workflow_dispatch
+on: push
 
 env:
   GODOT_VERSION: 3.3.4
