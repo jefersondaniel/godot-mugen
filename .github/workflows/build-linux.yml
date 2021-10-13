@@ -1,6 +1,6 @@
 name: Build for Linux
 
-on: push
+on: workflow_dispatch
 
 env:
   GODOT_VERSION: 3.3.4
