@@ -34,7 +34,6 @@ jobs:
       - name: Setup Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > ${{ env.ANDROID_KEYSTORE_PATH }}
-          cat ${{ env.ANDROID_KEYSTORE_PATH }}
 
       - name: Install aarch64 android rust toolchain
         uses: actions-rs/toolchain@v1
@@ -93,14 +92,14 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
-      # - name: Compile native lib for x86_64 android
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: build
-      #     args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
-      #   env:
-      #     CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
-      #     CARGO_TARGET_DIR: source/native/target
+      - name: Compile native lib for x86_64 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target x86_64-linux-android --release
+        env:
+          CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
       - name: Compile native lib for armv7 android
         uses: actions-rs/cargo@v1
         with:
@@ -109,14 +108,14 @@ jobs:
         env:
           CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${{env.ANDROID_VERSION}}-clang
           CARGO_TARGET_DIR: source/native/target
-      # - name: Compile native lib for i686 android
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: build
-      #     args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
-      #   env:
-      #     CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
-      #     CARGO_TARGET_DIR: source/native/target
+      - name: Compile native lib for i686 android
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path source/native/Cargo.toml --target i686-linux-android --release
+        env:
+          CARGO_TARGET_I686_LINUX_ANDROID_LINKER: ${{env.ANDROID_SDK_ROOT}}/ndk/${{env.ANDROID_NDK_VERSION}}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${{env.ANDROID_VERSION}}-clang
+          CARGO_TARGET_DIR: source/native/target
       - name: Build
         env:
           SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
