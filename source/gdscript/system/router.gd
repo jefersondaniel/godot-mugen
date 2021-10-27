@@ -36,7 +36,8 @@ func _ready():
     fight_route.add_transition(title_route, "done")
 
     connect("on_route", self, "on_route_change")
-    start(title_route)
+    # start(title_route)
+    start(fight_route)
 
 func handle_menu_action(action):
     trigger(action.id, action)

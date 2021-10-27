@@ -190,10 +190,10 @@ func run_character_contacts():
         var hit_count: int = count_contacts(character, CONTACT_HIT)
         var block_count: int = count_contacts(character, CONTACT_BLOCK)
         if hit_count:
-            character.hit_count += 1
-            character.unique_hit_count += hit_count
+            character.attack_state.hit_count += 1
+            character.attack_state.unique_hit_count += hit_count
         if block_count or hit_count:
-            character.is_hit_def_active = false
+            character.attack_state.is_active = false
 
 func count_contacts(attacker, type):
     var count: int = 0
@@ -238,7 +238,7 @@ func priority_check(a, b):
 
 func check_move_contacts():
     for attacker in self.active_characters:
-        if attacker.in_hit_pause or not attacker.is_hit_def_active:
+        if attacker.in_hit_pause or not attacker.attack_state.is_active:
             continue
         for target in self.active_characters:
             if attacker == target:
@@ -251,36 +251,37 @@ func check_move_contact(attacker, target):
         self.contacts.append({
             'attacker': attacker,
             'target': target,
-            'hit_def': attacker.hit_def,
+            'hit_def': attacker.attack_state.hit_def,
             'type': CONTACT_BLOCK
         })
     elif can_hit(attacker, target):
         self.contacts.append({
             'attacker': attacker,
             'target': target,
-            'hit_def': attacker.hit_def,
+            'hit_def': attacker.attack_state.hit_def,
             'type': CONTACT_HIT
         })
     elif can_block(attacker, target, false):
         self.contacts.append({
             'attacker': attacker,
             'target': target,
-            'hit_def': attacker.hit_def,
+            'hit_def': attacker.attack_state.hit_def,
             'type': CONTACT_MISS_BLOCK
         })
 
 func can_block(attacker, target, collision_check: bool) -> bool:
-    var hit_def = attacker.hit_def
+    var hit_def = attacker.attack_state.hit_def
 
     if collision_check and not attacker.check_attack_collision(target):
         return false
-    if attacker.hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
+    if hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
         return false
-    if attacker.hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
+    if hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
         return false
     if not target.check_command('holdback'):
         return false
-    if abs(attacker.position.x - target.position.x) <= attacker.hit_def.guard_dist:
+    # TODO: Check position scale here
+    if abs(attacker.position.x - target.position.x) <= hit_def.guard_dist:
         return false
     if target.statetype == constants.FLAG_A and (not hit_def.allow_guard_air() or target.check_assert_special('noairguard')):
         return false
@@ -295,13 +296,13 @@ func can_block(attacker, target, collision_check: bool) -> bool:
     return true
 
 func can_hit(attacker, target) -> bool:
-    var hit_def = attacker.hit_def
+    var hit_def = attacker.attack_state.hit_def
 
     if not attacker.check_attack_collision(target):
         return false
-    if attacker.hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
+    if attacker.attack_state.hit_def.affectteam == 'e' and target.team_number == attacker.team_number:
         return false
-    if attacker.hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
+    if attacker.attack_state.hit_def.affectteam == 'f' and target.team_number != attacker.team_number:
         return false
     if target.statetype == constants.FLAG_S and not hit_def.allow_hit_high():
         return false
@@ -315,9 +316,9 @@ func can_hit(attacker, target) -> bool:
         return false
     if target.movetype == constants.FLAG_H and hit_def.hitflag_sign == '+':
         return false
-    if target.hit_by_1 and not target.hit_by_1.can_hit(hit_def.attribute):
+    if target.defense_state.hit_by_1 and not target.defense_state.hit_by_1.can_hit(hit_def.attribute):
         return false
-    if target.hit_by_2 and not target.hit_by_2.can_hit(hit_def.attribute):
+    if target.defense_state.hit_by_2 and not target.defense_state.hit_by_2.can_hit(hit_def.attribute):
         return false
 
     # TODO: Implement juggle points
@@ -344,11 +345,11 @@ func run_character_attack(attack):
         out_of_range_block(attack['target'])
 
 func on_character_attack(attacker, target, hit_def, blocked):
-    target.handle_hit_target(hit_def, attacker, blocked)
-    attacker.handle_hit_attacker(target.received_hit_def, target, blocked)
-    set_facing(attacker, target, target.received_hit_def)
+    target.defense_state.on_hit(hit_def, attacker, blocked)
+    attacker.attack_state.on_hit(target.defense_state.hit_def, target, blocked)
+    set_facing(attacker, target, target.defense_state.hit_def)
 
-    var received_hit_def = target.received_hit_def
+    var received_hit_def = target.defense_state.hit_def
 
     # TODO: implement hit sound and sparks using global data
     # if not blocked:
@@ -359,7 +360,7 @@ func on_character_attack(attacker, target, hit_def, blocked):
     #     play_sound(attacker, target, received_hit_def.guardsound, received_hit_def.guardsound_source);
     #     make_spark(attacker, target, received_hit_def.guard_sparkno, received_hit_def.sparkxy, received_hit_def.guard_sparkno_source)
 
-    var hitoverride = target.find_hit_override(received_hit_def)
+    var hitoverride = target.defense_state.find_hit_override(received_hit_def)
 
     if hitoverride:
         if hitoverride.force_air:
@@ -378,13 +379,13 @@ func on_attack_hit(attacker, target, hit_def):
     if target.life == 0:
         hit_def.fall = 1
 
-    match target.hit_state_type:
+    match target.defense_state.hit_state_type:
         constants.FLAG_S, constants.FLAG_C, constants.FLAG_L:
-            target.hit_time = hit_def.ground_hittime
+            target.defense_state.hit_time = hit_def.ground_hittime
         constants.FLAG_A:
-            target.hit_time = hit_def.air_hittime
+            target.defense_state.hit_time = hit_def.air_hittime
         _:
-            printerr("Invalid hit state type: " % [target.hit_state_type])
+            printerr("Invalid hit state type: " % [target.defense_state.hit_state_type])
 
     if hit_def.p1stateno > 0:
         attacker.change_state(hit_def.p1stateno)
@@ -401,7 +402,7 @@ func on_attack_hit(attacker, target, hit_def):
         if hit_def.ground_type == 'trip':
             target.change_state(constants.STATE_HIT_TRIP)
         else:
-            match target.hit_state_type:
+            match target.defense_state.hit_state_type:
                 constants.FLAG_S:
                     target.change_state(constants.STATE_STANDING_HIT_SHAKING)
                 constants.FLAG_C:
@@ -411,7 +412,7 @@ func on_attack_hit(attacker, target, hit_def):
                 constants.FLAG_L:
                     target.change_state(constants.STATE_HIT_PRONE_SHAKING)
                 _:
-                    printerr("Invalid hit state type: " % [target.hit_state_type])
+                    printerr("Invalid hit state type: " % [target.defense_state.hit_state_type])
 
 func on_attack_block(attacker, target, hit_def):
     target.hit_time = hit_def.guard_hittime;
@@ -426,8 +427,8 @@ func on_attack_block(attacker, target, hit_def):
             target.change_state(constants.STATE_CROUCHING_GUARD_HIT_SHAKING)
 
 func apply_damage(attacker, target, amount, kill):
-    var offensive_multiplier = attacker.attack_multiplier * (attacker.get_attack_power() / 100.0)
-    var defensive_multiplier = target.defense_multiplier * (target.get_defence_power() / 100.0)
+    var offensive_multiplier = attacker.attack_state.attack_multiplier * (attacker.get_attack_power() / 100.0)
+    var defensive_multiplier = target.defense_state.defense_multiplier * (target.get_defence_power() / 100.0)
     amount = int(amount * offensive_multiplier / defensive_multiplier)
     target.add_life(-amount, kill)
 

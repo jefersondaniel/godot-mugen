@@ -116,18 +116,18 @@ func activate_state(statedef):
         hitcountpersist = int(statedef['hitcountpersist'])
 
     if not hitdefpersist:
-        character.is_hit_def_active = false
-        character.hit_pause_time = 0
+        character.attack_state.is_active = false
+        character.attack_state.hit_pause_time = 0
 
     if not movehitpersist:
-        character.move_reversed = 0
-        character.move_hit = 0
-        character.move_guarded = 0
-        character.move_contact = 0
+        character.attack_state.move_reversed = 0
+        character.attack_state.move_hit = 0
+        character.attack_state.move_guarded = 0
+        character.attack_state.move_contact = 0
 
     if not hitcountpersist:
-        character.hit_count = 0
-        character.unique_hit_count = 0
+        character.attack_state.hit_count = 0
+        character.attack_state.unique_hit_count = 0
 
     # TODO: Implement facep2
 
@@ -397,19 +397,19 @@ func handle_defencemulset(controller):
     if value == null:
         printerr("defencemulset: invalid value")
         return
-    character.defense_multiplier = float(value)
+    character.defense_state.defense_multiplier = float(value)
 
 func handle_attackmulset(controller):
     var character = get_character()
     var value = controller['value'].execute(character)
-    character.attack_multiplier = float(value)
+    character.attack_state.attack_multiplier = float(value)
 
 func handle_hitdef(controller):
     var character = get_character()
     var hit_def = HitDef.new()
     hit_def.parse(controller, character)
-    character.hit_def = hit_def
-    character.is_hit_def_active = true
+    character.attack_state.hit_def = hit_def
+    character.attack_state.is_active = true
 
 func handle_hitvelset(controller):
     var character = get_character()
@@ -422,9 +422,9 @@ func handle_hitvelset(controller):
     if controller.has('y'):
         yflag = controller['y'].execute(character)
 
-    var new_velocity = character.get_hit_velocity()
+    var new_velocity = character.defense_state.get_hit_velocity()
 
-    if character.attacker.is_facing_right == character.is_facing_right:
+    if character.defense_state.attacker.is_facing_right == character.is_facing_right:
         new_velocity.x = -new_velocity.x
 
     if not xflag:
@@ -439,10 +439,10 @@ func handle_hitvelset(controller):
 func handle_hitfallvel(controller):
     var character = get_character()
 
-    if not character.received_hit_def or not character.is_falling():
+    if not character.defense_state.hit_def or not character.is_falling():
         return
 
-    var hitdef = character.received_hit_def
+    var hitdef = character.defense_state.hit_def
 
     if hitdef.fall_xvelocity:
         character.set_velocity_x(hitdef.fall_xvelocity)
@@ -452,7 +452,7 @@ func handle_hitfallvel(controller):
 func handle_hitfallset(controller):
     var character = get_character()
 
-    if not character.received_hit_def:
+    if not character.defense_state.hit_def:
         return
 
     var value = -1
@@ -469,17 +469,17 @@ func handle_hitfallset(controller):
         xvel = controller['xvel'].execute(character)
 
     if value == 1 or value == 0:
-        character.received_hit_def.fall = value
+        character.defense_state.hit_def.fall = value
 
     if xvel != null:
-        character.received_hit_def.fall_xvelocity = xvel
+        character.defense_state.hit_def.fall_xvelocity = xvel
 
     if yvel != null:
-        character.received_hit_def.fall_yvelocity = yvel
+        character.defense_state.hit_def.fall_yvelocity = yvel
 
 func handle_movecontact(controller):
     var character = get_character()
-    return character.move_contact if character.movetype == constants.FLAG_A else 0
+    return character.attack_state.move_contact if character.movetype == constants.FLAG_A else 0
 
 func handle_sprpriority(controller):
     var character = get_character()
@@ -507,7 +507,7 @@ func handle_playsnd(controller):
 
 func handle_fallenvshake(_controller):
     var character = get_character()
-    var hit_def = character.received_hit_def
+    var hit_def = character.defense_state.hit_def
     var stage = character.get_stage()
 
     if not hit_def:
@@ -532,8 +532,8 @@ func handle_envshake(controller):
 
 func handle_hitfalldamage(_controller):
     var character = get_character()
-    var hit_def = character.received_hit_def
-    var attacker = character.attacker
+    var hit_def = character.defense_state.hit_def
+    var attacker = character.defense_state.attacker
     var fight = character.get_fight()
 
     if not hit_def or not attacker:
@@ -562,9 +562,9 @@ func apply_hit_by(controller, is_negation: bool):
     hit_by.setup(hit_attribute, time, is_negation)
 
     if slot == 1:
-        character.hit_by_1 = hit_by
+        character.defense_state.hit_by_1 = hit_by
     else:
-        character.hit_by_2 = hit_by
+        character.defense_state.hit_by_2 = hit_by
 
 func handle_nothitby(controller):
     self.apply_hit_by(controller, true)
@@ -584,7 +584,7 @@ func handle_hitoverride(controller):
         printerr("hitoverride: invalid attr: %s" + attr)
         return
 
-    character.hit_overrides[slot].setup(
+    character.defense_state.hit_overrides[slot].setup(
         attr,
         stateno,
         time,
@@ -615,7 +615,7 @@ func handle_targetdrop(controller):
     var excluded = []
 
     for target in character.targets:
-        if id != -1 and target.received_hit_def.id == id:
+        if id != -1 and target.defense_state.hit_def.id == id:
             continue
         excluded.append(target)
 
@@ -671,8 +671,8 @@ func handle_targetlifeadd(controller):
     for target in character.find_targets(target_id):
         var new_value = value
         if not absolute and new_value < 0:
-            new_value = int(new_value * character.attack_multiplier)
-            new_value = int(new_value / target.defense_multiplier)
+            new_value = int(new_value * character.attack_state.attack_multiplier)
+            new_value = int(new_value / target.defense_state.defense_multiplier)
         target.add_life(new_value, kill)
 
 func handle_targetpoweradd(controller):
@@ -742,11 +742,11 @@ func handle_attackdist(controller):
     var character = get_character()
     var value = controller['value'].execute(character)
 
-    if not value or not character.hit_def:
-        printerr("attackdist: invalid value or missing hitdef")
+    if not value:
+        printerr("attackdist: invalid value")
         return
 
-    character.hit_def.guard_dist = value
+    character.attack_state.hit_def.guard_dist = value
 
 func handle_lifeadd(controller):
     var character = get_character()
@@ -759,7 +759,7 @@ func handle_lifeadd(controller):
         return
 
     if not absolute:
-        value = int(value / character.defense_multiplier)
+        value = int(value / character.defense_state.defense_multiplier)
 
     character.add_life(value, kill)
 
@@ -780,10 +780,10 @@ func handle_poweradd(controller):
 
 func handle_movehitreset(controller):
     var character = get_character()
-    character.move_contact = 0
-    character.move_guarded = 0
-    character.move_hit = 0
-    character.move_reversed = 0
+    character.attack_state.move_contact = 0
+    character.attack_state.move_guarded = 0
+    character.attack_state.move_hit = 0
+    character.attack_state.move_reversed = 0
 
 func handle_playerpush(controller):
     var character = get_character()

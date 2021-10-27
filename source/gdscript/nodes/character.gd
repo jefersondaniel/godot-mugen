@@ -5,8 +5,9 @@ var AnimationSprite = load('res://source/gdscript/nodes/sprite/animation_sprite.
 var StateManager = load('res://source/gdscript/nodes/character/state_manager.gd')
 var SoundManager = load('res://source/gdscript/nodes/character/sound_manager.gd')
 var HitAttribute = load('res://source/gdscript/nodes/character/hit_attribute.gd')
-var HitOverride = load('res://source/gdscript/nodes/character/hit_override.gd')
 var Bind = load('res://source/gdscript/nodes/character/bind.gd')
+var AttackState = load('res://source/gdscript/nodes/character/attack_state.gd')
+var DefenseState = load('res://source/gdscript/nodes/character/defense_state.gd')
 
 # Nodes and managers
 var character_sprite = null
@@ -20,6 +21,9 @@ var fight_ref: WeakRef
 var definition = null
 var data = null
 var state_defs = null
+var attack_state = null
+var defense_state = null
+var bind = null
 var info_localcoord: Vector2 = Vector2(320, 240)
 var int_vars: PoolIntArray
 var float_vars: PoolRealArray
@@ -31,31 +35,8 @@ var special_flags = {}
 var push_flag: bool = true
 var in_hit_pause: bool = false
 var is_facing_right: bool = true
-var hit_def = null
-var received_hit_def = null
-var hit_by_1 = null
-var hit_by_2 = null
-var bind = null
-var is_hit_def_active: bool = false
-var hit_count: int = 0
-var unique_hit_count: int = 0
-var attacker = null
-var targets: Array = []
-var blocked: bool = false
-var killed: bool = false
 var remaining_juggle_points: int = 15
 var required_juggle_points: int = 0
-var hit_pause_time: int = 0
-var move_contact: int = 0
-var move_guarded: int = 0
-var move_hit: int = 0
-var move_reversed: int = 0
-var hit_overrides: Array = []
-var hit_time: int = 0
-var hit_shake_time: int = 0
-var hit_state_type: int = 0
-var defense_multiplier: float = 1
-var attack_multiplier: float = 1
 var string_variable_regex: RegEx
 var base_z_index = 100
 var posfreeze: int = 0
@@ -91,6 +72,8 @@ func setup(_definition, _data, _state_defs, sprite_bundle, animations, sounds, _
     state_manager = StateManager.new(self)
     sound_manager = SoundManager.new(sounds)
     bind = Bind.new(self)
+    attack_state = AttackState.new(self)
+    defense_state = DefenseState.new(self)
 
     info_localcoord = definition.info.localcoord
     velocity = Vector2(0, 0)
@@ -129,11 +112,6 @@ func setup_vars():
         sys_int_vars[i] = 0
         sys_float_vars[i] = 0
 
-    self.hit_overrides = []
-
-    for i in range(0, 8):
-        self.hit_overrides.append(HitOverride.new())
-
 func _ready():
     self.add_child(character_sprite)
     self.add_child(sound_manager)
@@ -150,8 +128,8 @@ func reset_round_state():
     # Meant to reset state between rounds
     ctrl = 0
     life = data.data.life
-    hit_def = null
-    received_hit_def = null
+    attack_state.reset()
+    defense_state.reset()
     remaining_juggle_points = 15
     required_juggle_points = 0
     special_flags.clear()
@@ -163,82 +141,79 @@ func get_const(fullname):
     return data.get_value(fullname)
 
 func is_falling():
-    return movetype == constants.FLAG_H and received_hit_def and received_hit_def.fall
+    return movetype == constants.FLAG_H and defense_state.hit_def.fall
 
 func get_hit_var(key):
-    if not received_hit_def:
-        return -1
-
     match key:
         'fall.envshake.time':
-            return received_hit_def.fall_envshake_time
+            return defense_state.hit_def.fall_envshake_time
         'fall.envshake.freq':
-            return received_hit_def.fall_envshake_freq
+            return defense_state.hit_def.fall_envshake_freq
         'fall.envshake.ampl':
-            return received_hit_def.fall_envshake_ampl
+            return defense_state.hit_def.fall_envshake_ampl
         'fall.envshake.phase':
-            return received_hit_def.fall_envshake_phase
+            return defense_state.hit_def.fall_envshake_phase
         'guarded':
-            return blocked
+            return defense_state.blocked
         'chainid':
-            return received_hit_def.chainid
+            return defense_state.hit_def.chainid
         'fall':
             return is_falling()
         'fall.damage':
-            return received_hit_def.fall_damage
+            return defense_state.hit_def.fall_damage
         'fall.recover':
-            return received_hit_def.fall_recover
+            return defense_state.hit_def.fall_recover
         'fall.kill':
-            return received_hit_def.fall_kill
+            return defense_state.hit_def.fall_kill
         'fall.recovertime':
-            return received_hit_def.fall_recovertime
+            return defense_state.hit_def.fall_recovertime
         'fall.xvel':
-            return received_hit_def.fall_xvelocity
+            return defense_state.hit_def.fall_xvelocity
         'fall.yvel':
-            return received_hit_def.fall_yvelocity
+            return defense_state.hit_def.fall_yvelocity
         'recovertime':
-            return 0 # implement this
+            return 0 # TODO: implement this
         'hitcount':
-            return hit_count
+            return defense_state.hit_count
         'xvel':
-            return get_hit_velocity().x
+            return defense_state.get_hit_velocity().x
         'yvel':
-            return get_hit_velocity().y
+            return defense_state.get_hit_velocity().y
         'type':
             if life == 0:
                 return 3
-            return get_hit_var('airtype') if hit_state_type == constants.FLAG_A else get_hit_var('groundtype')
+            return get_hit_var('airtype') if defense_state.hit_state_type == constants.FLAG_A else get_hit_var('groundtype')
         'airtype':
-            var airtype: String = received_hit_def.air_type
+            var airtype: String = defense_state.hit_def.air_type
             return constants.HIT_TYPE_ID[airtype] if constants.HIT_TYPE_ID.has(airtype) else 4
         'groundtype':
-            var groundtype: String = received_hit_def.ground_type
+            var groundtype: String = defense_state.hit_def.ground_type
             return constants.HIT_TYPE_ID[groundtype] if constants.HIT_TYPE_ID.has(groundtype) else 0
         'animtype':
             var animtype: String = ''
             if is_falling():
-                animtype = received_hit_def.fall_animtype
-            elif hit_state_type == constants.FLAG_A:
-                animtype = received_hit_def.air_animtype
+                animtype = defense_state.hit_def.fall_animtype
+            elif defense_state.hit_state_type == constants.FLAG_A:
+                animtype = defense_state.hit_def.air_animtype
             else:
-                animtype = received_hit_def.animtype
+                animtype = defense_state.hit_def.animtype
             return constants.ANIM_TYPE_ID[animtype] if constants.ANIM_TYPE_ID.has(animtype) else null
         'damage':
-            return received_hit_def.hit_damage if not blocked else received_hit_def.guard_damage
+            return defense_state.hit_def.hit_damage if not defense_state.blocked else defense_state.hit_def.guard_damage
         'hitshaketime':
-            return hit_shake_time
+            return defense_state.hit_shake_time
         'hittime':
-            return hit_time
+            return defense_state.hit_time
         'slidetime':
-            return received_hit_def.ground_slidetime if not blocked else received_hit_def.guard_slidetime
+            return defense_state.hit_def.ground_slidetime if not defense_state.blocked else defense_state.hit_def.guard_slidetime
         'ctrltime':
-            return received_hit_def.airguard_ctrltime if hit_state_type == constants.FLAG_A else received_hit_def.guard_ctrltime
+            return defense_state.hit_def.airguard_ctrltime if defense_state.hit_state_type == constants.FLAG_A else defense_state.hit_def.guard_ctrltime
         'xoff':
-            return received_hit_def.snap.x if received_hit_def.snap else null
+            return defense_state.hit_def.snap.x if defense_state.hit_def.snap else null
         'yoff':
-            return received_hit_def.snap.y if received_hit_def.snap else null
+            return defense_state.hit_def.snap.y if defense_state.hit_def.snap else null
         'yaccel':
-            return received_hit_def.yaccel
+            return defense_state.hit_def.yaccel
         'isbound':
             return bind.is_active and bind.is_target_bind
         _:
@@ -351,13 +326,13 @@ func get_context_variable(key):
     if key == "sprpriority":
         return z_index
     if key == "hitshakeover":
-        return hit_shake_time <= 0
+        return defense_state.hit_shake_time <= 0
     if key == "hitfall":
         return is_falling()
     if key == "hitover":
-        return hit_time <= 0
+        return defense_state.hit_time <= 0
     if key == "canrecover":
-        return is_falling() and received_hit_def and received_hit_def.fall_recover
+        return is_falling() and defense_state.hit_def.fall_recover
     if key == "e":
         return 2.718281828
     if key == "pi":
@@ -510,26 +485,13 @@ func mul_velocity(_velocity):
     velocity.x *= _velocity.x
     velocity.y *= _velocity.y
 
-func get_hit_velocity() -> Vector2:
-    var hit_velocity: Vector2 = Vector2(0, 0)
+func add_power(input_power):
+    power = max(0, min(power + input_power, get_max_power()))
 
-    if blocked:
-        hit_velocity = received_hit_def.airguard_velocity if hit_state_type == constants.FLAG_A else Vector2(received_hit_def.guard_velocity, 0)
-    else:
-        hit_velocity = received_hit_def.air_velocity if hit_state_type == constants.FLAG_A else received_hit_def.ground_velocity
-        if killed:
-            hit_velocity.x = hit_velocity.x * 0.66 # TODO: Put this constant in global file
-            hit_velocity.y = -6
-
-    return hit_velocity
-
-func add_power(power):
-    self.power = max(0, min(self.power + power, get_max_power()))
-
-func add_life(life: int, kill: bool = true):
-    self.life = max(0, min(self.life + life, get_max_life()))
-    if not kill and self.life == 0:
-        self.life = 1
+func add_life(input_life: int, kill: bool = true):
+    life = max(0, min(life + input_life, get_max_life()))
+    if not kill and life == 0:
+        life = 1
 
 func get_attack_power() -> float:
     var result = get_const('data.attack')
@@ -551,7 +513,7 @@ func check_command(name: String) -> bool:
 func check_hit_def_attr(args: Array) -> bool:
     var operator: String = args.pop_front()
     var attribute = HitAttribute.parse(args)
-    var result = received_hit_def.attribute.satisfy(attribute)
+    var result = defense_state.hit_def.attribute.satisfy(attribute)
 
     return result if operator == "=" else not result
 
@@ -588,12 +550,12 @@ func draw_debug_text():
     get_node('/root/Node2D/debug/text').text = text
 
 func cleanup():
-    if hit_pause_time > 1:
+    if attack_state.hit_pause_time > 1:
         in_hit_pause = true
-        hit_pause_time = hit_pause_time - 1
+        attack_state.hit_pause_time = attack_state.hit_pause_time - 1
     else:
         in_hit_pause = false
-        hit_pause_time = 0
+        attack_state.hit_pause_time = 0
 
     if not in_hit_pause:
         posfreeze = false
@@ -619,54 +581,19 @@ func update_state():
     state_manager.update()
 
     if not in_hit_pause:
-        update_hit_state()
+        attack_state.handle_tick()
+        defense_state.handle_tick()
         update_ko_state()
 
-func update_hit_state():
-    if move_contact > 0:
-        move_contact += 1
-
-    if move_hit > 0:
-        move_hit += 1
-
-    if move_guarded > 0:
-        move_guarded += 1
-
-    if move_reversed > 0:
-        move_reversed += 1
-
-    if hit_by_1:
-        hit_by_1.handle_tick()
-
-    if hit_by_2:
-        hit_by_2.handle_tick()
-
-    if hit_shake_time > 0:
-        hit_shake_time = hit_shake_time - 1
-    elif hit_time > -1:
-        hit_time = hit_time - 1
-
-    if hit_shake_time < 0:
-        hit_shake_time = 0
-
-    if hit_time < 0:
-        hit_time = -1
-
-    if received_hit_def and stateno == constants.STATE_HIT_GET_UP and time == 0:
-        received_hit_def.fall = 0
-
-    for hit_override in hit_overrides:
-        hit_override.handle_tick()
-
 func update_ko_state():
-    if life > 0 or killed or assert_special(constants.ASSERTION_NOKO):
+    if life > 0 or defense_state.killed or assert_special(constants.ASSERTION_NOKO):
         return
     if not assert_special(constants.ASSERTION_NOKOSOUND):
         play_sound({"value": [11, 0]})
-    killed = true
+    defense_state.killed = true
 
 func update_physics():
-    if in_hit_pause or hit_shake_time > 0:
+    if in_hit_pause or defense_state.hit_shake_time > 0:
         return
 
     handle_physics()
@@ -838,60 +765,10 @@ func handle_pushing():
         enemy.handle_movement_restriction()
         # TODO: Fix scale
 
-func handle_hit_target(hit_def, attacker, blocked):
-    self.received_hit_def = hit_def.duplicate()
-    self.attacker = attacker
-    self.blocked = blocked
-
-    if self.is_falling():
-        self.received_hit_def.fall = 1
-    else:
-        self.remaining_juggle_points = int(self.get_const('data.airjuggle'))
-
-    self.hit_count = self.hit_count + 1 if self.movetype == constants.FLAG_H else 1
-    self.hit_state_type = self.statetype
-
-    self.update_z_index(self.received_hit_def.p2sprpriority)
-    self.ctrl = 0
-    self.movetype = constants.FLAG_H
-
-    if self.blocked:
-        self.hit_shake_time = self.received_hit_def.guard_shaketime
-        self.add_power(self.received_hit_def.p2_guard_power)
-    else:
-        self.hit_shake_time = self.received_hit_def.shaketime
-        self.add_power(self.received_hit_def.p2_power)
-
-        # TODO: Apply pallete fx
-
-        if is_falling():
-            self.remaining_juggle_points -= attacker.required_juggle_points
-
-func handle_hit_attacker(hit_def, target, blocked):
-    self.z_index = hit_def.p1sprpriority
-
-    if not self.targets.has(target):
-        self.targets.append(target)
-
-    if blocked:
-        self.add_power(hit_def.p1_guard_power)
-        hit_pause_time = hit_def.guard_pausetime
-        move_contact = 1
-        move_guarded = 1
-        move_hit = 0
-        move_reversed = 0
-    else:
-        self.add_power(hit_def.p1_power)
-        hit_pause_time = hit_def.pausetime
-        move_contact = 1
-        move_guarded = 0
-        move_hit = 1
-        move_reversed = 0
-
 func find_targets(target_id: int):
     var results = []
-    for target in targets:
-        if target_id == -1 or target_id == target.received_hit_def.id:
+    for target in attack_state.targets:
+        if target_id == -1 or target_id == target.defense_state.hit_def.id:
             results.append(target)
     return results
 
@@ -902,17 +779,8 @@ func remove_check():
     # TODO: Implement helper remove check
     pass
 
-func find_hit_override(hit_def):
-    for hit_override in hit_overrides:
-        if not hit_override.is_active:
-            continue
-        if not hit_override.attribute.satisfy(hit_def.attribute):
-            continue
-        return hit_override
-    return null
-
-func set_fight(fight):
-    fight_ref = weakref(fight)
+func set_fight(input_fight):
+    fight_ref = weakref(input_fight)
 
 func get_fight():
     return fight_ref.get_ref()
