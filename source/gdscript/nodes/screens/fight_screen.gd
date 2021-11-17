@@ -2,7 +2,7 @@ extends Node2D
 
 var Fight = load("res://source/gdscript/nodes/fight/fight.gd")
 var Team = load("res://source/gdscript/nodes/fight/team.gd")
-var UserCommandManager = load("res://source/gdscript/nodes/character/user_command_manager.gd")
+var UserCommandManager = load('res://source/native/user_command_manager.gdns')
 var AiCommandManager = load("res://source/gdscript/nodes/character/ai_command_manager.gd")
 var CharacterLoader = load("res://source/gdscript/loaders/character_loader.gd").new()
 var StageLoader = load("res://source/gdscript/loaders/stage_loader.gd").new()
@@ -27,7 +27,8 @@ func setup_fight():
   var character1 = load_character(1, "res://data/chars/kfm/kfm.def", 0)
   fight.set_team(1, Team.new(constants.TEAM_SIDE_LEFT, character1))
 
-  var character2 = load_character(2, "res://data/chars/kfm/kfm.def", 3)
+  # var character2 = load_character(2, "res://data/chars/kfm/kfm.def", 3)
+  var character2 = load_ai("res://data/chars/kfm/kfm.def", 3)
   fight.set_team(2, Team.new(constants.TEAM_SIDE_RIGHT, character2))
 
   add_child(fight)
@@ -36,7 +37,9 @@ func _physics_process(_delta: float):
   fight.update_tick()
 
 func load_character(index: int, path: String, palette: int):
-  var command_manager = UserCommandManager.new('P%s_' % [index])
+  var command_manager = UserCommandManager.new()
+  command_manager.set_input_prefix('P%s_' % [index])
+  command_manager.set_constants(constants)
   var character = CharacterLoader.load(path, palette, command_manager)
   return character
 
