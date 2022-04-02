@@ -6,8 +6,7 @@ env:
   GODOT_VERSION: 3.3.4
   EXPORT_NAME: neomugen
   CARGO_TERM_COLOR: always
-  EMSDK_VERSION: 2.0.34
-  RUST_VERSION: 1.56.1
+  EMSDK_VERSION: 2.0.17
 
 jobs:
   export-html:
@@ -35,7 +34,7 @@ jobs:
       - name: Install emscripten rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{env.RUST_VERSION}}
+          toolchain: stable
           target: wasm32-unknown-emscripten
           profile: minimal
 
@@ -43,7 +42,7 @@ jobs:
         run: apt-get update && apt-get install -y --no-install-recommends build-essential clang python3 xz-utils
 
       - name: Setup emscripten sdk
-        uses: mymindstorm/setup-emsdk@v11
+        uses: mymindstorm/setup-emsdk@v10
         with:
           version: ${{env.EMSDK_VERSION}}
 
