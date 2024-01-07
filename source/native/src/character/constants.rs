@@ -27,7 +27,7 @@ impl From<&Variant> for Constants {
     fn from(variant: &Variant) -> Self {
         let object_ref = variant.try_to_object::<Object>();
 
-        if object_ref.is_none() {
+        if !object_ref.is_ok() {
             godot_error!("invalid constants value");
             return Self::default();
         }

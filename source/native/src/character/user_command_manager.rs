@@ -21,9 +21,9 @@ impl From<&Variant> for CommandElement {
         let dict = dict_ref.unwrap();
 
         CommandElement {
-            ticks: i64::from_variant(&dict.get("ticks")).unwrap(),
-            modifier: i64::from_variant(&dict.get("modifier")).unwrap(),
-            code: i64::from_variant(&dict.get("code")).unwrap(),
+            ticks: i64::from_variant(&dict.get("ticks").unwrap_or(Variant::nil())).unwrap(),
+            modifier: i64::from_variant(&dict.get("modifier").unwrap_or(Variant::nil())).unwrap(),
+            code: i64::from_variant(&dict.get("code").unwrap_or(Variant::nil())).unwrap(),
         }
     }
 }
@@ -47,16 +47,17 @@ impl From<&Variant> for Command {
 
         let dict = dict_ref.unwrap();
 
-        let variant_array = VariantArray::from_variant(&dict.get("cmd")).unwrap();
+        let variant_array = VariantArray::from_variant(&dict.get("cmd").unwrap_or(Variant::nil())).unwrap();
         let mut cmd: Vec<CommandElement> = Vec::new();
         for command_element_variant in variant_array.iter() {
             cmd.push(CommandElement::from(&command_element_variant));
         }
 
+
         Command {
-            name: String::from_variant(&dict.get("name")).unwrap(),
-            buffer_time: i64::from_variant(&dict.get("buffer_time")).unwrap(),
-            time: i64::from_variant(&dict.get("time")).unwrap(),
+            name: String::from_variant(&dict.get("name").unwrap_or(Variant::nil())).unwrap(),
+            buffer_time: i64::from_variant(&dict.get("buffer_time").unwrap_or(Variant::nil())).unwrap(),
+            time: i64::from_variant(&dict.get("time").unwrap_or(Variant::nil())).unwrap(),
             cmd: cmd,
         }
     }
@@ -95,13 +96,13 @@ impl UserCommandManager {
         }
     }
 
-    #[export]
-    pub fn set_input_prefix(&mut self, _owner: &Reference, input_prefix: String) {
+    #[method]
+    pub fn set_input_prefix(&mut self, input_prefix: String) {
         self.input_prefix = input_prefix;
     }
 
-    #[export]
-    pub fn set_constants(&mut self, _owner: &Reference, variant: Variant) {
+    #[method]
+    pub fn set_constants(&mut self, variant: Variant) {
         self.constants = Constants::from(&variant);
         self.input_map.insert("U".to_string(), self.constants.key_direction_u);
         self.input_map.insert("D".to_string(), self.constants.key_direction_d);
@@ -114,8 +115,8 @@ impl UserCommandManager {
         self.input_map.insert("s".to_string(), self.constants.key_s);
     }
 
-    #[export]
-    pub fn set_commands(&mut self, _owner: &Reference, variant_array: VariantArray) {
+    #[method]
+    pub fn set_commands(&mut self, variant_array: VariantArray) {
         let mut commands: Vec<Command> = Vec::new();
         let mut command_countdown: HashMap<String, i64> = HashMap::new();
         for variant in variant_array.iter() {
@@ -127,8 +128,8 @@ impl UserCommandManager {
         self.command_countdown = command_countdown;
     }
 
-    #[export]
-    pub fn update(&mut self, _owner: &Reference, in_hit_pause: bool) {
+    #[method]
+    pub fn update(&mut self, in_hit_pause: bool) {
         self.update_input_buffer();
         self.update_command_countdown(in_hit_pause);
         self.check_commands(in_hit_pause);
@@ -146,7 +147,7 @@ impl UserCommandManager {
 
         let input = Input::godot_singleton();
 
-        if Input::is_action_pressed(input, format!("{}F", self.input_prefix)) {
+        if Input::is_action_pressed(input, format!("{}F", self.input_prefix), false) {
             if self.is_facing_right {
                 code += self.constants.key_direction_f;
             } else {
@@ -154,7 +155,7 @@ impl UserCommandManager {
             }
         }
 
-        if Input::is_action_pressed(input, format!("{}B", self.input_prefix)) {
+        if Input::is_action_pressed(input, format!("{}B", self.input_prefix), false) {
             if self.is_facing_right {
                 code += self.constants.key_direction_b;
             } else {
@@ -163,7 +164,7 @@ impl UserCommandManager {
         }
 
         for action in vec!["U", "D", "a", "b", "c", "x", "y", "z", "s"].iter() {
-            if Input::is_action_pressed(input, format!("{}{}", self.input_prefix, action)) {
+            if Input::is_action_pressed(input, format!("{}{}", self.input_prefix, action), false) {
                 code += self.input_map.get(&action.to_string()).unwrap_or(&0);
             }
         }
