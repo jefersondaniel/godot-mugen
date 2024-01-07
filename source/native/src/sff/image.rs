@@ -1,4 +1,4 @@
-use gdnative::api::image::Image;
+use gdnative::api::Image;
 use gdnative::prelude::*;
 use std::rc::Rc;
 
@@ -95,7 +95,7 @@ impl RawImage {
             my_byte_array.push(color.a);
         }
 
-        let dest = ByteArray::from_slice(my_byte_array.as_slice());
+        let dest = PoolArray::from_slice(my_byte_array.as_slice());
 
         let image = Image::new();
         image.create_from_data(

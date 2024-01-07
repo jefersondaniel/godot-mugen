@@ -149,7 +149,7 @@ class TurnsName:
     var p1: NamePlayer = NamePlayer.new()
     var p2: NamePlayer = NamePlayer.new()
 
-class Time:
+class TimeConfiguration:
     var pos: Vector2 = Vector2(0 ,0) # Example: 160,23
     var bg_spr: PoolIntArray = PoolIntArray([])
     var counter: LabelConfiguration = LabelConfiguration.new()
@@ -277,7 +277,7 @@ var turnsface: TurnsFace = TurnsFace.new()
 var name: Name = Name.new()
 var simulname: SimulName = SimulName.new()
 var turnsname: TurnsName = TurnsName.new()
-var time: Time = Time.new()
+var time: TimeConfiguration = TimeConfiguration.new()
 var combo: Combo = Combo.new()
 var round_info: Round = Round.new()
 var winicon: WinIcon = WinIcon.new()

@@ -53,11 +53,11 @@ impl ToVariant for SffMetadata {
     }
 }
 
-pub fn export_palette(source: Rc<Palette>) -> ColorArray {
-    let mut result = ColorArray::new();
+pub fn export_palette(source: Rc<Palette>) -> PoolArray<Color> {
+    let mut result = PoolArray::new();
 
     for raw_color in source.colors.iter() {
-        result.push(Color::rgba(
+        result.push(Color::from_rgba(
             raw_color.r as f32 / 255.0,
             raw_color.g as f32 / 255.0,
             raw_color.b as f32 / 255.0,
@@ -68,7 +68,7 @@ pub fn export_palette(source: Rc<Palette>) -> ColorArray {
     result
 }
 
-pub fn import_palette(source: ColorArray) -> Rc<Palette> {
+pub fn import_palette(source: PoolArray<Color>) -> Rc<Palette> {
     let mut raw_colors: Vec<RawColor> = Vec::new();
 
     for i in 0..source.len() {

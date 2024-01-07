@@ -2,8 +2,8 @@ use crate::sff::data::{BufferAccess, BufferReader, DataError, DataReader, FileRe
 use crate::sff::image::{Palette, RawColor, RawImage};
 use crate::sff::pcx::read_pcx;
 use crate::sff::sff_common::{SffData, SffPal, SffMetadata, SffReference};
-use gdnative::Ref;
-use gdnative::api::file::File;
+use gdnative::object::Ref;
+use gdnative::api::File;
 use gdnative::prelude::Unique;
 use std::cell::RefCell;
 use std::collections::HashMap;

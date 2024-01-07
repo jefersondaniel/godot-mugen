@@ -2,7 +2,7 @@ extends Node2D
 
 var Fight = load("res://source/gdscript/nodes/fight/fight.gd")
 var Team = load("res://source/gdscript/nodes/fight/team.gd")
-var UserCommandManager = load("res://source/gdscript/nodes/character/user_command_manager.gd")
+var UserCommandManager = load('res://source/native/user_command_manager.gdns')
 var AiCommandManager = load("res://source/gdscript/nodes/character/ai_command_manager.gd")
 var CharacterLoader = load("res://source/gdscript/loaders/character_loader.gd").new()
 var StageLoader = load("res://source/gdscript/loaders/stage_loader.gd").new()
@@ -36,7 +36,9 @@ func _physics_process(_delta: float):
   fight.update_tick()
 
 func load_character(index: int, path: String, palette: int):
-  var command_manager = UserCommandManager.new('P%s_' % [index])
+  var command_manager = UserCommandManager.new()
+  command_manager.set_input_prefix('P%s_' % [index])
+  command_manager.set_constants(constants)
   var character = CharacterLoader.load(path, palette, command_manager)
   return character
 

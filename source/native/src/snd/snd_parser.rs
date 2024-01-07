@@ -1,7 +1,7 @@
 use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
 use crate::snd::structs::{FileHeader, SubHeader, WavHeader};
-use gdnative::api::file::File;
-use gdnative::api::audio_stream_sample::AudioStreamSample;
+use gdnative::api::File;
+use gdnative::api::AudioStreamSample;
 use gdnative::prelude::*;
 
 #[derive(NativeClass)]
@@ -14,8 +14,8 @@ impl SndParser {
         SndParser {}
     }
 
-    #[export]
-    pub fn read_sounds(&self, _owner: &Reference, path: String) -> Variant {
+    #[method]
+    pub fn read_sounds(&self, path: String) -> Variant {
         let result = self.read_file(path);
 
         if let Ok(dict) = result {
@@ -24,7 +24,7 @@ impl SndParser {
             godot_error!("{}", message);
         }
 
-        Variant::new()
+        Variant::nil()
     }
 
     pub fn read_file(&self, path: String) -> Result<Dictionary, DataError> {
@@ -96,7 +96,7 @@ impl SndParser {
     }
 }
 
-fn to_signed(source: &[u8]) -> ByteArray {
+fn to_signed(source: &[u8]) -> PoolArray<u8> {
     source
         .iter()
         .map(|value| ((*value as i16) - 128) as u8)
