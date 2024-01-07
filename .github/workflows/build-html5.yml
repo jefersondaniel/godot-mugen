@@ -46,31 +46,20 @@ jobs:
       - name: Compile native lib for wasm
         uses: actions-rs/cargo@v1
         with:
+          toolchain: nightly-2023-11-10
           command: build
           args: --manifest-path source/native/Cargo.toml --target wasm32-unknown-emscripten --release
         env:
-          RUSTFLAGS: -C link-args=-fPIC -C relocation-model=pic -C target-feature=+mutable-globals
-          EMMAKEN_CFLAGS: -s SIDE_MODULE=1 -shared -Os
           C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
           CARGO_TARGET_DIR: source/native/target
-          # Optimize for size
-          CARGO_PROFILE_RELEASE_OPT_LEVEL: s
-          # No overflow check / assertions
-          CARGO_PROFILE_RELEASE_OVERFLOW_CHECKS: false
-          CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS: false
-          # Don't unwind the stack
-          CARGO_PROFILE_RELEASE_PANIC: abort
-          # Use my wrapper to extract the rlib
-          CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_LINKER: ${{github.workspace}}/source/native/emcc/emcc-test
 
       - name: Build
         run: |
           mkdir -v -p exports/web
           godot -v --export "HTML5" exports/web/${EXPORT_NAME}.html
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+      - name: Publish Game
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: HTML5
-          path: exports/web
-          retention-days: 7
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./exports/web
