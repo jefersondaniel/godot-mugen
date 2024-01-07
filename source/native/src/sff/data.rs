@@ -1,5 +1,5 @@
 use byteorder::{LittleEndian, ReadBytesExt};
-use gdnative::api::file::File;
+use gdnative::api::File;
 use std::fmt;
 use std::io::Cursor;
 use std::io::Read;

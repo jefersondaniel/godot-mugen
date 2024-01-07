@@ -24,31 +24,31 @@ impl MugenExpression {
         }
     }
 
-    #[export]
-    fn parse(&mut self, _owner: &Reference, text: String) {
+    #[method]
+    fn parse(&mut self, text: String) {
         self.expression = parse(Rc::clone(&self.state_ref), text);
         self.error = self.state_ref.borrow().error.to_string();
     }
 
-    #[export]
-    fn execute(&self, _owner: &Reference, context: Variant) -> Variant {
+    #[method]
+    fn execute(&self, context: Variant) -> Variant {
         let context_object = Context::new(context);
 
         self.expression.evaluate(&context_object).to_variant()
     }
 
-    #[export]
-    fn get_error_text(&self, _owner: &Reference) -> String {
+    #[method]
+    fn get_error_text(&self) -> String {
         self.error.to_string()
     }
 
-    #[export]
-    fn has_error(&self, _owner: &Reference) -> bool {
+    #[method]
+    fn has_error(&self) -> bool {
         !self.error.is_empty()
     }
 
-    #[export]
-    fn to_string(&self, _owner: &Reference) -> String {
+    #[method]
+    fn to_string(&self) -> String {
         self.expression.to_string()
     }
 }

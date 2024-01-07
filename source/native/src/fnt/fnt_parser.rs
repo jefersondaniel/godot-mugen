@@ -1,6 +1,6 @@
 use crate::sff::data::{BufferReader, DataError, DataReader, FileReader};
 use crate::sff::pcx::read_pcx;
-use gdnative::api::file::File;
+use gdnative::api::File;
 use gdnative::prelude::*;
 
 #[allow(dead_code)]
@@ -44,8 +44,8 @@ impl FntParser {
         FntParser {}
     }
 
-    #[export]
-    pub fn get_font_data(&self, _owner: &Reference, path: String) -> Variant {
+    #[method]
+    pub fn get_font_data(&self, path: String) -> Variant {
         let result = self.read_file(path);
 
         if let Ok(dict) = result {
@@ -54,7 +54,7 @@ impl FntParser {
             godot_print!("error: {}", message);
         }
 
-        Variant::new()
+        Variant::nil()
     }
 
     pub fn read_file(&self, path: String) -> Result<Dictionary, DataError> {

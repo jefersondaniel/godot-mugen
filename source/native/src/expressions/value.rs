@@ -48,9 +48,9 @@ impl From<Variant> for Value {
 impl ToVariant for Value {
     fn to_variant(&self) -> Variant {
         match self {
-            Value::IntValue(x) => Variant::from_i64(*x),
-            Value::FloatValue(x) => Variant::from_f64(*x),
-            Value::StringValue(x) => Variant::from_str(x),
+            Value::IntValue(x) => Variant::new(*x),
+            Value::FloatValue(x) => Variant::new(*x),
+            Value::StringValue(x) => Variant::new(x),
             Value::ArrayValue(x) => {
                 let array = VariantArray::new();
                 for val in x.iter() {
@@ -58,7 +58,7 @@ impl ToVariant for Value {
                 }
                 array.into_shared().to_variant()
             }
-            _ => Variant::new(),
+            _ => Variant::nil(),
         }
     }
 }

@@ -18,8 +18,8 @@ impl SffParser {
         }
     }
 
-    #[export]
-    pub fn read_metadata(&mut self, _owner: &Reference, path: String) -> Variant {
+    #[method]
+    pub fn read_metadata(&mut self, path: String) -> Variant {
         let result_v2 = sffv2::read_metadata(&path);
 
         if result_v2.is_err() {
@@ -33,18 +33,18 @@ impl SffParser {
                 godot_error!("error: sffv1: {}", message);
             }
 
-            return Variant::new();
+            return Variant::nil();
         }
 
         if let Ok(metadata) = result_v2 {
             return metadata.to_variant()
         }
 
-        Variant::new()
+        Variant::nil()
     }
 
-    #[export]
-    pub fn read_palette(&mut self, _owner: &Reference, path: String) -> Variant {
+    #[method]
+    pub fn read_palette(&mut self, path: String) -> Variant {
         let result = sffv1::read_palette(&path);
 
         match result {
@@ -52,13 +52,13 @@ impl SffParser {
             Err(error) => {
                 godot_error!("error: read_palette: {}", error);
 
-                Variant::new()
+                Variant::nil()
             }
         }
     }
 
-    #[export]
-    pub fn read_palettes(&mut self, _owner: &Reference, path: String) -> Variant {
+    #[method]
+    pub fn read_palettes(&mut self, path: String) -> Variant {
         let result = sffv2::read_palettes(&path);
 
         match result {
@@ -74,13 +74,13 @@ impl SffParser {
             Err(error) => {
                 godot_error!("error: read_palette: {}", error);
 
-                Variant::new()
+                Variant::nil()
             }
         }
     }
 
-    #[export]
-    pub fn read_images(&mut self, _owner: &Reference, path: String, palette: Variant, groups: Variant) -> Variant {
+    #[method]
+    pub fn read_images(&mut self, path: String, palette: Variant, groups: Variant) -> Variant {
         let palette_import = self.parse_palette_argument(palette);
         let groups_vector: Vec<i16> = self.parse_groups_argument(groups);
         let result_v2 = sffv2::read_images(&path, &groups_vector);
@@ -96,14 +96,14 @@ impl SffParser {
                 godot_error!("error: {}", message);
             }
 
-            return Variant::new();
+            return Variant::nil();
         }
 
         if let Ok(mut sffdata) = result_v2 {
             return self.export_images(&mut sffdata, palette_import);
         }
 
-        Variant::new()
+        Variant::nil()
     }
 
     fn export_images(&self, sffdata: &mut Vec<SffData>, maybe_palette: Option<Rc<Palette>>) -> Variant {
@@ -136,7 +136,7 @@ impl SffParser {
 
     pub fn parse_palette_argument(&self, variant: Variant) -> Option<Rc<Palette>> {
         match variant.get_type() {
-            VariantType::ColorArray => Option::Some(import_palette(ColorArray::from_variant(&variant).unwrap())),
+            VariantType::ColorArray => Option::Some(import_palette(PoolArray::from_variant(&variant).unwrap())),
             _ => Option::None
         }
     }
@@ -145,7 +145,7 @@ impl SffParser {
         match variant.get_type() {
             VariantType::Int32Array => {
                 let mut result: Vec<i16> = Vec::new();
-                let values = Int32Array::from_variant(&variant).unwrap();
+                let values: PoolArray<i32> = PoolArray::from_variant(&variant).unwrap();
                 for i in 0..values.len() {
                     result.push(values.get(i) as i16);
                 }

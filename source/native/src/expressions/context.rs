@@ -15,7 +15,7 @@ impl Context {
     pub fn godot_call(&self, name: &str, arguments: &[Variant]) -> Option<Variant> {
         let object_ref = self.object.try_to_object::<Object>();
 
-        if object_ref.is_none() {
+        if !object_ref.is_ok() {
             godot_print!("invalid_context");
             return Option::None;
         }

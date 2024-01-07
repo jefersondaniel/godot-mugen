@@ -2,7 +2,7 @@
 name = "game"
 version = "0.1.0"
 authors = ["Jeferson Daniel <jeferson.daniel412@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
@@ -13,5 +13,5 @@ opt-level = 3
 lto = true
 
 [dependencies]
-gdnative = "0.9"
+gdnative = "0.11.3"
 byteorder = "1.4.3"
