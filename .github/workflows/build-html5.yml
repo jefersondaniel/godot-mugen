@@ -51,6 +51,8 @@ jobs:
           args: --manifest-path source/native/Cargo.toml --target wasm32-unknown-emscripten --release
         env:
           C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
+          RUSTFLAGS: -Zlink-native-libraries=no -Cpanic=abort
+          EMMAKEN_CFLAGS: -s SIDE_MODULE=2 -shared -Os
           CARGO_TARGET_DIR: source/native/target
 
       - name: Build
