@@ -6,7 +6,7 @@ env:
   GODOT_VERSION: 3.5.2
   EXPORT_NAME: neomugen
   CARGO_TERM_COLOR: always
-  EMSDK_VERSION: 2.0.17
+  EMSDK_VERSION: 3.1.21
 
 jobs:
   export-html:
