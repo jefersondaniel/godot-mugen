@@ -31,7 +31,7 @@ jobs:
       - name: Install emscripten rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly-2023-11-10
           target: wasm32-unknown-emscripten
           profile: minimal
 
