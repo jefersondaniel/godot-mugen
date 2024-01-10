@@ -3,7 +3,7 @@ name: Build for MacOS
 on: workflow_dispatch
 
 env:
-  GODOT_VERSION: 3.5.3
+  GODOT_VERSION: 3.5.2
   EXPORT_NAME: mugen
   CARGO_TERM_COLOR: always
   MACOS_SDK_TAR: https://s3.dockerproject.org/darwin/v2/MacOSX10.10.sdk.tar.xz
@@ -15,7 +15,7 @@ jobs:
     name: MacOSX export
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:3.5.3
+      image: barichello/godot-ci:3.5.2
       credentials:
         username: jefersondaniel
         password: ${{ secrets.GHCR_TOKEN }}

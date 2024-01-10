@@ -3,7 +3,7 @@ name: Build for Android
 on: workflow_dispatch
 
 env:
-  GODOT_VERSION: 3.5.3
+  GODOT_VERSION: 3.5.2
   EXPORT_NAME: mugen
   CARGO_TERM_COLOR: always
   JAVA_VERSION: 1.8
@@ -19,7 +19,7 @@ jobs:
     name: Android export
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:3.5.3
+      image: barichello/godot-ci:3.5.2
       credentials:
         username: jefersondaniel
         password: ${{ secrets.GHCR_TOKEN }}

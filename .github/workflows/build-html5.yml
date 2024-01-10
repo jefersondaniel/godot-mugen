@@ -3,7 +3,7 @@ name: Build for HTML5
 on: workflow_dispatch
 
 env:
-  GODOT_VERSION: 3.5.3
+  GODOT_VERSION: 3.5.2
   EXPORT_NAME: mugen
   CARGO_TERM_COLOR: always
   EMSDK_VERSION: 3.1.14
@@ -13,7 +13,7 @@ jobs:
     name: HTML5 export
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:3.5.3
+      image: barichello/godot-ci:3.5.2
     steps:
       - name: Checkout
         uses: actions/checkout@v2
