@@ -3,8 +3,8 @@ name: Build for Windows
 on: workflow_dispatch
 
 env:
-  GODOT_VERSION: 3.5.2
-  EXPORT_NAME: neomugen
+  GODOT_VERSION: 3.5.3
+  EXPORT_NAME: mugen
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
     name: Windows export
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.5.3
       credentials:
         username: jefersondaniel
         password: ${{ secrets.GHCR_TOKEN }}
