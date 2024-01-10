@@ -44,14 +44,11 @@ jobs:
           version: ${{env.EMSDK_VERSION}}
 
       - name: Compile native lib for wasm
-        uses: actions-rs/cargo@v1
         working-directory: ./source/native
-        with:
-          toolchain: nightly-2023-11-10
-          command: build
-          args: --target wasm32-unknown-emscripten --release
         env:
           C_INCLUDE_PATH: ${{env.EMSDK}}/upstream/emscripten/cache/sysroot/include/
+        run: |
+          cargo +nightly-2023-11-10 build --target=wasm32-unknown-emscripten --release
 
       - name: Build
         run: |
