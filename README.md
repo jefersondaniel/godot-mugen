@@ -4,6 +4,8 @@
 
 ![Example Match](https://public-data.jefersondaniel.com/godot-mugen-match-20240110.gif)
 
+[Try It](https://jefersondaniel.com/godot-mugen/mugen.html)
+
 # Project Status
 
 This project is an implementation of a basic Mugen clone using the Godot engine. It is still in early development and is not yet fully compatible. I am not actively working on this project, but I am open to contributions. Additionally, I have created a Proof of Concept (POC) using a different architecture based on ECS and Rust, which can be found [here](https://github.com/jefersondaniel/gdnative-rust-poc).
