@@ -20,8 +20,8 @@ jobs:
 
       - name: Get mugen data
         run: |
-          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
-          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+          wget https://github.com/jefersondaniel/godot-mugen-data/archive/refs/tags/1.0.0.zip -O mugen-data.zip
+          unzip mugen-data.zip && rm mugen-data.zip
 
       - name: Setup godot templates
         run: |

@@ -20,17 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:3.5.2
-      credentials:
-        username: jefersondaniel
-        password: ${{ secrets.GHCR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Get mugen data
         run: |
-          wget https://f000.backblazeb2.com/file/jefersondaniel-public/mugen/neo-mugen-default-data.zip
-          unzip neo-mugen-default-data.zip && rm neo-mugen-default-data.zip
+          wget https://github.com/jefersondaniel/godot-mugen-data/archive/refs/tags/1.0.0.zip -O mugen-data.zip
+          unzip mugen-data.zip && rm mugen-data.zip
 
       - name: Setup godot templates
         run: |
@@ -127,7 +124,6 @@ jobs:
           SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
           KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE }}
         run: |
-          sed -i "s/script_encryption_key=\"\"/script_encryption_key=\"${SCRIPT_AES256_ENCRYPTION_KEY}\"/g; s/script_export_mode=1/script_export_mode=2/g; s@keystore\/release=\"\"@keystore\/release=\"${ANDROID_KEYSTORE_PATH}\"@g; s@keystore\/release_user=\"\"@keystore\/release_user=\"${ANDROID_KEYSTORE_ALIAS}\"@g; s@keystore\/release_password=\"\"@keystore\/release_password=\"${ANDROID_KEYSTORE_PASSWORD}\"@g" export_presets.cfg
           godot -e -q
           echo 'export/android/android_sdk_path = "'${ANDROID_SDK_ROOT}'"' >> ~/.config/godot/editor_settings-3.tres
           echo 'export/android/debug_keystore = "/root/debug.keystore"' >> ~/.config/godot/editor_settings-3.tres
