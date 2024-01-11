@@ -1,6 +1,8 @@
 # Godot Mugen
 
-Mugen clone using the Godot engine
+[M.U.G.E.N™](https://www.elecbyte.com/mugendocs-11b1/mugen.html) clone using the Godot engine. This project aims to be compatible with HTML5 exports, utilizing GDScript for the majority of the game logic and Rust for native modules.
+
+![Example Match](https://public-data.jefersondaniel.com/godot-mugen-match-20240110.gif)
 
 # Project Status
 
