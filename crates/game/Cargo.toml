@@ -7,10 +7,5 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-# godot = { version = "0.2.4", features = ["experimental-wasm", "lazy-function-tables"]}
-# mugen_data = { path = "../mugen_data" }
-
-[dependencies.godot]
-git = "https://github.com/godot-rust/gdext"
-branch = "master"
-features = ["experimental-wasm", "lazy-function-tables"]
+godot = { version = "0.2.4", features = ["experimental-wasm", "lazy-function-tables"]}
+mugen_data = { path = "../mugen_data" }

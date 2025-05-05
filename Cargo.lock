@@ -12,10 +12,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitflags"
+version = "2.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c8214115b7bf84099f1309324e63141d4c5d7cc26862f97a0a857dbefe165bd"
+
+[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
+name = "cfg-if"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "enumflags2"
@@ -42,12 +54,38 @@ name = "game"
 version = "1.0.0"
 dependencies = [
  "godot",
+ "mugen_data",
 ]
 
 [[package]]
 name = "gdextension-api"
 version = "0.2.2"
-source = "git+https://github.com/godot-rust/godot4-prebuilt?branch=releases#09432b4c2c16f044f0296f96512661ea106003ff"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ec0a03c8f9c91e3d8eb7ca56dea81c7248c03826dd3f545f33cd22ef275d4d1"
+
+[[package]]
+name = "gensym"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "913dce4c5f06c2ea40fc178c06f777ac89fc6b1383e90c254fafb1abe4ba3c82"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "uuid",
+]
+
+[[package]]
+name = "getrandom"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73fea8450eea4bac3940448fb7ae50d91f034f941199fcd9d909a5a07aa455f0"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "r-efi",
+ "wasi",
+]
 
 [[package]]
 name = "glam"
@@ -57,14 +95,15 @@ checksum = "9e05e7e6723e3455f4818c7b26e855439f7546cf617ef669d1adedb8669e5cb9"
 
 [[package]]
 name = "glam"
-version = "0.30.3"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b46b9ca4690308844c644e7c634d68792467260e051c8543e0c7871662b3ba7"
+checksum = "779ae4bf7e8421cf91c0b3b64e7e8b40b862fba4d393f59150042de7c4965a94"
 
 [[package]]
 name = "godot"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a29a3646d4b02bf4587fedba4ac7b44a47d45c933fd85ba7e61292408818eaa4"
 dependencies = [
  "godot-core",
  "godot-macros",
@@ -73,7 +112,8 @@ dependencies = [
 [[package]]
 name = "godot-bindings"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0014540bff93ba275031bc852f1cf9a3ff3216f02cdd51dc249745dccc8c578"
 dependencies = [
  "gdextension-api",
 ]
@@ -81,12 +121,14 @@ dependencies = [
 [[package]]
 name = "godot-cell"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88184d525d763ebc88ff6806ffee35e19c7118d5c9e4eedbc74e70e069f8a671"
 
 [[package]]
 name = "godot-codegen"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "caa72d9b8be812fef2932f2a172b80c8b3feaee030571682f8f770c3d1c348d8"
 dependencies = [
  "godot-bindings",
  "heck",
@@ -99,9 +141,10 @@ dependencies = [
 [[package]]
 name = "godot-core"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ff8345372e4c990ca592d7b61490ef88ff249fc77226f5b79beca173b4a0458"
 dependencies = [
- "glam 0.30.3",
+ "glam 0.28.0",
  "godot-bindings",
  "godot-cell",
  "godot-codegen",
@@ -111,21 +154,23 @@ dependencies = [
 [[package]]
 name = "godot-ffi"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "606d08085bd590d2f9c72633d4d218fee665ab3a0760b2d9daff2d964d628def"
 dependencies = [
+ "gensym",
  "godot-bindings",
  "godot-codegen",
- "godot-macros",
  "libc",
+ "paste",
 ]
 
 [[package]]
 name = "godot-macros"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#4a6f8033c0f117eff288183adb4c35b8874f718e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c11b3188e54ebacf88feb4c968ed19048a71a329c4cfd4a06cf374f18357a36"
 dependencies = [
  "godot-bindings",
- "libc",
  "proc-macro2",
  "quote",
  "venial",
@@ -170,18 +215,24 @@ dependencies = [
 
 [[package]]
 name = "nanoserde"
-version = "0.2.1"
+version = "0.1.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a36fb3a748a4c9736ed7aeb5f2dfc99665247f1ce306abbddb2bf0ba2ac530a4"
+checksum = "5de9cf844ab1e25a0353525bd74cb889843a6215fa4a0d156fd446f4857a1b99"
 dependencies = [
  "nanoserde-derive",
 ]
 
 [[package]]
 name = "nanoserde-derive"
-version = "0.2.1"
+version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a846cbc04412cf509efcd8f3694b114fc700a035fb5a37f21517f9fb019f1ebc"
+checksum = "e943b2c21337b7e3ec6678500687cdc741b7639ad457f234693352075c082204"
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "proc-macro2"
@@ -200,6 +251,12 @@ checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
 dependencies = [
  "proc-macro2",
 ]
+
+[[package]]
+name = "r-efi"
+version = "5.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74765f6d916ee2faa39bc8e68e4f3ed8949b48cccdac59983d287a7cb71ce9c5"
 
 [[package]]
 name = "regex"
@@ -274,6 +331,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
+name = "uuid"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
+dependencies = [
+ "getrandom",
+]
+
+[[package]]
 name = "venial"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -281,4 +347,22 @@ checksum = "9a42528baceab6c7784446df2a10f4185078c39bf73dc614f154353f1a6b1229"
 dependencies = [
  "proc-macro2",
  "quote",
+]
+
+[[package]]
+name = "wasi"
+version = "0.14.2+wasi-0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9683f9a5a998d873c0d21fcbe3c083009670149a8fab228644b8bd36b2c48cb3"
+dependencies = [
+ "wit-bindgen-rt",
+]
+
+[[package]]
+name = "wit-bindgen-rt"
+version = "0.39.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
+dependencies = [
+ "bitflags",
 ]
