@@ -30,4 +30,6 @@ exports/
 
 # Added by godot
 
-.godot/
+.godot/*
+!.godot/extension_list.cfg
+
