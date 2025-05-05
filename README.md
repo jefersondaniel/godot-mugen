@@ -1,6 +1,6 @@
 # Godot Mugen
 
-[M.U.G.E.N™](https://www.elecbyte.com/mugendocs-11b1/mugen.html) clone using the Godot engine. This project aims to be compatible with HTML5 exports, utilizing GDScript for the majority of the game logic and Rust for native modules.
+[M.U.G.E.N™](https://www.elecbyte.com/mugendocs-11b1/mugen.html) clone using the Godot engine. This project aims to be compatible with HTML5 exports, utilizing GDScript and Rust.
 
 ![Example Match](https://public-data.jefersondaniel.com/godot-mugen-match-20240110.gif)
 
@@ -8,11 +8,11 @@
 
 # Project Status
 
-This project is an implementation of a basic Mugen clone using the Godot engine. It is still in early development and is not yet fully compatible. Additionally, I have created a Proof of Concept (POC) using a different architecture based on ECS and Rust, which can be found [here](https://github.com/jefersondaniel/gdnative-rust-poc).
+This project is an implementation of a basic Mugen clone using the Godot engine. It is still in early development and is not yet fully compatible.
 
 ## Requirements
 
-* Godot 3.5
+* Godot 4.4.1
 * Clang
 * Rust
 
