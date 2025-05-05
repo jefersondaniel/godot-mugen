@@ -1,0 +1,16 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 =     "res://target/debug/libgame.so"
+linux.release.x86_64 =   "res://target/release/libgame.so"
+windows.debug.x86_64 =   "res://target/debug/game.dll"
+windows.release.x86_64 = "res://target/release/game.dll"
+macos.debug =            "res://target/debug/libgame.dylib"
+macos.release =          "res://target/release/libgame.dylib"
+macos.debug.arm64 =      "res://target/debug/libgame.dylib"
+macos.release.arm64 =    "res://target/release/libgame.dylib"
+web.debug.wasm32 = "res://target/wasm32-unknown-emscripten/debug/game.wasm"
+web.release.wasm32 = "res://target/wasm32-unknown-emscripten/release/game.wasm"

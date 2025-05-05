@@ -1,0 +1,16 @@
+[package]
+name = "game"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# godot = { version = "0.2.4", features = ["experimental-wasm", "lazy-function-tables"]}
+# mugen_data = { path = "../mugen_data" }
+
+[dependencies.godot]
+git = "https://github.com/godot-rust/gdext"
+branch = "master"
+features = ["experimental-wasm", "lazy-function-tables"]

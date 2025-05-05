@@ -20,5 +20,14 @@ resources
 /data
 **/*.rs.bk
 *.pdb
-source/native/logs
+logs/
 exports/
+
+
+# Added by cargo
+
+/target
+
+# Added by godot
+
+.godot/
