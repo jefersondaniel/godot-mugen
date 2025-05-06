@@ -1,6 +1,4 @@
-use godot::prelude::*;
-use godot::{classes::FileAccess, classes::file_access::ModeFlags};
-
+use crate::assets::CoreAssets;
 use crate::prelude::*;
 
 pub fn start(game_manager: &mut GameManager) -> Result<()> {
@@ -8,17 +6,17 @@ pub fn start(game_manager: &mut GameManager) -> Result<()> {
         return Err(anyhow::anyhow!("Configuration directory does not exist"));
     }
 
-    let configuration_path = join_paths(&[game_manager.configuration_directory.to_string().as_str(), "data/mugen.cfg"]);
+    let configuration_directory = game_manager.configuration_directory.to_string();
+    let core_assets = CoreAssets::load(&configuration_directory)?;
+    game_manager.core_assets = Some(core_assets);
 
-    let file = FileAccess::open(&GString::from(configuration_path), ModeFlags::READ);
-
-    if let Some(file) = file {
-        Ok(())
-    } else {
-        return Err(anyhow::anyhow!("Configuration file does not exist"));
-    }
+    Ok(())
 }
 
 pub fn update(game_manager: &mut GameManager) -> Result<Option<GameState>> {
+    if game_manager.core_assets.is_some() {
+        return Ok(Some(GameState::TitleScreen));
+    }
+
     Ok(None)
 }

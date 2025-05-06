@@ -1,5 +1,7 @@
 use godot::prelude::*;
 
+use crate::assets::CoreAssets;
+
 use super::game_state::GameState;
 
 #[derive(GodotClass)]
@@ -15,6 +17,8 @@ pub struct GameManager {
 
     #[var(set, get)]
     pub configuration_directory: GString,
+
+    pub core_assets: Option<CoreAssets>,
 }
 
 #[godot_api]

@@ -2,10 +2,11 @@ use godot::prelude::*;
 use godot::classes::{Engine, Object};
 use prelude::GameManager;
 
-mod helpers;
+mod assets;
 mod core;
-mod state;
+mod helpers;
 mod prelude;
+mod state;
 
 struct GameExtension;
 

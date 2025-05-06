@@ -27,11 +27,9 @@ impl GameState {
 
     pub fn update(&self, game_manager: &mut GameManager) -> Result<Option<Self>> {
         match self {
-            GameState::PreStart => {
-                Ok(Some(GameState::LoadingConfiguration))
-            }
+            GameState::PreStart => Ok(Some(GameState::LoadingConfiguration)),
             GameState::LoadingConfiguration => loading_configuration::update(game_manager),
-            _ => Err(anyhow::anyhow!("Invalid game state: {:?}", self))
+            _ => Ok(None)
         }
     }
 }
