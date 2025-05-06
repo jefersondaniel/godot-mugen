@@ -1,11 +1,7 @@
 extends Node2D
 
 func _init() -> void:
-    print("Going to load core assets")
-    var assets = CoreAssets.load("mugen-data")
-    assets.success = false
-    print("Success: ", assets.success)
-    print("Error message: ", assets.error_message)
-    # print(core_assets.configuration)
-    # print("Finished loading core assets")
+    GameManager.configuration_directory = "res://mugen-data"
 
+func _process(_delta: float) -> void:
+    GameManager.update()

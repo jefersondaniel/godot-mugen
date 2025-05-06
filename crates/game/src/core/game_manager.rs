@@ -1,4 +1,4 @@
-use godot::{classes::{file_access::ModeFlags, FileAccess}, prelude::*};
+use godot::prelude::*;
 
 use super::game_state::GameState;
 
@@ -29,7 +29,8 @@ impl GameManager {
 
     #[func]
     pub fn update(&mut self) {
-        let next_state = self.state.update(&self);
+        let state = self.state;
+        let next_state = state.update(self);
 
         if let Err(error) = next_state {
             self.error_message = format!("{}", error).into();
@@ -38,6 +39,11 @@ impl GameManager {
         }
 
         if let Ok(Some(state)) = next_state {
+            if let Err(error) = state.start(self) {
+                self.error_message = format!("{}", error).into();
+                self.set_state(GameState::FatalError);
+                return;
+            }
             self.set_state(state);
         }
     }
