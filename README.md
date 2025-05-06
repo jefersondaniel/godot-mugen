@@ -27,8 +27,9 @@ git clone git@github.com:jefersondaniel/godot-mugen.git
 2. Download game data
 
 ```sh
-wget https://github.com/jefersondaniel/godot-mugen-data/archive/refs/tags/1.0.0.zip -O mugen-data.zip
-unzip mugen-data.zip && rm mugen-data.zip
+wget https://github.com/jefersondaniel/godot-mugen-data/archive/refs/tags/1.0.0.zip -O godot-mugen-data-1.0.0.zip
+unzip godot-mugen-data-1.0.0.zip && rm godot-mugen-data-1.0.0.zip
+mv godot-mugen-data-1.0.0 mugen-data
 ```
 
 3. Compile custom GDNative modules

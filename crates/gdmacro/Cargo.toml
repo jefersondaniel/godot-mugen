@@ -1,0 +1,12 @@
+[package]
+name = "gdmacro"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.80"
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"

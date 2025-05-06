@@ -1,10 +1,11 @@
 extends Node2D
 
 func _init() -> void:
-	print("Initializing game")
-	var hello = HelloWorld.new()
-	hello.connect("some_signal", self.receive_some_signal)
-	hello.trigger_signal()
+    print("Going to load core assets")
+    var assets = CoreAssets.load("mugen-data")
+    assets.success = false
+    print("Success: ", assets.success)
+    print("Error message: ", assets.error_message)
+    # print(core_assets.configuration)
+    # print("Finished loading core assets")
 
-func receive_some_signal():
-	print("Some signal was sucessfully received")

@@ -25,13 +25,24 @@ pub struct SpriteData<'a> {
     pub image: &'a Image,
 }
 
+impl Default for SpriteFile {
+    fn default() -> Self {
+        Self {
+            palette_storage: Arena::new(),
+            image_storage: Arena::new(),
+            sprites: HashMap::new(),
+            palettes: vec![],
+        }
+    }
+}
+
 impl SpriteFile {
     pub fn from_reader(reader: &mut dyn DataReader) -> Result<Self, Error> {
         let mut image_storage = Arena::new();
         let mut palette_storage = Arena::new();
 
         let mut sprites_result = sffv2::read_images(
-            reader, 
+            reader,
             &[],
             &mut image_storage,
             &mut palette_storage,
@@ -43,7 +54,7 @@ impl SpriteFile {
             should_read_palettes = false;
             reader.seek(0usize);
             sprites_result = sffv1::read_images(
-                reader, 
+                reader,
                 &[],
                 &mut image_storage,
                 &mut palette_storage

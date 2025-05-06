@@ -33,3 +33,6 @@ exports/
 .godot/*
 !.godot/extension_list.cfg
 
+# Mugen specific files
+mugen-data/
+

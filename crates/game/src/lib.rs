@@ -1,10 +1,13 @@
 use godot::prelude::*;
 use godot::classes::Object;
 
-struct MyExtension;
+mod helpers;
+mod core;
+
+struct GameExtension;
 
 #[gdextension]
-unsafe impl ExtensionLibrary for MyExtension {}
+unsafe impl ExtensionLibrary for GameExtension {}
 
 #[derive(GodotClass)]
 #[class(init, base=Object)]
