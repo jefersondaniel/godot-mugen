@@ -1,3 +1,5 @@
+use godot::obj::Gd;
+
 use crate::assets::CoreAssets;
 use crate::prelude::*;
 
@@ -7,7 +9,7 @@ pub fn start(game_manager: &mut GameManager) -> Result<()> {
     }
 
     let configuration_directory = game_manager.configuration_directory.to_string();
-    let core_assets = CoreAssets::load(&configuration_directory)?;
+    let core_assets = Gd::from_object(CoreAssets::load(&configuration_directory)?);
     game_manager.core_assets = Some(core_assets);
 
     Ok(())

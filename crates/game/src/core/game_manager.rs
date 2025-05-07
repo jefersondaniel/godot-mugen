@@ -9,16 +9,17 @@ use super::game_state::GameState;
 pub struct GameManager {
     base: Base<Object>,
 
+    #[var(set, get)]
+    pub configuration_directory: GString,
+
     #[var(get)]
     pub state: GameState,
 
     #[var(get)]
     pub error_message: GString,
 
-    #[var(set, get)]
-    pub configuration_directory: GString,
-
-    pub core_assets: Option<CoreAssets>,
+    #[var(get)]
+    pub core_assets: Option<Gd<CoreAssets>>,
 }
 
 #[godot_api]

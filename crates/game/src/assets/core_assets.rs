@@ -1,3 +1,4 @@
+use godot::prelude::*;
 use anyhow::Result;
 use mugen_data::{sprite::sprite_file::SpriteFile, system::{configuration::Configuration, system_motif::SystemMotif}};
 
@@ -5,6 +6,8 @@ use crate::helpers::{get_directory, join_paths, map_io_error};
 
 use super::loaders::{load_sprite_file, load_text_file};
 
+#[derive(GodotClass)]
+#[class(init, base=RefCounted)]
 pub struct CoreAssets {
     pub directory: String,
     pub configuration: Configuration,
