@@ -4,7 +4,7 @@ use mugen_data::{sprite::sprite_file::SpriteFile, system::{configuration::Config
 
 use crate::helpers::{get_directory, join_paths, map_io_error};
 
-use super::loaders::{load_sprite_file, load_text_file};
+use super::{loaders::{load_sprite_file, load_text_file}, SpriteCache};
 
 #[derive(GodotClass)]
 #[class(init, base=RefCounted)]
@@ -13,11 +13,11 @@ pub struct CoreAssets {
     pub configuration: Configuration,
     pub motif: SystemMotif,
     pub motif_path: String,
-    pub motif_sprite_file: SpriteFile,
+    pub motif_sprite_file_path: String,
 }
 
 impl CoreAssets {
-    pub fn load(directory: &str) -> Result<CoreAssets> {
+    pub fn load(directory: &str, mut sprite_cache: Gd<SpriteCache>) -> Result<CoreAssets> {
         // Configuration
         let configuration_path = join_paths(&[directory, "data/mugen.cfg"]);
         let configuration_text_file = load_text_file(&configuration_path)?;
@@ -32,14 +32,15 @@ impl CoreAssets {
             map_io_error,
         )?;
         let motif_sprite_file_path = join_paths(&[&get_directory(&motif_path), &motif.sprite_path]);
-        let motif_sprite_file = load_sprite_file(&motif_sprite_file_path)?;
+
+        sprite_cache.bind_mut().warmup_file(&motif_sprite_file_path)?;
 
         Ok(CoreAssets {
             directory: directory.to_string(),
             configuration,
             motif,
             motif_path,
-            motif_sprite_file,
+            motif_sprite_file_path,
         })
     }
 }

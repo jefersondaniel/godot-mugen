@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::assets::CoreAssets;
+use crate::assets::{CoreAssets, SpriteCache};
 
 use super::game_state::GameState;
 
@@ -17,6 +17,9 @@ pub struct GameManager {
 
     #[var(get)]
     pub error_message: GString,
+
+    #[var(get)]
+    pub sprite_cache: Gd<SpriteCache>,
 
     #[var(get)]
     pub core_assets: Option<Gd<CoreAssets>>,

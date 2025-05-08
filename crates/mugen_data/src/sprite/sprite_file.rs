@@ -20,9 +20,10 @@ pub struct SpriteFile {
     pub palettes: Vec<Index>,
 }
 
-pub struct SpriteData<'a> {
-    pub sff_data: &'a SffData,
-    pub image: &'a Image,
+#[derive(Clone, Debug)]
+pub struct SpriteData {
+    pub sff_data: SffData,
+    pub image: Image,
 }
 
 impl Default for SpriteFile {
