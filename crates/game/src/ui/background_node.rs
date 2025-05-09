@@ -4,7 +4,7 @@ use mugen_data::background::{background::Background, static_background::StaticBa
 
 #[derive(GodotClass)]
 #[class(init, base=Node2D)]
-pub struct BackgroundSprite {
+pub struct BackgroundNode {
     base: Base<Node2D>,
 
     #[var(get, set)]
@@ -14,14 +14,14 @@ pub struct BackgroundSprite {
 }
 
 #[godot_api]
-impl INode2D for BackgroundSprite {
+impl INode2D for BackgroundNode {
     fn enter_tree(&mut self) {
-        godot_print!("BackgroundSprite::enter_tree");
+        godot_print!("BackgroundNode::enter_tree");
     }
 }
 
 #[godot_api]
-impl BackgroundSprite {
+impl BackgroundNode {
     #[func]
     pub fn from_background(background: Gd<BackgroundAdapter>) -> Gd<Self> {
         Gd::from_init_fn(|base| {

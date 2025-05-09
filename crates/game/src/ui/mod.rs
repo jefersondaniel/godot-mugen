@@ -1,3 +1,1 @@
-mod background_sprite;
-
-use background_sprite::*;
+mod background_node;
