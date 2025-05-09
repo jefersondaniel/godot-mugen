@@ -9,7 +9,6 @@ crate-type = ["cdylib"]
 [dependencies]
 godot = { version = "0.2.4", features = ["experimental-wasm", "lazy-function-tables"]}
 mugen_data = { path = "../mugen_data" }
-gdmacro = { path = "../gdmacro" }
 thiserror = "2.0.12"
 anyhow = "1.0"
 fnv = "1.0.7"

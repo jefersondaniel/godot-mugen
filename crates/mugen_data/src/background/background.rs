@@ -10,6 +10,12 @@ pub enum Background {
     Static(StaticBackground),
 }
 
+impl Default for Background {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 impl Background {
     pub fn from_text_section(section: &TextSection) -> Result<Self, Error> {
         let background_type = section.get_attribute_or_default("type");

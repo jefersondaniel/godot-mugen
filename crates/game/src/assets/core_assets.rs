@@ -1,14 +1,15 @@
 use godot::prelude::*;
 use anyhow::Result;
-use mugen_data::{sprite::sprite_file::SpriteFile, system::{configuration::Configuration, system_motif::SystemMotif}};
+use mugen_data::{system::{configuration::Configuration, system_motif::SystemMotif}};
 
 use crate::helpers::{get_directory, join_paths, map_io_error};
 
-use super::{loaders::{load_sprite_file, load_text_file}, SpriteCache};
+use super::{loaders::load_text_file, SpriteCache};
 
 #[derive(GodotClass)]
 #[class(init, base=RefCounted)]
 pub struct CoreAssets {
+    pub loaded: bool,
     pub directory: String,
     pub configuration: Configuration,
     pub motif: SystemMotif,
@@ -36,6 +37,7 @@ impl CoreAssets {
         sprite_cache.bind_mut().warmup_file(&motif_sprite_file_path)?;
 
         Ok(CoreAssets {
+            loaded: true,
             directory: directory.to_string(),
             configuration,
             motif,

@@ -25,13 +25,6 @@ pub struct SpriteCache {
 }
 
 impl SpriteCache {
-    pub fn new() -> SpriteCache {
-        SpriteCache {
-            file_hash_cache: HashMap::new(),
-            file_cache: HashMap::new(),
-        }
-    }
-
     pub fn warmup_file(&mut self, path: &str) -> Result<()> {
         let sprite_file = load_sprite_file(&path)?;
         let file_hash = hash(&path);

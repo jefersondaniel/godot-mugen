@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::assets::{CoreAssets, SpriteCache};
+use crate::assets::{CoreAssets, SpriteCache, TitleScreenData};
 
 use super::game_state::GameState;
 
@@ -22,7 +22,10 @@ pub struct GameManager {
     pub sprite_cache: Gd<SpriteCache>,
 
     #[var(get)]
-    pub core_assets: Option<Gd<CoreAssets>>,
+    pub core_assets: Gd<CoreAssets>,
+
+    #[var(get)]
+    pub title_screen_data: Gd<TitleScreenData>,
 }
 
 #[godot_api]
@@ -32,7 +35,7 @@ impl GameManager {
 
     fn set_state(&mut self, state: GameState) {
         self.state = state;
-        self.base_mut().emit_signal("state_changed", &[state.into()]);
+        self.base_mut().emit_signal("state_changed", &[Variant::from(state)]);
     }
 
     #[func]

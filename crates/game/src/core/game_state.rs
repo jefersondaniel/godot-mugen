@@ -1,4 +1,3 @@
-use gdmacro::godot_enum;
 use godot::prelude::*;
 use anyhow::Result;
 
@@ -6,15 +5,19 @@ use crate::state::loading_configuration;
 
 use super::game_manager::GameManager;
 
-#[godot_enum]
-#[derive(Copy, Clone)]
-#[derive(GodotConvert)]
+#[derive(GodotConvert, Var, Export, Debug, Copy, Clone)]
 #[godot(via = GString)]
 pub enum GameState {
     PreStart,
     LoadingConfiguration,
     TitleScreen,
     FatalError,
+}
+
+impl Default for GameState {
+    fn default() -> Self {
+        GameState::PreStart
+    }
 }
 
 impl GameState {
