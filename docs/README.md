@@ -1,63 +1,89 @@
-## Godot MUGEN Hybrid Architecture
+## Godot MUGEN Architecture
 
-This document outlines the high-level architecture for our Godot 4.4 + Rust-based MUGEN project, describes the core data structures and Godot nodes, and provides guidelines for selecting implementation approaches when adding new features.
-
----
-
-### 1. Overall Architecture
-
-* **Separation of Concerns**
-
-  * **Rust (Native)**
-
-    * Game simulation & state (rollback-safe)
-    * MUGEN asset parsing (SFF, ACT, DEF files)
-    * Configuration loading & typed structs (SystemDef, SelectDef, BackgroundInfo, etc.)
-    * Core state-machine (GameManager and GameState)
-    * Data adapters (SpriteAdapter, BackgroundAdapter)
-
-  * **GDScript (Godot Frontend)**
-
-    * Scene composition & UI nodes
-    * Rendering
-    * Polling native state & reacting (TitleMenuState, SelectState)
-    * Minimal glue code—no heavy logic in GDScript
-
-* **Core Flow**
-
-  1. **Boot**: `GameManager` singleton starts in `PreStart`
-  2. **Load Config**: Rust’s `MugenConfigLoader` loads DEF files → typed `MugenConfig`
-  3. **State Transition**: `GameManager.update()` → `TitleScreen`
-  4. **Title**: `title_screen.gd` uses `BackgroundNode` + `TitleScreenData` via adapters
-  5. **Select**: on menu confirm, transition to `SelectScreen` with `SelectState`
-  6. **Fight**: enters gameplay state (native) with full rollback support
+This document provides an up-to-date overview of the Godot 4.4 + Rust-based MUGEN project, describing the main modules, data flow, and best practices for extending the codebase. Use this as a runbook and onboarding reference for new contributors.
 
 ---
 
-### 2. Core Data Structures
+### 1. Architecture Overview
 
-| Name                        | Language | Purpose                                                                 |
+**Separation of Concerns**
+
+- **Rust (Native, crates/game & crates/mugen_data):**
+  - Game simulation and state machine (`GameManager`, `GameState`)
+  - Asset parsing and configuration loading (SFF, ACT, DEF → strongly typed structs)
+  - Core logic for rollback, error handling, and state transitions
+  - Data adapters (e.g., `SpriteAdapter`, `BackgroundAdapter`, `BackgroundGroupAdapter`)
+
+- **Godot/GDScript (Frontend, gdscript/):**
+  - Scene composition and UI nodes (e.g., `title_screen.gd`, `BackgroundNode`)
+  - Rendering and input handling
+  - Polling native state and reacting to state changes
+  - Minimal glue code; heavy logic stays in Rust
+
+**Initialization and Core Flow**
+
+1. **Startup:**
+   - The Rust `GameManager` singleton is registered as a Godot singleton via GDExtension.
+   - Godot's `main.gd` sets up the configuration directory and connects to state change signals.
+2. **Configuration Loading:**
+   - `GameManager` starts in `PreStart` state.
+   - Transitions to `LoadingConfiguration`, where assets and configuration files are loaded via Rust (`CoreAssets`, `TitleScreenData`).
+   - On successful load, transitions to `TitleScreen`.
+3. **Scene Flow:**
+   - GDScript listens for state changes and swaps scenes accordingly (e.g., showing `title_screen.gd` when state is `TitleScreen`).
+   - UI nodes (e.g., `BackgroundNode`) are constructed from Rust adapters and populated with data.
+4. **Gameplay:**
+   - Future states (e.g., Select, Fight) will follow the same pattern: Rust manages state, Godot renders and handles input.
+
+**Error Handling:**
+- Errors in asset loading or state transitions are surfaced via `GameManager.error_message` and handled gracefully in GDScript.
+- Fatal errors trigger a transition to a dedicated error state.
+
+---
+
+### 2. Main Modules and Data Structures
+
+| Name                        | Layer    | Purpose                                                                 |
 | --------------------------- | -------- | ----------------------------------------------------------------------- |
-| `MugenConfigLoader`         | Rust     | Load & parse DEF files into `MugenConfig`                               |
-| `SystemDef` / `SelectDef`   | Rust     | Typed representation of system & select settings                        |
-| `Background`                | Rust     | Holds one `[TitleBG #]` section (spriteno, tile, velocity, mask, start) |
-| `SpriteHandle`              | Rust     | Identifies (SFF ID, group, index) for any sprite                        |
-| `TitleScreenData`           | Rust     | Config for menu UI (position, spacing, fonts, actions)                  |
-| `TitleScreenState`          | Rust     | Menu selection logic & input handling                                   |
-| `GameState` / `GameManager` | Rust     | Global state-machine driving scenes & error handling                    |
+| `GameManager`               | Rust     | Singleton, global state, asset loading, state transitions               |
+| `GameState`                 | Rust     | Enum for core states (PreStart, LoadingConfiguration, TitleScreen, etc.)|
+| `CoreAssets`                | Rust     | Loads and holds references to all game assets                           |
+| `TitleScreenData`           | Rust     | Data for title screen UI, backgrounds                                   |
+| `BackgroundAdapter`         | Rust     | Adapter for background data, exposed to Godot                           |
+| `BackgroundGroupAdapter`    | Rust     | Adapter for a group of backgrounds                                      |
+| `BackgroundNode`            | Godot    | Node2D for rendering backgrounds (instantiated from adapters)           |
+| `main.gd`                   | Godot    | Entry point, state polling, scene switching                             |
+| `title_screen.gd`           | Godot    | Title screen UI logic, background setup                                 |
 
 ---
 
 ### 3. Implementation Guidelines
 
-When starting a new feature or screen, follow these steps:
+#### When adding a new feature or screen:
 
-1. **Check the relevant rust data model in `crates/mugen_data`**
+1. **Model data in Rust (`crates/mugen_data`)**
+   - Define or extend typed structs/enums as needed.
+2. **Expose Adapters in Rust (`crates/game/src/adapters`)**
+   - Create a `*Adapter` to wrap Rust structs for Godot.
+3. **Create Scene Nodes in Godot (`gdscript/`)**
+   - For rendering or input, implement a `*Node` (`Node2D` or `Control`) referencing the Rust adapter.
+4. **State Management**
+   - Add new states to `GameState` and handle transitions in `GameManager`.
+   - Use signals and error reporting for robust state changes.
 
-2. **Expose an Adapter, Node or Both**
+---
 
-   * If you only need to data structures → create a `*Adapter` that wraps the Rust struct
-   * If you need rendering or input logic → create a `*Node` (`Node2D` or `Control`) with a reference to the `something: Gd<SomethingAdapter>` property
+### 4. Naming Conventions & Best Practices
+
+- **Rust pure types:** No suffix (e.g., `BackgroundInfo`, `SpriteHandle`, `SystemDef`).
+- **Godot-exposed adapters:** `*Adapter` (e.g., `BackgroundAdapter`, `SpriteAdapter`).
+- **Godot scene nodes:** Descriptive names ending in `Node` or `Screen` (e.g., `BackgroundNode`, `TitleScreen`).
+- **Singletons:** Register via GDExtension and always unregister on deinit to avoid leaks.
+- **Error Handling:** Always surface errors to `GameManager.error_message` for GDScript to handle.
+
+---
+
+This overview should serve as a reference for implementing new screens, assets, or logic. Consistency in naming and clear separation between Rust and GDScript will keep the codebase maintainable and performant.
 
 3. **Global Services**
 
