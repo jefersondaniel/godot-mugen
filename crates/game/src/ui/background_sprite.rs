@@ -1,21 +1,20 @@
 use godot::prelude::*;
 use crate::adapters::BackgroundAdapter;
+use mugen_data::background::{background::Background, static_background::StaticBackground};
 
 #[derive(GodotClass)]
-#[class(base=Node2D)]
+#[class(init, base=Node2D)]
 pub struct BackgroundSprite {
     base: Base<Node2D>,
 
     #[var(get, set)]
     pub background: Option<Gd<BackgroundAdapter>>,
+
+    pub renderer: BackgroundRenderer,
 }
 
 #[godot_api]
 impl INode2D for BackgroundSprite {
-    fn init(base: Base<Node2D>) -> Self {
-        Self { base, background: None }
-    }
-
     fn enter_tree(&mut self) {
         godot_print!("BackgroundSprite::enter_tree");
     }
@@ -29,7 +28,36 @@ impl BackgroundSprite {
             Self {
                 background: Some(background),
                 base,
+                renderer: Default::default(),
             }
         })
+    }
+}
+
+struct StaticBackgroundRendererData {
+    static_background: StaticBackground,
+}
+
+enum BackgroundRenderer {
+    None,
+    Static(StaticBackgroundRendererData),
+}
+
+impl Default for BackgroundRenderer {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+impl From<Gd<BackgroundAdapter>> for BackgroundRenderer {
+    fn from(adapter: Gd<BackgroundAdapter>) -> Self {
+        let background = &adapter.bind().inner;
+
+        match background {
+            Background::Static(static_background) => Self::Static(StaticBackgroundRendererData {
+                static_background: static_background.clone()
+            }),
+            _ => Self::None,
+        }
     }
 }
