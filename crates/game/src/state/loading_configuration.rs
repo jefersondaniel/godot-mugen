@@ -4,6 +4,8 @@ use crate::assets::{CoreAssets, TitleScreenData};
 use crate::prelude::*;
 
 pub fn start(game_manager: &mut GameManager) -> Result<()> {
+    game_manager.bootstrap();
+
     if game_manager.configuration_directory.is_empty() {
         return Err(anyhow::anyhow!("Configuration directory does not exist"));
     }

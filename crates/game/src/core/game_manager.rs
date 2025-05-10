@@ -1,4 +1,4 @@
-use godot::prelude::*;
+use godot::{classes::Engine, prelude::*};
 
 use crate::assets::{CoreAssets, SpriteCache, TitleScreenData};
 
@@ -8,6 +8,9 @@ use super::game_state::GameState;
 #[class(init, base=Object)]
 pub struct GameManager {
     base: Base<Object>,
+
+    #[var(get)]
+    pub viewport_size: Vector2,
 
     #[var(set, get)]
     pub configuration_directory: GString,
@@ -30,6 +33,24 @@ pub struct GameManager {
 
 #[godot_api]
 impl GameManager {
+    pub fn singleton() -> Gd<Self> {
+        let name = StringName::from("GameManager");
+        Engine::singleton().get_singleton(&name).unwrap().cast::<GameManager>()
+    }
+
+    pub fn bootstrap(&mut self) {
+        let window = Engine::singleton()
+          .get_main_loop()
+          .unwrap()
+          .cast::<SceneTree>()
+          .get_root()
+          .unwrap();
+
+        let viewport = window.get_viewport().unwrap();
+        let rect = viewport.get_visible_rect();
+        self.viewport_size = rect.size;
+    }
+
     #[signal]
     pub fn state_changed(state: GameState);
 
