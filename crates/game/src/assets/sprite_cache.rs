@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use godot::prelude::*;
-use mugen_data::sprite::sprite_file::SpriteFile;
+use godot::classes::image::Format;
+use godot::classes::Image;
+use godot::{classes::Texture2D, prelude::*};
+use mugen_data::sprite::sff::image::Palette;
+use mugen_data::sprite::{sff::sff_common::SffData, sprite_file::SpriteFile};
 use mugen_data::sprite::sprite_id::SpriteId;
 use mugen_data::sprite::sprite_file::SpriteData;
 use super::loaders::load_sprite_file;
@@ -77,3 +80,50 @@ fn hash(s: &str) -> u64 {
     hasher.finish()
 }
 
+pub fn create_palette_image(sprite_data: &SpriteData, palette: Option<&Palette>) -> Gd<Image> {
+    let width: usize;
+    let data: PackedByteArray;
+
+    if let Some(palette) = palette {
+        width = palette.colors.len();
+        let mut byte_array = Vec::with_capacity(width * 4);
+        for color in palette.colors.iter() {
+            byte_array.push(color.r);
+            byte_array.push(color.g);
+            byte_array.push(color.b);
+            byte_array.push(color.a);
+        }
+        data = PackedByteArray::from(byte_array.as_slice());
+    } else {
+        width = sprite_data.image.width;
+        data = PackedByteArray::from(sprite_data.image.pixels.as_slice());
+    }
+
+    let mut image = Image::new_gd();
+
+    image.set_data(
+        width as i32,
+        1 as i32,
+        false,
+        Format::RGBA8,
+        &data,
+    );
+
+    image
+}
+
+pub fn create_sprite_image(sprite_data: &SpriteData) -> Gd<Image> {
+    let data = PackedByteArray::from(sprite_data.image.pixels.as_slice());
+
+    let mut image = Image::new_gd();
+
+    image.set_data(
+        sprite_data.image.width as i32,
+        sprite_data.image.height as i32,
+        false,
+        Format::RGBA8,
+        &data,
+    );
+
+    image
+}

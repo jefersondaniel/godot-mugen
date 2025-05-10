@@ -2,7 +2,7 @@ use thunderdome::Index;
 
 use crate::types::Color;
 
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct Palette {
     pub colors: Vec<Color>,
 }
