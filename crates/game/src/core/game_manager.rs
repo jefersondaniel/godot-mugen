@@ -1,4 +1,4 @@
-use godot::{classes::Engine, prelude::*};
+use godot::{classes::{Engine, Shader}, prelude::*};
 
 use crate::assets::{CoreAssets, SpriteCache, TitleScreenData};
 
@@ -29,6 +29,8 @@ pub struct GameManager {
 
     #[var(get)]
     pub title_screen_data: Gd<TitleScreenData>,
+
+    pub sprite_shader: Gd<Shader>,
 }
 
 #[godot_api]

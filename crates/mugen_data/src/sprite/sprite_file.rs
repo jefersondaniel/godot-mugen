@@ -20,12 +20,6 @@ pub struct SpriteFile {
     pub palettes: Vec<Index>,
 }
 
-#[derive(Clone, Debug)]
-pub struct SpriteData {
-    pub sff_data: SffData,
-    pub image: Image,
-}
-
 impl Default for SpriteFile {
     fn default() -> Self {
         Self {
