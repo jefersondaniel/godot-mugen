@@ -12,7 +12,6 @@ func _physics_process(_delta: float) -> void:
     GameManager.update()
 
 func on_state_changed(state) -> void:
-    print("State changed: ", state)
     if GameManager.error_message != "":
         print("Error: ", GameManager.error_message)
         return

@@ -1,4 +1,4 @@
-use godot::{classes::{mesh::PrimitiveType, ArrayMesh, IMeshInstance2D, MeshInstance2D, ShaderMaterial, SurfaceTool}, prelude::*};
+use godot::{classes::{canvas_item::TextureFilter, mesh::PrimitiveType, ArrayMesh, IMeshInstance2D, MeshInstance2D, SurfaceTool}, prelude::*};
 use crate::{adapters::BackgroundAdapter, assets::{SpriteData, TextureGroup}, GameManager};
 use mugen_data::background::{background::Background, static_background::StaticBackground};
 
@@ -18,16 +18,9 @@ pub struct BackgroundNode {
 #[godot_api]
 impl IMeshInstance2D for BackgroundNode {
     fn enter_tree(&mut self) {
-        godot_print!("BackgroundNode::enter_tree");
-        let game_manager_singleton = GameManager::singleton();
-        let game_manager = game_manager_singleton.bind();
-        self.renderer = BackgroundRenderer::from(&self.background);
-
-        let mesh = self.renderer.create_mesh();
-        self.base_mut().set_mesh(&mesh);
-
-        let material = self.renderer.create_material(&game_manager);
-        self.base_mut().set_material(&material);
+        let renderer = BackgroundRenderer::from(&self.background);
+        renderer.configure_mesh_instance(self);
+        self.renderer = renderer;
     }
 }
 
@@ -97,17 +90,12 @@ impl From<&Option<Gd<BackgroundAdapter>>> for BackgroundRenderer {
 }
 
 impl BackgroundRenderer {
-    fn create_mesh(&self) -> Gd<ArrayMesh> {
+    fn configure_mesh_instance(&self, mesh_instance: &mut BackgroundNode) {
         match self {
-            BackgroundRenderer::Static(data) => data.create_mesh(),
-            _ => ArrayMesh::new_gd(),
-        }
-    }
-
-    fn create_material(&self, game_manager: &GameManager) -> Gd<ShaderMaterial> {
-        match self {
-            BackgroundRenderer::Static(data) => data.create_material(game_manager),
-            _ => ShaderMaterial::new_gd(),
+            BackgroundRenderer::Static(data) => data.configure_mesh_instance(mesh_instance),
+            _ => {
+                godot_error!("BackgroundRenderer::configure_mesh_instance: No renderer");
+            }
         }
     }
 }
@@ -133,8 +121,13 @@ impl StaticBackgroundRendererData {
         }
     }
 
-    fn create_material(&self, game_manager: &GameManager) -> Gd<ShaderMaterial> {
-        create_sprite_material(&self.texture_group, &game_manager.sprite_shader)
+    fn configure_mesh_instance(&self, node: &mut BackgroundNode) {
+        let mut base = node.base_mut();
+        let game_manager_singleton = GameManager::singleton();
+        let material = create_sprite_material(&self.texture_group, &game_manager_singleton.bind().sprite_shader);
+        base.set_mesh(&self.create_mesh());
+        base.set_material(&material);
+        base.set_texture(&self.texture_group.image_texture);
     }
 }
 

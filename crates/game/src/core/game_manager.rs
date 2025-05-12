@@ -2,7 +2,7 @@ use godot::{classes::{Engine, Shader}, prelude::*};
 
 use crate::assets::{CoreAssets, SpriteCache, TitleScreenData};
 
-use super::game_state::GameState;
+use super::{game_state::GameState, shader::create_sprite_shader};
 
 #[derive(GodotClass)]
 #[class(init, base=Object)]
@@ -51,6 +51,7 @@ impl GameManager {
         let viewport = window.get_viewport().unwrap();
         let rect = viewport.get_visible_rect();
         self.viewport_size = rect.size;
+        self.sprite_shader = create_sprite_shader();
     }
 
     #[signal]

@@ -38,6 +38,7 @@ pub struct TextureGroup {
 #[class(init, base=RefCounted)]
 pub struct SpriteCache {
     file_hash_cache: HashMap<String, u64>,
+    file_hash_reverse_cache: HashMap<u64, String>,
     file_cache: HashMap<u64, SpriteFile>,
 }
 
@@ -46,6 +47,7 @@ impl SpriteCache {
         let sprite_file = load_sprite_file(&path)?;
         let file_hash = hash(&path);
         self.file_hash_cache.insert(String::from(path), file_hash);
+        self.file_hash_reverse_cache.insert(file_hash, String::from(path));
         self.file_cache.insert(file_hash, sprite_file);
         Ok(())
     }
@@ -53,6 +55,7 @@ impl SpriteCache {
     pub fn forget_file(&mut self, path: String) {
         let hash = self.file_hash_cache.remove(&path);
         if let Some(hash) = hash {
+            self.file_hash_reverse_cache.remove(&hash);
             self.file_cache.remove(&hash);
         }
     }
@@ -72,7 +75,8 @@ impl SpriteCache {
     pub fn get_sprite_data(&self, handle: SpriteHandle) -> Option<SpriteData> {
         let sprite_file = self.get_sprite_file(handle);
         if let Some(sprite_file) = sprite_file {
-            let sff_data = sprite_file.get_sff_data(&SpriteId::new(handle.group, handle.image));
+            let sprite_id = SpriteId::new(handle.group, handle.image);
+            let sff_data = sprite_file.get_sff_data(&sprite_id);
             if let Ok(sff_data) = sff_data {
                 let image = sprite_file.get_image(sff_data.image);
                 if let Ok(image) = image {
@@ -84,7 +88,13 @@ impl SpriteCache {
                         default_palette: palette.clone(),
                     });
                 }
+            } else {
+                godot_error!("Sprite not found: {}", &sprite_id);
             }
+        } else {
+            let fallback_filename = String::from("unknown");
+            let filename = self.file_hash_reverse_cache.get(&handle.file_hash).unwrap_or(&fallback_filename);
+            godot_error!("Sprite file not found: {}", filename);
         }
 
         None
@@ -115,7 +125,6 @@ impl SpriteCache {
 
     fn create_sprite_image(&self, sprite_data: &SpriteData) -> Gd<Image> {
         let data = PackedByteArray::from(sprite_data.image.pixels.as_slice());
-
         let mut image = Image::new_gd();
 
         image.set_data(
