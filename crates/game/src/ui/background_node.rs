@@ -27,6 +27,52 @@ impl IMeshInstance2D for BackgroundNode {
     fn draw(&mut self) {
         self.renderer.configure_draw_rect(self);
     }
+
+    fn process(&mut self, delta: f64) {
+        match &self.renderer {
+            BackgroundRenderer::Static(data) => {
+                let base_background = &data.static_background.base_background;
+                let velocity = base_background.velocity * 30.0;
+
+                // Skip if no velocity
+                if velocity == Vec2::new(0.0, 0.0) {
+                    return;
+                }
+
+                // Apply velocity to transform
+                let mut transform = self.base().get_transform();
+                let scaled_velocity = Vector2::new(velocity.x * delta as f32, velocity.y * delta as f32);
+                transform = transform.translated(scaled_velocity);
+
+                // Get current location and sprite size
+                let sprite_size = Vector2::new(
+                    data.sprite_data.image.width as f32,
+                    data.sprite_data.image.height as f32,
+                );
+                let location = transform.origin;
+                let startlocation = base_background.startlocation;
+
+                // Reset X position if out of bounds
+                if location.x >= startlocation.x + sprite_size.x || location.x <= startlocation.x - sprite_size.x {
+                    transform.origin.x = startlocation.x;
+                    godot_print!("Reset X position");
+                }
+
+                // Reset Y position if out of bounds
+                if location.y >= startlocation.y + sprite_size.y || location.y <= startlocation.y - sprite_size.y {
+                    transform.origin.y = startlocation.y;
+                    godot_print!("Reset Y position");
+                }
+
+                // Apply the updated transform
+                self.base_mut().set_transform(transform);
+
+            },
+            _ => {
+                // No animation for other renderer types
+            }
+        }
+    }
 }
 
 #[godot_api]
@@ -174,8 +220,10 @@ impl StaticBackgroundRendererData {
         let x_offset = -core_assets.get_localcoord().x / 2.0;
         if let Some(drawrect) = self.static_background.drawrect {
             let mut rendering_server = RenderingServer::singleton();
+            let draw_rect_origin = Vector2::new(drawrect.origin.x + x_offset, drawrect.origin.y);
+            let inverse_transform = base.get_transform().affine_inverse();
             let rect = Rect2::new(
-                Vector2::new(drawrect.origin.x + x_offset, drawrect.origin.y),
+                inverse_transform * draw_rect_origin,
                 Vector2::new(drawrect.size.x, drawrect.size.y)
             );
             rendering_server.canvas_item_set_custom_rect_ex(base.get_canvas_item(), true).rect(rect).done();
