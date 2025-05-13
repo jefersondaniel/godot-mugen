@@ -21,7 +21,7 @@ pub struct SpriteHandle {
 
 #[derive(Clone, Debug)]
 pub struct SpriteData {
-    sff_data: SffData,
+    pub sff_data: SffData,
     pub image: SffImage,
     default_palette: Palette,
 }

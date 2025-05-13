@@ -10,6 +10,7 @@ use super::game_manager::GameManager;
 pub enum GameState {
     PreStart,
     LoadingConfiguration,
+    ConfigurationLoaded,
     TitleScreen,
     FatalError,
 }
@@ -32,6 +33,7 @@ impl GameState {
         match self {
             GameState::PreStart => Ok(Some(GameState::LoadingConfiguration)),
             GameState::LoadingConfiguration => loading_configuration::update(game_manager),
+            GameState::ConfigurationLoaded => Ok(Some(GameState::TitleScreen)),
             _ => Ok(None)
         }
     }

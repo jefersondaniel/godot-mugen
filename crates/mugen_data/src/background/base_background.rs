@@ -92,6 +92,10 @@ impl BaseBackground {
             drawrect,
         }
     }
+
+    pub fn has_tiling(&self) -> bool {
+        self.tiling != Vector2::new(0.0, 0.0)
+    }
 }
 
 fn get_background_name(textsection: &TextSection) -> String {

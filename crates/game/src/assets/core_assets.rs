@@ -17,6 +17,7 @@ pub struct CoreAssets {
     pub motif_sprite_file_path: String,
 }
 
+#[godot_api]
 impl CoreAssets {
     pub fn load(directory: &str, mut sprite_cache: Gd<SpriteCache>) -> Result<CoreAssets> {
         // Configuration
@@ -44,5 +45,10 @@ impl CoreAssets {
             motif_path,
             motif_sprite_file_path,
         })
+    }
+
+    #[func]
+    pub fn get_localcoord(&self) -> Vector2 {
+        Vector2::new(self.motif.localcoord.x as f32, self.motif.localcoord.y as f32)
     }
 }

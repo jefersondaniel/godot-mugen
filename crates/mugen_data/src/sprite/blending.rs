@@ -7,9 +7,9 @@ use crate::{enumerations::BlendType, regex::{RegEx, RegExFlags}, attribute_value
 
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Blending {
-    blend_type: BlendType,
-    source: u8,
-    destination: u8,
+    pub blend_type: BlendType,
+    pub source: u8,
+    pub destination: u8,
 }
 
 impl Blending {
@@ -27,6 +27,35 @@ impl Blending {
 
     pub fn is_none(&self) -> bool {
         return self.blend_type == BlendType::None;
+    }
+
+    pub fn to_string(&self) -> String {
+        if self.blend_type == BlendType::None {
+            return "".to_string();
+        }
+
+        if self.blend_type == BlendType::Add && self.source == 0 && self.destination == 0 {
+            return "addalpha".to_string();
+        }
+
+        if self.blend_type == BlendType::Add && self.source == 255 && self.destination == 255 {
+            return "add".to_string();
+        }
+
+        if self.blend_type == BlendType::Add && self.source == 255 && self.destination == 127 {
+            return "add1".to_string();
+        }
+
+        if self.blend_type == BlendType::Subtract && self.source == 255 && self.destination == 255 {
+            return "sub".to_string();
+        }
+
+        format!(
+            "{}S{}D{}",
+            if self.blend_type == BlendType::Add { "A" } else { "S" },
+            self.source,
+            self.destination
+        )
     }
 }
 
@@ -93,31 +122,6 @@ impl ParseAttributeValue for Blending {
 
 impl Display for Blending {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.blend_type == BlendType::None {
-            return f.write_str("");
-        }
-
-        if self.blend_type == BlendType::Add && self.source == 0 && self.destination == 0 {
-            return f.write_str("addalpha");
-        }
-
-        if self.blend_type == BlendType::Add && self.source == 255 && self.destination == 255 {
-            return f.write_str("add");
-        }
-
-        if self.blend_type == BlendType::Add && self.source == 255 && self.destination == 127 {
-            return f.write_str("add1");
-        }
-
-        if self.blend_type == BlendType::Subtract && self.source == 255 && self.destination == 255 {
-            return f.write_str("sub");
-        }
-
-        f.write_str(&format!(
-            "{}S{}D{}",
-            if self.blend_type == BlendType::Add { "A" } else { "S" },
-            self.source,
-            self.destination
-        ))
+        f.write_str(&self.to_string())
     }
 }

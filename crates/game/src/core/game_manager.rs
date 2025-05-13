@@ -1,16 +1,15 @@
+use std::collections::HashMap;
+
 use godot::{classes::{Engine, Shader}, prelude::*};
 
 use crate::assets::{CoreAssets, SpriteCache, TitleScreenData};
 
-use super::{game_state::GameState, shader::create_sprite_shader};
+use super::{game_state::GameState, shader::{create_sprite_shader, BlendMode}};
 
 #[derive(GodotClass)]
 #[class(init, base=Object)]
 pub struct GameManager {
     base: Base<Object>,
-
-    #[var(get)]
-    pub viewport_size: Vector2,
 
     #[var(set, get)]
     pub configuration_directory: GString,
@@ -30,7 +29,7 @@ pub struct GameManager {
     #[var(get)]
     pub title_screen_data: Gd<TitleScreenData>,
 
-    pub sprite_shader: Gd<Shader>,
+    pub sprite_shaders: HashMap<BlendMode, Gd<Shader>>,
 }
 
 #[godot_api]
@@ -41,17 +40,11 @@ impl GameManager {
     }
 
     pub fn bootstrap(&mut self) {
-        let window = Engine::singleton()
-          .get_main_loop()
-          .unwrap()
-          .cast::<SceneTree>()
-          .get_root()
-          .unwrap();
-
-        let viewport = window.get_viewport().unwrap();
-        let rect = viewport.get_visible_rect();
-        self.viewport_size = rect.size;
-        self.sprite_shader = create_sprite_shader();
+        self.sprite_shaders = HashMap::new();
+        self.sprite_shaders.insert(BlendMode::None, create_sprite_shader(BlendMode::None));
+        self.sprite_shaders.insert(BlendMode::Add, create_sprite_shader(BlendMode::Add));
+        self.sprite_shaders.insert(BlendMode::Subtract, create_sprite_shader(BlendMode::Subtract));
+        self.sprite_shaders.insert(BlendMode::PremulAlpha, create_sprite_shader(BlendMode::PremulAlpha));
     }
 
     #[signal]
@@ -60,6 +53,28 @@ impl GameManager {
     fn set_state(&mut self, state: GameState) {
         self.state = state;
         self.base_mut().emit_signal("state_changed", &[Variant::from(state)]);
+    }
+
+    #[func]
+    pub fn get_viewport_size(&self) -> Vector2 {
+        let window = Engine::singleton()
+            .get_main_loop()
+            .unwrap()
+            .cast::<SceneTree>()
+            .get_root();
+
+        if let Some(window) = window {
+            let viewport = window.get_viewport();
+
+            if let Some(viewport) = viewport {
+                let rect = viewport.get_visible_rect();
+                rect.size
+            } else {
+                Vector2::new(0.0, 0.0)
+            }
+        } else {
+            Vector2::new(0.0, 0.0)
+        }
     }
 
     #[func]

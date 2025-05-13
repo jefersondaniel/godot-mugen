@@ -22,7 +22,7 @@ pub fn start(game_manager: &mut GameManager) -> Result<()> {
 
 pub fn update(game_manager: &mut GameManager) -> Result<Option<GameState>> {
     if game_manager.core_assets.bind().loaded {
-        return Ok(Some(GameState::TitleScreen));
+        return Ok(Some(GameState::ConfigurationLoaded));
     }
 
     Ok(None)
