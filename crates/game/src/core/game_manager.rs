@@ -97,4 +97,11 @@ impl GameManager {
             self.set_state(state);
         }
     }
+
+    #[func]
+    pub fn get_render_offset(&self) -> Vector2 {
+        let core_assets = self.core_assets.bind();
+        let x_offset = -core_assets.get_localcoord().x / 2.0;
+        Vector2::new(x_offset, 0.0)
+    }
 }
