@@ -5,11 +5,12 @@ use mugen_data::background::{background_group::BackgroundGroup, background::Back
 #[class(init, base=RefCounted)]
 pub struct BackgroundAdapter {
     pub inner: Background,
+    pub sprite_file_path: String,
 }
 
 impl BackgroundAdapter {
-    fn build(value: &Background) -> Gd<BackgroundAdapter> {
-        let adapter = Self { inner: value.clone() };
+    fn build(value: &Background, sprite_file_path: &str) -> Gd<BackgroundAdapter> {
+        let adapter = Self { inner: value.clone(), sprite_file_path: sprite_file_path.into() };
         Gd::from_object(adapter)
     }
 }
@@ -18,8 +19,6 @@ impl BackgroundAdapter {
 #[class(init, base=RefCounted)]
 pub struct BackgroundGroupAdapter {
     pub inner: BackgroundGroup,
-
-    sprite_file_path: String,
 
     #[var(get)]
     backgrounds: Array<Gd<BackgroundAdapter>>,
@@ -52,10 +51,10 @@ impl BackgroundGroupAdapter {
         );
         let mut backgrounds = Array::new();
         for background in inner.backgrounds.iter() {
-            let background = BackgroundAdapter::build(background);
+            let background = BackgroundAdapter::build(background, sprite_file_path);
             backgrounds.push(&background);
         }
-        let adapter = Self { inner: inner.clone(), sprite_file_path: sprite_file_path.into(), backgrounds, clearcolor };
+        let adapter = Self { inner: inner.clone(), backgrounds, clearcolor };
         Gd::from_object(adapter)
     }
 }

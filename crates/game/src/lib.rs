@@ -1,5 +1,5 @@
 use godot::prelude::*;
-use godot::classes::{Engine, Object};
+use godot::classes::Engine;
 use prelude::GameManager;
 
 mod adapters;

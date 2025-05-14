@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use godot::classes::image::Format;
-use godot::classes::{Image, ImageTexture, Texture2DArray};
-use godot::{classes::Texture2D, prelude::*};
+use godot::classes::{Image, ImageTexture};
+use godot::prelude::*;
 use mugen_data::sprite::sff::image::{Image as SffImage, Palette};
 use mugen_data::sprite::{sff::sff_common::SffData, sprite_file::SpriteFile};
 use mugen_data::sprite::sprite_id::SpriteId;

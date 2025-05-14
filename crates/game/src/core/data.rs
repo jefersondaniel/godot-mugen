@@ -6,12 +6,6 @@ use mugen_data::io::reader::DataReader;
 
 pub struct GodotFilesystem {}
 
-impl GodotFilesystem {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
 impl FileReader for GodotFilesystem {
     fn read(&self, path: &str) -> Result<Box<dyn DataReader>, std::io::Error> {
         let file = FileAccess::open(&GString::from(path), ModeFlags::READ);

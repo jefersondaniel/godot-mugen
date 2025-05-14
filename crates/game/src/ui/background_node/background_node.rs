@@ -1,6 +1,6 @@
-use godot::{classes::{canvas_item::TextureFilter, mesh::PrimitiveType, ArrayMesh, IMeshInstance2D, MeshInstance2D, RenderingServer, ShaderMaterial, SurfaceTool}, prelude::*};
-use crate::{adapters::BackgroundAdapter, assets::{SpriteData, TextureGroup}, GameManager};
-use mugen_data::background::{background::Background, base_background::BaseBackground, static_background::StaticBackground};
+use godot::{classes::{IMeshInstance2D, MeshInstance2D}, prelude::*};
+use crate::{adapters::BackgroundAdapter, GameManager};
+use mugen_data::background::{background::Background};
 
 use super::static_background::{configure_static_background, draw_static_background, process_static_background, StaticBackgroundRendererData};
 
@@ -85,11 +85,10 @@ fn setup_renderer(node: &mut BackgroundNode) {
 
     if let Some(adapter) = adapter {
         let background = &adapter.bind().inner;
+        let sprite_file_path = &adapter.bind().sprite_file_path;
         let game_manager_singleton = GameManager::singleton();
         let game_manager = game_manager_singleton.bind();
-        let core_assets = game_manager.core_assets.bind();
         let sprite_cache = game_manager.sprite_cache.bind();
-        let sprite_file_path = &core_assets.motif_sprite_file_path;
 
         match background {
             Background::Static(static_background) => {
