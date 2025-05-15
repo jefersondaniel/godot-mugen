@@ -4,21 +4,34 @@ use godot::prelude::*;
 use mugen_data::io::file::FileReader;
 use mugen_data::io::reader::DataReader;
 
-pub struct GodotFilesystem {}
+use crate::helpers::join_paths;
+
+pub struct GodotFilesystem {
+    root: String,
+}
+
+impl GodotFilesystem {
+    pub fn new(root: &str) -> Self {
+        Self {
+            root: root.to_string(),
+        }
+    }
+}
 
 impl FileReader for GodotFilesystem {
     fn read(&self, path: &str) -> Result<Box<dyn DataReader>, std::io::Error> {
-        let file = FileAccess::open(&GString::from(path), ModeFlags::READ);
+        let full_file_path = join_paths(&[&self.root, path]);
+        let file = FileAccess::open(&GString::from(&full_file_path), ModeFlags::READ);
         if let Some(file) = file {
             let reader = GodotFileReader::new(file);
             Ok(Box::new(reader))
         } else {
-            Err(std::io::Error::new(std::io::ErrorKind::Other, "File does not exist"))
+            Err(std::io::Error::new(std::io::ErrorKind::Other, format!("File does not exist: {}, root = {}", &full_file_path, &self.root)))
         }
     }
 
     fn does_file_exist(&self, path: &str) -> bool {
-        FileAccess::file_exists(&GString::from(path))
+        FileAccess::file_exists(&GString::from(&join_paths(&[&self.root, path])))
     }
 }
 

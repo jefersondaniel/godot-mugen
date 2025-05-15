@@ -1,10 +1,10 @@
-use godot::prelude::*;
+use godot::{classes::FontFile, prelude::*};
 use anyhow::Result;
 use mugen_data::{system::{configuration::Configuration, system_motif::SystemMotif}};
 
 use crate::helpers::{get_directory, join_paths, map_io_error};
 
-use super::{loaders::load_text_file, SpriteCache};
+use super::{loaders::{load_fonts, load_text_file}, SpriteCache};
 
 #[derive(GodotClass)]
 #[class(init, base=RefCounted)]
@@ -15,6 +15,7 @@ pub struct CoreAssets {
     pub motif: SystemMotif,
     pub motif_path: String,
     pub motif_sprite_file_path: String,
+    pub fonts: Array<Option<Gd<FontFile>>>,
 }
 
 #[godot_api]
@@ -35,6 +36,10 @@ impl CoreAssets {
         )?;
         let motif_sprite_file_path = join_paths(&[&get_directory(&motif_path), &motif.sprite_path]);
 
+        // Fonts
+        let font_directory = join_paths(&[directory, "font"]);
+        let fonts = load_fonts(motif.fonts.clone(), &font_directory)?;
+
         sprite_cache.bind_mut().warmup_file(&motif_sprite_file_path)?;
 
         Ok(CoreAssets {
@@ -44,6 +49,7 @@ impl CoreAssets {
             motif,
             motif_path,
             motif_sprite_file_path,
+            fonts,
         })
     }
 

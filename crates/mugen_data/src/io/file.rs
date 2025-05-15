@@ -10,17 +10,17 @@ pub trait FileReader {
     fn get_path_by_referrer(&self, name: &str, referrer: &str) -> String {
         let mut directory = get_directory(referrer);
         let mut path = combine_paths(&directory, name);
-    
+
         for _ in 0..2 {
             if !self.does_file_exist(&path) {
                 directory = get_directory(&directory);
                 path = combine_paths(&directory, name);
                 continue;
             }
-    
+
             break;
         }
-    
+
         path
     }
     fn read_text_file(&self, path: &str) -> Result<TextFile, Error> {

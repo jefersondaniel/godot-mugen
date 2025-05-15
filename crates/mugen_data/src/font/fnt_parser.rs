@@ -103,7 +103,7 @@ pub fn read_fnt_v1(
     let image = image_storage.insert(read_pcx(&mut pcx_arr_reader, palette_storage)?);
 
     parse_fnt_file(
-        &text, 
+        &text,
         image
     )
 }

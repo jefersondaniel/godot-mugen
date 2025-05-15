@@ -4,3 +4,6 @@ pub mod palette_file;
 pub mod sff;
 pub mod sprite_file;
 pub mod sprite_id;
+
+pub use font_file::FontFile;
+pub use sprite_file::SpriteFile;
